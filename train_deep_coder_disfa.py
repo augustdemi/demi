@@ -6,6 +6,7 @@ import keras as K
 import numpy as np
 import h5py
 import argparse
+import tensorflow as tf
 from datetime import datetime
 start_time = datetime.now()
 
@@ -14,8 +15,13 @@ parser.add_argument("-i","--input",  type=str, default='init', help="files creat
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
 parser.add_argument("-n","--nb_iter",type=int, default=1, help="number of VAE iterations")
 parser.add_argument("-w","--warming",type=int, default=1, help="factor on kl loss")
-parser.add_argument("-tr","--training_data",type=str, default='/home/ml1323/project/robert_data/DISFA/kfold_detected/1/train.h5', help="path to training data set")
-parser.add_argument("-te","--test_data",type=str, default='/home/ml1323/project/robert_data/DISFA/kfold_detected/1/test.h5', help="path to test data set")
+
+parser.add_argument("-tr","--training_data",type=str, default='/home/mihee/dev/project/robert_data/disfa/test.h5', help="path to training data set")
+parser.add_argument("-te","--test_data",type=str, default='/home/mihee/dev/project/robert_data/disfa/test.h5', help="path to test data set")
+
+#parser.add_argument("-tr","--training_data",type=str, default='/home/ml1323/project/robert_data/DISFA/kfold_detected/1/train.h5', help="path to training data set")
+#parser.add_argument("-te","--test_data",type=str, default='/home/ml1323/project/robert_data/DISFA/kfold_detected/1/test.h5', help="path to test data set")
+
 parser.add_argument("-k","--kfold",type=int, default=1, help="for k fold")
 args = parser.parse_args()
 
@@ -69,9 +75,8 @@ def generator(dat_dict, aug, mod=0, s=False):
                 img, 
                 preprocessing=True,
                 augmentation=aug)
-        #lab = lab.argmax(2)
-        lab = lab[:,11]
-        lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
+
+        lab = np.reshape(lab, (lab.shape[0], 1))
         if mod==1:
             if(s): yield [img], [lab], [sub]
             else: yield [img], [lab]
@@ -113,9 +118,8 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
 
 z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma]) # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
-aug_z = Reshape((2000,1))(z_mean)
-out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(aug_z) # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
+out_1 = EE.layers.logREG(out_0_shape[0])(z)
 
 D1 = Dense(latent_dim, activation='relu')
 D2 = Dense(n_feat, activation='sigmoid')  # n_feat  = conv 결과 shape들의 곱이 ouputspace의 dim
@@ -138,8 +142,8 @@ def rec_loss(img, rec):
     return mse
 
 def pred_loss(y_true, y_pred):
-    ce = EE.losses.categorical_crossentropy(y_true, y_pred)
-    return (1-w_1)*ce
+    cost = - tf.reduce_sum(y_true * tf.log(y_pred) + (1-y_true) * tf.log(1-y_pred))
+    return (1-w_1)*cost
 
 loss  = [rec_loss, pred_loss, vae_loss]
 
@@ -185,7 +189,6 @@ model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
                 batch_size = batch_size,
                 title = ['TR','TE'],
-                one_hot = True,
                 log_dir = 'res_disfa_'+str(args.warming).zfill(4)+'.csv/' + str(args.kfold),
             ),
             EE.callbacks.summary_vac_disfa(
