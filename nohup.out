@@ -1,0 +1,19 @@
+Using TensorFlow backend.
+/home/ml1323/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+/bigdata1/homedirs/ml1323/project/robert_code/EmoData/data/mean_shape.h5
+/home/ml1323/project/robert_data/DISFA/kfold/2
+Traceback (most recent call last):
+  File "train_deep_coder_disfa.py", line 44, in <module>
+    w_1 = args.warming / 50
+  File "/bigdata1/homedirs/ml1323/project/robert_code/EmoData/provider_back.py", line 17, in flow_from_hdf5
+    f = h5py.File(path_to_file, 'r')
+  File "/home/ml1323/anaconda3/lib/python3.6/site-packages/h5py/_hl/files.py", line 269, in __init__
+    fid = make_fid(name, mode, userblock_size, fapl, swmr=swmr)
+  File "/home/ml1323/anaconda3/lib/python3.6/site-packages/h5py/_hl/files.py", line 99, in make_fid
+    fid = h5f.open(name, flags, fapl=fapl)
+  File "h5py/_objects.pyx", line 54, in h5py._objects.with_phil.wrapper
+  File "h5py/_objects.pyx", line 55, in h5py._objects.with_phil.wrapper
+  File "h5py/h5f.pyx", line 78, in h5py.h5f.open
+OSError: Unable to open file (file read failed: time = Sat Apr 21 02:02:52 2018
+, filename = '/home/ml1323/project/robert_data/DISFA/kfold/2', file descriptor = 5, errno = 21, error message = 'Is a directory', buf = 0x7fffb55ea6c0, total read size = 8, bytes this sub-read = 8, bytes actually read = 18446744073709551615, offset = 0)

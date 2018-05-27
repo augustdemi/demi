@@ -1,0 +1,434 @@
+/home/ml1323/anaconda3/lib/python3.6/site-packages/h5py/__init__.py:36: FutureWarning: Conversion of the second argument of issubdtype from `float` to `np.floating` is deprecated. In future, it will be treated as `np.float64 == np.dtype(float).type`.
+  from ._conv import register_converters as _register_converters
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 8
+AU1 0
+AU2 40
+AU3 0
+AU4 0
+AU5 0
+AU6 692
+AU7 36
+AU8 36
+AU9 28
+AU10 932
+AU11 321
+total:  2093
+>>>>>>>>>>>>>>>>> end: SN001
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 37
+AU1 9
+AU2 289
+AU3 35
+AU4 167
+AU5 0
+AU6 739
+AU7 232
+AU8 140
+AU9 705
+AU10 1185
+AU11 865
+total:  4403
+>>>>>>>>>>>>>>>>> end: SN005
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 715
+AU1 27
+AU2 2739
+AU3 42
+AU4 1830
+AU5 1555
+AU6 781
+AU7 151
+AU8 870
+AU9 260
+AU10 1855
+AU11 1571
+total:  12396
+>>>>>>>>>>>>>>>>> end: SN003
+img shape: (4835, 256, 256, 3)
+lab shape: (4835, 12, 2)
+AU0 218
+AU1 297
+AU2 23
+AU3 34
+AU4 229
+AU5 143
+AU6 1237
+AU7 200
+AU8 114
+AU9 26
+AU10 1849
+AU11 1892
+total:  6262
+>>>>>>>>>>>>>>>>> end: SN002
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 1319
+AU1 1605
+AU2 2013
+AU3 71
+AU4 1817
+AU5 496
+AU6 1715
+AU7 246
+AU8 1183
+AU9 297
+AU10 1440
+AU11 558
+total:  12760
+>>>>>>>>>>>>>>>>> end: SN004
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 123
+AU1 8
+AU2 1094
+AU3 35
+AU4 211
+AU5 94
+AU6 920
+AU7 182
+AU8 138
+AU9 50
+AU10 1353
+AU11 454
+total:  4662
+>>>>>>>>>>>>>>>>> end: SN021
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 40
+AU1 119
+AU2 133
+AU3 105
+AU4 909
+AU5 458
+AU6 572
+AU7 883
+AU8 973
+AU9 170
+AU10 762
+AU11 448
+total:  5572
+>>>>>>>>>>>>>>>>> end: SN026
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 111
+AU1 241
+AU2 484
+AU3 84
+AU4 1184
+AU5 181
+AU6 1356
+AU7 278
+AU8 16
+AU9 206
+AU10 2039
+AU11 497
+total:  6677
+>>>>>>>>>>>>>>>>> end: SN030
+img shape: (4830, 256, 256, 3)
+lab shape: (4830, 12, 2)
+AU0 352
+AU1 249
+AU2 1915
+AU3 130
+AU4 194
+AU5 519
+AU6 1030
+AU7 12
+AU8 1013
+AU9 182
+AU10 2796
+AU11 2252
+total:  10644
+>>>>>>>>>>>>>>>>> end: SN023
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 274
+AU1 34
+AU2 588
+AU3 0
+AU4 230
+AU5 285
+AU6 1187
+AU7 192
+AU8 251
+AU9 218
+AU10 3561
+AU11 602
+total:  7422
+>>>>>>>>>>>>>>>>> end: SN012
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 403
+AU1 0
+AU2 710
+AU3 10
+AU4 297
+AU5 59
+AU6 1631
+AU7 23
+AU8 69
+AU9 62
+AU10 2117
+AU11 859
+total:  6240
+>>>>>>>>>>>>>>>>> end: SN027
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 0
+AU1 0
+AU2 589
+AU3 0
+AU4 2303
+AU5 189
+AU6 1788
+AU7 60
+AU8 282
+AU9 50
+AU10 1699
+AU11 389
+total:  7349
+>>>>>>>>>>>>>>>>> end: SN006
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 71
+AU1 42
+AU2 230
+AU3 101
+AU4 534
+AU5 99
+AU6 1644
+AU7 119
+AU8 334
+AU9 94
+AU10 1957
+AU11 2020
+total:  7245
+>>>>>>>>>>>>>>>>> end: SN031
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 325
+AU1 325
+AU2 149
+AU3 151
+AU4 197
+AU5 101
+AU6 724
+AU7 228
+AU8 501
+AU9 85
+AU10 1185
+AU11 317
+total:  4288
+>>>>>>>>>>>>>>>>> end: SN024
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 4
+AU1 45
+AU2 214
+AU3 18
+AU4 658
+AU5 137
+AU6 408
+AU7 950
+AU8 211
+AU9 586
+AU10 2433
+AU11 2606
+total:  8270
+>>>>>>>>>>>>>>>>> end: SN028
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 970
+AU1 214
+AU2 1196
+AU3 36
+AU4 575
+AU5 680
+AU6 787
+AU7 0
+AU8 29
+AU9 28
+AU10 3226
+AU11 3291
+total:  11032
+>>>>>>>>>>>>>>>>> end: SN032
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 23
+AU1 0
+AU2 378
+AU3 0
+AU4 1009
+AU5 228
+AU6 1872
+AU7 159
+AU8 399
+AU9 0
+AU10 1298
+AU11 193
+total:  5559
+>>>>>>>>>>>>>>>>> end: SN013
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 117
+AU1 196
+AU2 124
+AU3 97
+AU4 958
+AU5 344
+AU6 1071
+AU7 9
+AU8 411
+AU9 444
+AU10 959
+AU11 369
+total:  5099
+>>>>>>>>>>>>>>>>> end: SN007
+img shape: (4842, 256, 256, 3)
+lab shape: (4842, 12, 2)
+AU0 0
+AU1 0
+AU2 133
+AU3 14
+AU4 324
+AU5 55
+AU6 1983
+AU7 820
+AU8 782
+AU9 120
+AU10 4283
+AU11 955
+total:  9469
+>>>>>>>>>>>>>>>>> end: SN025
+img shape: (4432, 256, 256, 3)
+lab shape: (4432, 12, 2)
+AU0 1427
+AU1 1716
+AU2 2005
+AU3 113
+AU4 265
+AU5 231
+AU6 866
+AU7 334
+AU8 645
+AU9 424
+AU10 746
+AU11 363
+total:  9135
+>>>>>>>>>>>>>>>>> end: SN029
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 654
+AU1 617
+AU2 3033
+AU3 499
+AU4 394
+AU5 0
+AU6 917
+AU7 875
+AU8 1112
+AU9 134
+AU10 1757
+AU11 1009
+total:  11001
+>>>>>>>>>>>>>>>>> end: SN016
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 251
+AU1 260
+AU2 881
+AU3 24
+AU4 709
+AU5 418
+AU6 508
+AU7 21
+AU8 132
+AU9 11
+AU10 523
+AU11 210
+total:  3948
+>>>>>>>>>>>>>>>>> end: SN008
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 119
+AU1 113
+AU2 210
+AU3 0
+AU4 1792
+AU5 265
+AU6 2234
+AU7 0
+AU8 229
+AU9 21
+AU10 1241
+AU11 672
+total:  6896
+>>>>>>>>>>>>>>>>> end: SN017
+img shape: (4814, 256, 256, 3)
+lab shape: (4814, 12, 2)
+AU0 28
+AU1 78
+AU2 29
+AU3 0
+AU4 15
+AU5 0
+AU6 974
+AU7 17
+AU8 259
+AU9 158
+AU10 358
+AU11 147
+total:  2063
+>>>>>>>>>>>>>>>>> end: SN009
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 676
+AU1 507
+AU2 1269
+AU3 374
+AU4 776
+AU5 544
+AU6 1133
+AU7 1128
+AU8 951
+AU9 37
+AU10 2175
+AU11 747
+total:  10317
+>>>>>>>>>>>>>>>>> end: SN018
+img shape: (4844, 256, 256, 3)
+lab shape: (4844, 12, 2)
+AU0 43
+AU1 80
+AU2 412
+AU3 723
+AU4 772
+AU5 0
+AU6 1237
+AU7 0
+AU8 16
+AU9 45
+AU10 856
+AU11 763
+total:  4947
+>>>>>>>>>>>>>>>>> end: SN010
+img shape: (4845, 256, 256, 3)
+lab shape: (4845, 12, 2)
+AU0 395
+AU1 159
+AU2 3364
+AU3 28
+AU4 1135
+AU5 51
+AU6 773
+AU7 707
+AU8 1832
+AU9 91
+AU10 1464
+AU11 606
+total:  10605
+>>>>>>>>>>>>>>>>> end: SN011

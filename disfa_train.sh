@@ -1,0 +1,1 @@
+nohup python -u train_deep_coder_disfa.py -k 3 -n 80 -tr /home/ml1323/project/robert_data/DISFA/kfold_detected_bin/3/train.h5 -te /home/ml1323/project/robert_data/DISFA/kfold_detected_bin/3/test.h5 > disfa_bin_one3.txt &
