@@ -9,18 +9,18 @@ class logREG(Layer):
         self.num_outputs = num_outputs
         super(logREG, self).__init__(**kwargs)
 
-    def build(self, input_shape):
+    def build(self, input_shape): #(10,2000)
         '''
         '''
 
-        self.w = self.add_weight( 
-                shape = [input_shape[1], self.num_outputs], 
+        self.w = self.add_weight(
+                shape = [input_shape[1], self.num_outputs], #(2000,1)
                 initializer = 'he_normal',
                 trainable = True
                 )
 
-        self.b = self.add_weight( 
-                shape = [self.num_outputs], 
+        self.b = self.add_weight(
+                shape = [self.num_outputs], #(1)
                 initializer='zero',
                 trainable = True
                 )
@@ -32,16 +32,17 @@ class logREG(Layer):
         '''
         '''
         # add dimension for samples
-        var_w = self.w[None, :, :]
-        var_b = self.b[None, :]
-        var_x = x[:,:, None]
+        # var_w = self.w[None, :, :] #(n,2000,1), n=1
+        # var_b = self.b[None, :] #(n,1)
+        # var_x = x[:,:, None] #(10,2000,n)
 
-        score = tf.reduce_sum(var_w*var_x,1) + var_b
+        score =tf.matmul(x, self.w) + self.b
+        # score = tf.reduce_sum(var_w*var_x,1) + var_b
         print(score)
         score2 = tf.sigmoid(score)
         print(score2)
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> logREG")
-        return score
+        return score2
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], self.num_outputs)
