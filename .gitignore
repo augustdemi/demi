@@ -1,4 +1,7 @@
 log/
+.c9/
+.idea/
+.ipynb_checkpoints/
 model*/
 vgpae*/
 res*/
