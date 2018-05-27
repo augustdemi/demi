@@ -49,14 +49,16 @@ for subject in os.listdir(original_frame_path):
 
     for k in range(k_fold):
         # kshot_path = "D:/연구/프로젝트/SN001/maml/kshot/" + str(k)
-        kshot_path = "/home/ml1323/project/robert_data/DISFA/kshot/" + str(k)
-        if not os.path.exists(kshot_path + "/on/" + subject): os.makedirs(kshot_path + "/on/" + subject)
-        if not os.path.exists(kshot_path + "/off/" + subject): os.makedirs(kshot_path + "/off/" + subject)
+        kshot_path = "/home/ml1323/project/robert_data/DISFA/kshot/" + str(k) + "/" + subject
+        if not os.path.exists(kshot_path + "/on"): os.makedirs(kshot_path + "/on")
+        if not os.path.exists(kshot_path + "/off"): os.makedirs(kshot_path + "/off")
 
+        # copy on intensity frames to kshot folder
         for i in on_idx[k * n_class * k_shot: (k + 1) * n_class * k_shot]:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     kshot_path + "/on/" + subject + "/frame" + str(i) + ".jpg")
+                     kshot_path + "/on/frame" + str(i) + ".jpg")
 
+        # copy off intensity frames to kshot folder
         for i in off_idx[k * n_class * k_shot: (k + 1) * n_class * k_shot]:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     kshot_path + "/off/" + subject + "/frame" + str(i) + ".jpg")
+                     kshot_path + "/off/frame" + str(i) + ".jpg")
