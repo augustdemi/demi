@@ -25,7 +25,7 @@ for subject in os.listdir(path):
     with open(label_path + subject + '_au12.txt', 'r') as f:
         for line in f:
             intensity = int(line.split(",")[1].split("\n")[0])
-            if (intensity > 0): intensity_onehot = 1
+            if (intensity > 0): intensity = 1
             label_for_one_au.append(intensity)
         f.close()
 
