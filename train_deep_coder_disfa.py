@@ -143,7 +143,10 @@ def rec_loss(img, rec):
 
 def pred_loss(y_true, y_pred):
     cost = - tf.reduce_sum(y_true * tf.log(y_pred) + (1-y_true) * tf.log(1-y_pred))
-    return (1-w_1)*cost
+    loss = EE.losses.categorical_crossentropy(y_true, y_pred)
+    print(">>>>>>>>>>>>>> cost: ", cost)
+    print(">>>>>>>>>>>>>> loss: ", loss)
+    return (1-w_1)*loss
 
 loss  = [rec_loss, pred_loss, vae_loss]
 
