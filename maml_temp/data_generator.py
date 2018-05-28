@@ -5,7 +5,7 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from maml_temp.utils import get_images
+from utils import get_images, get_images2
 
 FLAGS = flags.FLAGS
 
@@ -25,25 +25,23 @@ class DataGenerator(object):
         self.num_classes = 1  # by default 1 (only relevant for classification problems)
 
         self.num_classes = config.get('num_classes', FLAGS.num_classes)
-        self.img_size = config.get('img_size', (160, 240))
+        self.img_size = config.get('img_size', (28, 28))
         self.dim_input = np.prod(self.img_size)
         self.dim_output = self.num_classes
         # data that is pre-resized using PIL with lanczos filter
-        data_folder = config.get('data_folder', '../data/kshot/1')
+        data_folder = config.get('data_folder', './data/kshot/0')
 
-        character_folders = [os.path.join(data_folder, family, character) \
-                             for family in os.listdir(data_folder) \
-                             if os.path.isdir(os.path.join(data_folder, family)) \
-                             for character in os.listdir(os.path.join(data_folder, family))]
+        subject_folders = [os.path.join(data_folder, subject) \
+                             for subject in os.listdir(data_folder)]
         random.seed(1)
-        random.shuffle(character_folders)
+        random.shuffle(subject_folders)
         num_val = 3
-        num_train = config.get('num_train', 20) - num_val
-        self.metatrain_character_folders = character_folders[:num_train]
+        num_train = config.get('num_train', 14) - num_val
+        self.metatrain_character_folders = subject_folders[:num_train]
         if FLAGS.test_set:
-            self.metaval_character_folders = character_folders[num_train + num_val:]
+            self.metaval_character_folders = subject_folders[num_train + num_val:]
         else:
-            self.metaval_character_folders = character_folders[num_train:num_train + num_val]
+            self.metaval_character_folders = subject_folders[num_train:num_train + num_val]
         self.rotations = config.get('rotations', [0])
 
 
@@ -59,10 +57,9 @@ class DataGenerator(object):
         # make list of files
         print('Generating filenames')
         all_filenames = []
-        for _ in range(num_total_batches):
-            sampled_character_folders = random.sample(folders, self.num_classes)
-            random.shuffle(sampled_character_folders)
-            labels_and_images = get_images(sampled_character_folders, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
+        for sub_folder in folders: # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
+            # random.shuffle(sampled_character_folders)
+            labels_and_images = get_images2(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
             # make sure the above isn't randomized order
             labels = [li[0] for li in labels_and_images]
             filenames = [li[1] for li in labels_and_images]
@@ -88,6 +85,9 @@ class DataGenerator(object):
                 num_threads=num_preprocess_threads,
                 capacity=min_queue_examples + 3 * batch_image_size,
                 )
+
+
+
         all_image_batches, all_label_batches = [], []
         print('Manipulating image data to be right shape')
         for i in range(self.batch_size):
@@ -112,16 +112,3 @@ class DataGenerator(object):
         all_label_batches = tf.one_hot(all_label_batches, self.num_classes)
         return all_image_batches, all_label_batches
 
-    def generate_sinusoid_batch(self, train=True, input_idx=None):
-        # Note train arg is not used (but it is used for omniglot method.
-        # input_idx is used during qualitative testing --the number of examples used for the grad update
-        amp = np.random.uniform(self.amp_range[0], self.amp_range[1], [self.batch_size])
-        phase = np.random.uniform(self.phase_range[0], self.phase_range[1], [self.batch_size])
-        outputs = np.zeros([self.batch_size, self.num_samples_per_class, self.dim_output])
-        init_inputs = np.zeros([self.batch_size, self.num_samples_per_class, self.dim_input])
-        for func in range(self.batch_size):
-            init_inputs[func] = np.random.uniform(self.input_range[0], self.input_range[1], [self.num_samples_per_class, 1])
-            if input_idx is not None:
-                init_inputs[:,input_idx:,0] = np.linspace(self.input_range[0], self.input_range[1], num=self.num_samples_per_class-input_idx, retstep=False)
-            outputs[func] = amp[func] * np.sin(init_inputs[func]-phase[func])
-        return init_inputs, outputs, amp, phase
