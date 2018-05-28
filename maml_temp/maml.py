@@ -10,8 +10,8 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from maml.utils import mse, xent, conv_block, normalize
-from maml.vae_model import VAE
+from maml_temp.utils import mse, xent, conv_block, normalize
+from maml_temp.vae_model import VAE
 
 FLAGS = flags.FLAGS
 

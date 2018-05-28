@@ -70,7 +70,7 @@ class VAE:
         # aug_z = Reshape((latent_dim,1))(z_mean)
         # print("aug_z: ", aug_z)
         # print(aug_z.get_shape())
-        out_1 = EE.layers.softmax(label_shape[0], label_shape[1])(z) # label_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
+        out_1 = EE.layers.logREG(label_shape[0], label_shape[1])(z) # label_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
 
         D1 = Dense(latent_dim, activation='relu')
@@ -117,15 +117,12 @@ class VAE:
         self.model_train = model_train
         self.model_au_int = model_au_int
 
-        inp_1 = Input(shape=[latent_dim]) # latent dim 사이즈의 input 텐서
-        h1 = D1(inp_1)
-        x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 임의의 inp_1으로 생성
-        out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
+        model_train.load_weights("./new_model.h5")
 
+        print(model_train.summary())
 
-        rec = K.models.Model(inp_1, out_11)
-        if source_data!='init':
-            rec.load_weights('./model_vae/model.h5', by_name=True) # ========================== weight ==========================
+        last = model_train.layers.pop()
+
 
 
         weights = model_train.get_weights()

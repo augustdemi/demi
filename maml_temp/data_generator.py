@@ -5,7 +5,7 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from maml.utils import get_images
+from maml_temp.utils import get_images
 
 FLAGS = flags.FLAGS
 
