@@ -46,12 +46,14 @@ class MAML:
                 self.channels = 1
             self.img_size = int(np.sqrt(self.dim_input/self.channels))
         elif FLAGS.datasource == 'disfa':
-            vae_model = VAE((240,160,1), (1,self.dim_output))
+            vae_model = VAE((160,240,1), (1,self.dim_output))
+            # vae_model = VAE((160,240,1), (1,2))
             loss, weights = vae_model.build_vae_model("init", 1)
-            self.loss_func = loss
-            self.model_train = vae_model.model_train
-            self.forward = vae_model.model_au_int
+            self.loss_func = tf.nn.sigmoid_cross_entropy_with_logits
+            self.vae_model = vae_model
+            self.forward = self.forward_fc
             self.construct_weights = weights
+            self.model_z_int = vae_model.model_z_int
         else:
             raise ValueError('Unrecognized data source.')
 
@@ -88,25 +90,32 @@ class MAML:
                 """ Perform gradient descent for one task in the meta-batch. """
                 inputa, inputb, labela, labelb = inp
                 temp =int(inputa.shape[0])
-                inputa = tf.reshape(inputa, [temp, 240,160,1])
-                inputb = tf.reshape(inputb, [temp, 240,160,1])
+                inputa = tf.reshape(inputa, [temp, 160,240,1])
+                inputb = tf.reshape(inputb, [temp, 160,240,1])
 
                 task_outputbs, task_lossesb = [], []
 
                 if self.classification:
                     task_accuraciesb = []
 
-                # task_outputa = self.forward(inputa, weights, reuse=reuse)  # only reuse on the first iter
-                # task_lossa = self.loss_func(task_outputa, labela)
 
 
-                aa = self.forward.get_weights()
-                bb = weights
-                self.model_train.set_weights(weights)
+                t = self.model_z_int.trainable
+                t2 = self.model_z_int.trainable_weights
+                #
+                # z= self.vae_model.model_z_int.predict(inputa)[0]
+                task_outputa = self.forward(self.vae_model.z, weights, reuse=reuse)  # only reuse on the first iter
+                labela= tf.cast(labela, tf.float32)
+                task_lossa = self.loss_func(logits=task_outputa, labels=labela)
 
-                task_outputa = self.forward.output[0]
 
-                task_lossa = self.loss_func(labela, task_outputa)
+                # aa = self.forward.get_weights()
+                # bb = weights
+                # self.model_train.set_weights(weights)
+                #
+                # task_outputa = self.forward.output[0]
+                #
+                # task_lossa = self.loss_func(labela, task_outputa)
 
 
                 grads = tf.gradients(task_lossa, list(weights.values()))
@@ -200,10 +209,15 @@ class MAML:
         return weights
 
     def forward_fc(self, inp, weights, reuse=False):
-        hidden = normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
-        for i in range(1,len(self.dim_hidden)):
-            hidden = normalize(tf.matmul(hidden, weights['w'+str(i+1)]) + weights['b'+str(i+1)], activation=tf.nn.relu, reuse=reuse, scope=str(i+1))
-        return tf.matmul(hidden, weights['w'+str(len(self.dim_hidden)+1)]) + weights['b'+str(len(self.dim_hidden)+1)]
+        # hidden = normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
+        # for i in range(1,len(self.dim_hidden)):
+        #     hidden = normalize(tf.matmul(hidden, weights['w'+str(i+1)]) + weights['b'+str(i+1)], activation=tf.nn.relu, reuse=reuse, scope=str(i+1))
+        # return tf.matmul(hidden, weights['w'+str(len(self.dim_hidden)+1)]) + weights['b'+str(len(self.dim_hidden)+1)]
+        score =tf.matmul(inp, weights['w1']) + weights['b1']
+        # score = tf.reduce_sum(var_w*var_x,1) + var_b
+        print(score)
+        score2 = tf.sigmoid(score)
+        return score2
 
     def construct_conv_weights(self):
         weights = {}

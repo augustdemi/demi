@@ -70,7 +70,7 @@ class DataGenerator(object):
         print('Generating image processing ops')
         image_reader = tf.WholeFileReader()
         _, image_file = image_reader.read(filename_queue)
-        image = tf.image.decode_png(image_file)
+        image = tf.image.decode_jpeg(image_file)
         image.set_shape((self.img_size[0], self.img_size[1], 1))
         image = tf.reshape(image, [self.dim_input])
         image = tf.cast(image, tf.float32) / 255.0
@@ -109,6 +109,7 @@ class DataGenerator(object):
             all_label_batches.append(new_label_list)
         all_image_batches = tf.stack(all_image_batches)
         all_label_batches = tf.stack(all_label_batches)
-        all_label_batches = tf.one_hot(all_label_batches, self.num_classes)
+        all_label_batches = tf.reshape(all_label_batches, [int(all_label_batches.shape[0]), int(all_label_batches.shape[1]),1])
+        # all_label_batches = tf.one_hot(all_label_batches, self.num_classes)
         return all_image_batches, all_label_batches
 

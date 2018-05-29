@@ -19,20 +19,12 @@ class VAE:
     def build_vae_model(self, source_data, warming):
 
         w_1 = warming / 50
-        batch_size=18
+        batch_size=2
         latent_dim = 2000
+        target_std_vec = np.ones(latent_dim)
+        target_mean_vec = np.zeros(latent_dim)
 
-        if source_data=='init':
-            target_std_vec = np.ones(latent_dim)
-            target_mean_vec = np.zeros(latent_dim)
-        else:
 
-            with h5py.File(source_data + '_va.h5') as f:
-                dat = f['mean_reconstr'][::]
-                target_mean_vec= dat.mean(0)
-                target_std_vec= dat.std(0)
-                print(target_mean_vec.mean())
-                print(target_std_vec.mean())
 
 
 
@@ -40,8 +32,8 @@ class VAE:
         print("label_shape", self.label_shape[0])
         img_shape = self.img_shape[0]
         label_shape = self.label_shape[0]
-        inp_0       = Input(shape=img_shape) # 케라스의 텐서 선언 ???????? input shape만을 위해 X를 사용하고 데이터 사용 더이상 안함? 텐서는 사이즈만으로 뭘함?
-        emb, shape  = EE.networks.encoder(inp_0, norm=1) # conv넷을 여러번 씌워준 결과 emb와 그 shape ???????????????????.
+        inp_0       = Input(shape=img_shape)
+        emb, shape  = EE.networks.encoder(inp_0, norm=1)
 
         from numpy import prod
         from keras.layers import Dropout
@@ -110,22 +102,24 @@ class VAE:
 
         model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
 
-        model_rec_z = K.models.Model([inp_0], [out_0, z_mean])
+        model_z_int = K.models.Model([inp_0], [z_mean, out_1])
         model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
         model_au_int= K.models.Model([inp_0], [out_1]) #??????????????????
 
         self.model_train = model_train
-        self.model_au_int = model_au_int
+        self.model_z_int = model_z_int
+        self.z = z
 
-        model_train.load_weights("../new_model.h5")
+        if(source_data != 'init'):
+            model_train.load_weights("../model.h5")
+            z = model_z_int.predict(dat_x)
 
-        print(model_train.summary())
+        weights = model_train.trainable_weights[-2:]
+        total_weights = model_train.get_weights()
+        weights = {"w1": weights[0], "b1":weights[1]}
 
-        last = model_train.layers.pop()
 
 
-
-        weights = model_train.get_weights()
 
         return loss[1], weights
 

@@ -327,7 +327,8 @@ def main():
     tf.train.start_queue_runners()
 
     if FLAGS.resume or not FLAGS.train:
-        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + exp_string)
+        # model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + exp_string)
+        model_file = tf.train.latest_checkpoint('../model.h5')
         if FLAGS.test_iter > 0:
             model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
         if model_file:
