@@ -3,7 +3,7 @@ import glob
 import cv2
 import numpy as np
 
-path = "/home/mihee/dev/project/robert_data/kshot/1/"
+path = "/home/mihee/dev/demi/demi/data/1/"
 
 
 

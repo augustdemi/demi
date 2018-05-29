@@ -6,7 +6,7 @@ import random
 
 
 ############### img ############
-path = "/home/ml1323/project/robert_data/DISFA/h5_detected_bin_intensity/"
+path = "/home/ml1323/project/robert_data/DISFA/h5_au12/"
 # path = "D:/연구/프로젝트/DISFA/h5/"
 
 
@@ -38,7 +38,7 @@ for train_index, test_index in kf.split(file_idx):
             imgs.append(img)
             labels.append(label)
             subjects.append(subject_number * np.ones(n_data))
-        save_path = "/home/ml1323/project/robert_data/DISFA/kfold_detected_bin/" + str(k) + "/"
+        save_path = "/home/ml1323/project/robert_data/DISFA/kfold_au12/" + str(k) + "/"
         if not os.path.exists(save_path):
                 os.makedirs(save_path)
         # save_path = "D:/연구/프로젝트/DISFA/rrr/"

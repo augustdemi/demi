@@ -106,7 +106,7 @@ class FACE_pipeline():
                 img = exposure.equalize_hist(img)
 
             if self.resize:
-                img = transform.resize(img, self.resize)
+                img = transform.resize(img, self.output_size)
 
 
 

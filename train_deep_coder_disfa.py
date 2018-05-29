@@ -11,7 +11,7 @@ from datetime import datetime
 start_time = datetime.now()
 
 parser = argparse.ArgumentParser(description='extract feace images from raw datasets')
-parser.add_argument("-i","--input",  type=str, default='init', help="files created from GP")
+parser.add_argument("-i","--input",  type=str, default='iinit', help="files created from GP")
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
 parser.add_argument("-n","--nb_iter",type=int, default=1, help="number of VAE iterations")
 parser.add_argument("-w","--warming",type=int, default=1, help="factor on kl loss")
@@ -29,19 +29,8 @@ args = parser.parse_args()
 source_data = args.input
 nb_iter = args.nb_iter
 
-
-if source_data=='init':
-    target_std_vec = np.ones(2000)
-    target_mean_vec = np.zeros(2000)
-else:
-
-    with h5py.File(source_data + '_va.h5') as f:
-        dat = f['mean_reconstr'][::]
-        target_mean_vec= dat.mean(0)
-        target_std_vec= dat.std(0)
-        print(target_mean_vec.mean())
-        print(target_std_vec.mean())
-
+target_std_vec = np.ones(2000)
+target_mean_vec = np.zeros(2000)
 
 
 batch_size = 10 # dont change it!
@@ -57,6 +46,7 @@ TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
 pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
         grayscale=True,
+        resize = True,
         rotation_range = 3,
         width_shift_range = 0.03,
         height_shift_range = 0.03,
@@ -121,6 +111,7 @@ z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma]) # 발굴
 
 out_1 = EE.layers.logREG(out_0_shape[0])(z)
 
+
 D1 = Dense(latent_dim, activation='relu')
 D2 = Dense(n_feat, activation='sigmoid')  # n_feat  = conv 결과 shape들의 곱이 ouputspace의 dim
 h_decoded = D1(z) # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
@@ -142,13 +133,9 @@ def rec_loss(img, rec):
     return mse
 
 def pred_loss(y_true, y_pred):
-    #cost = - tf.reduce_sum(y_true * tf.log(y_pred) + (1-y_true) * tf.log(1-y_pred))
-    #loss = EE.losses.categorical_crossentropy(y_true, y_pred)
+    # print(y_pred.eval())
     mse = EE.losses.mse(y_true, y_pred)
-    #print(">>>>>>>>>>>>>> cost: ", cost)
-    #print(">>>>>>>>>>>>>> loss: ", loss)
-    print(">>>>>>>>>>>>>> mse: ", mse)
-    return (1-w_1)*mse
+    return mse
 
 loss  = [rec_loss, pred_loss, vae_loss]
 
@@ -164,9 +151,23 @@ x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 
 out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
 
 
+
+
 rec = K.models.Model(inp_1, out_11)
+
+
+
+w1 = model_train.get_weights()
+w2 = model_rec_z.get_weights()
+w3 = model_rec_z_y.get_weights()
+w4 = model_au_int.get_weights()
+w5 = rec.get_weights()
+
+
 if source_data!='init':
-    rec.load_weights('./model_vae/model.h5', by_name=True) # ========================== weight ==========================
+    rec.load_weights('./model.h5', by_name=True) # ========================== weight ==========================
+
+w5_2 = rec.get_weights()
 
 
 model_train.compile(
@@ -179,7 +180,6 @@ model_train.compile(
         loss = loss
         )
 
-ww = model_train.get_weights()
 
 model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
         generator = GEN_TR,
@@ -203,9 +203,19 @@ model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint('./model_vae/new_model.h5'),
+            K.callbacks.ModelCheckpoint('./model.h5'),
             ]
         )
+
+
+
+w11 = model_train.get_weights()
+w22 = model_rec_z.get_weights()
+w33 = model_rec_z_y.get_weights()
+w44 = model_au_int.get_weights()
+w55 = rec.get_weights()
+
+
 
 end_time = datetime.now()
 elapse = end_time - start_time

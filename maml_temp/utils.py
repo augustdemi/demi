@@ -22,6 +22,20 @@ def get_images(paths, labels, nb_samples=None, shuffle=True):
         random.shuffle(images)
     return images
 
+def get_images2(path, label_int, nb_samples=None, shuffle=False):
+    if shuffle:
+        sampler = lambda x: random.sample(x, nb_samples)
+    else:
+        sampler = lambda x: x[:nb_samples]
+    #각 task별로 k*2개 씩의 label 과 img담게됨
+    images = [(i, os.path.join(path,label, image)) \
+        for i, label in zip(label_int, os.listdir(path))\
+        for image in sampler(os.listdir(os.path.join(path, label)))]
+
+    if shuffle:
+        random.shuffle(images)
+    return images
+
 ## Network helpers
 def conv_block(inp, cweight, bweight, reuse, scope, activation=tf.nn.relu, max_pool_pad='VALID', residual=False):
     """ Perform, conv, batch norm, nonlinearity, and max pool """
