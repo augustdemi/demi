@@ -70,7 +70,7 @@ class VAE:
         # aug_z = Reshape((latent_dim,1))(z_mean)
         # print("aug_z: ", aug_z)
         # print(aug_z.get_shape())
-        out_1 = EE.layers.logREG(label_shape[0], label_shape[1])(z) # label_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
+        out_1 = EE.layers.logREG(label_shape[0])(z) # label_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
 
         D1 = Dense(latent_dim, activation='relu')
@@ -117,7 +117,7 @@ class VAE:
         self.model_train = model_train
         self.model_au_int = model_au_int
 
-        model_train.load_weights("./new_model.h5")
+        model_train.load_weights("../new_model.h5")
 
         print(model_train.summary())
 

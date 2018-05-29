@@ -25,11 +25,11 @@ class DataGenerator(object):
         self.num_classes = 1  # by default 1 (only relevant for classification problems)
 
         self.num_classes = config.get('num_classes', FLAGS.num_classes)
-        self.img_size = config.get('img_size', (28, 28))
+        self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         self.dim_output = self.num_classes
         # data that is pre-resized using PIL with lanczos filter
-        data_folder = config.get('data_folder', './data/kshot/0')
+        data_folder = config.get('data_folder', '../data/1')
 
         subject_folders = [os.path.join(data_folder, subject) \
                              for subject in os.listdir(data_folder)]
