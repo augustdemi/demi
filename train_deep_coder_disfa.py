@@ -142,11 +142,13 @@ def rec_loss(img, rec):
     return mse
 
 def pred_loss(y_true, y_pred):
-    cost = - tf.reduce_sum(y_true * tf.log(y_pred) + (1-y_true) * tf.log(1-y_pred))
-    loss = EE.losses.categorical_crossentropy(y_true, y_pred)
-    print(">>>>>>>>>>>>>> cost: ", cost)
-    print(">>>>>>>>>>>>>> loss: ", loss)
-    return (1-w_1)*loss
+    #cost = - tf.reduce_sum(y_true * tf.log(y_pred) + (1-y_true) * tf.log(1-y_pred))
+    #loss = EE.losses.categorical_crossentropy(y_true, y_pred)
+    mse = EE.losses.mse(y_true, y_pred)
+    #print(">>>>>>>>>>>>>> cost: ", cost)
+    #print(">>>>>>>>>>>>>> loss: ", loss)
+    print(">>>>>>>>>>>>>> mse: ", mse)
+    return (1-w_1)*mse
 
 loss  = [rec_loss, pred_loss, vae_loss]
 
@@ -201,7 +203,7 @@ model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint('./model_vae/model.h5'),
+            K.callbacks.ModelCheckpoint('./model_vae/new_model.h5'),
             ]
         )
 
