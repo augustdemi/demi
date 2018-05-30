@@ -5,7 +5,9 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from utils import get_images, get_images2
+from maml_temp.utils import get_images2
+from maml_temp.vae_model import VAE
+import EmoData as ED
 
 FLAGS = flags.FLAGS
 
@@ -27,15 +29,14 @@ class DataGenerator(object):
         self.num_classes = config.get('num_classes', FLAGS.num_classes)
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
-        self.dim_output = self.num_classes
         # data that is pre-resized using PIL with lanczos filter
-        data_folder = config.get('data_folder', '../data/1')
+        data_folder = config.get('data_folder', '../data/0')
 
         subject_folders = [os.path.join(data_folder, subject) \
                              for subject in os.listdir(data_folder)]
         random.seed(1)
         random.shuffle(subject_folders)
-        num_val = 3
+        num_val = 0
         num_train = config.get('num_train', 14) - num_val
         self.metatrain_character_folders = subject_folders[:num_train]
         if FLAGS.test_set:
@@ -65,33 +66,44 @@ class DataGenerator(object):
             filenames = [li[1] for li in labels_and_images]
             all_filenames.extend(filenames)
 
+
+        #################################################################################
+        a=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+        import cv2
+        imgs = []
+        for filename in all_filenames:
+            img = cv2.imread(filename)
+            imgs.append(img)
+
+        pp = ED.image_pipeline.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
+
+        img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+
+        vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
+        weights, z = vae_model.computeLatentVal(img_arr)
+        self.pred_weights = weights
+        b=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
+        #################################################################################
+
         # make queue for tensorflow to read from
-        filename_queue = tf.train.string_input_producer(tf.convert_to_tensor(all_filenames), shuffle=False)
-        print('Generating image processing ops')
-        image_reader = tf.WholeFileReader()
-        _, image_file = image_reader.read(filename_queue)
-        image = tf.image.decode_jpeg(image_file)
-        image.set_shape((self.img_size[0], self.img_size[1], 1))
-        image = tf.reshape(image, [self.dim_input])
-        image = tf.cast(image, tf.float32) / 255.0
-        num_preprocess_threads = 1 # TODO - enable this to be set to >1
-        min_queue_examples = 256
+        z_tensor = tf.convert_to_tensor(z)
         examples_per_batch = self.num_classes * self.num_samples_per_class
-        batch_image_size = self.batch_size * examples_per_batch
-        print('Batching images')
-        images = tf.train.batch(
-                [image],
-                batch_size = batch_image_size,
-                num_threads=num_preprocess_threads,
-                capacity=min_queue_examples + 3 * batch_image_size,
-                )
 
 
 
         all_image_batches, all_label_batches = [], []
         print('Manipulating image data to be right shape')
         for i in range(self.batch_size):
-            image_batch = images[i*examples_per_batch:(i+1)*examples_per_batch]
+            image_batch = z_tensor[i*examples_per_batch:(i+1)*examples_per_batch]
 
             label_batch = tf.convert_to_tensor(labels)
             new_list, new_label_list = [], []
@@ -100,8 +112,8 @@ class DataGenerator(object):
                 class_idxs = tf.random_shuffle(class_idxs)
 
                 true_idxs = class_idxs*self.num_samples_per_class + k
-                new_list.append(tf.gather(image_batch,true_idxs))
 
+                new_list.append(tf.gather(image_batch,true_idxs))
                 new_label_list.append(tf.gather(label_batch, true_idxs))
             new_list = tf.concat(new_list, 0)  # has shape [self.num_classes*self.num_samples_per_class, self.dim_input]
             new_label_list = tf.concat(new_label_list, 0)
@@ -109,7 +121,7 @@ class DataGenerator(object):
             all_label_batches.append(new_label_list)
         all_image_batches = tf.stack(all_image_batches)
         all_label_batches = tf.stack(all_label_batches)
-        all_label_batches = tf.reshape(all_label_batches, [int(all_label_batches.shape[0]), int(all_label_batches.shape[1]),1])
-        # all_label_batches = tf.one_hot(all_label_batches, self.num_classes)
+        # all_label_batches = tf.reshape(all_label_batches, [int(all_label_batches.shape[0]), int(all_label_batches.shape[1]),1])
+        all_label_batches = tf.one_hot(all_label_batches, self.num_classes)
         return all_image_batches, all_label_batches
 

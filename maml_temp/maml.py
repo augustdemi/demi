@@ -24,36 +24,14 @@ class MAML:
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
         self.classification = False
         self.test_num_updates = test_num_updates
-        if FLAGS.datasource == 'sinusoid':
-            self.dim_hidden = [40, 40]
-            self.loss_func = mse
-            self.forward = self.forward_fc
-            self.construct_weights = self.construct_fc_weights
-        elif FLAGS.datasource == 'omniglot' or FLAGS.datasource == 'miniimagenet':
+        if FLAGS.datasource == 'disfa':
             self.loss_func = xent
             self.classification = True
-            if FLAGS.conv:
-                self.dim_hidden = FLAGS.num_filters
-                self.forward = self.forward_conv
-                self.construct_weights = self.construct_conv_weights
-            else:
-                self.dim_hidden = [256, 128, 64, 64]
-                self.forward=self.forward_fc
-                self.construct_weights = self.construct_fc_weights
-            if FLAGS.datasource == 'miniimagenet':
-                self.channels = 3
-            else:
-                self.channels = 1
-            self.img_size = int(np.sqrt(self.dim_input/self.channels))
-        elif FLAGS.datasource == 'disfa':
             vae_model = VAE((160,240,1), (1,self.dim_output))
-            # vae_model = VAE((160,240,1), (1,2))
-            loss, weights = vae_model.build_vae_model("init", 1)
-            self.loss_func = tf.nn.sigmoid_cross_entropy_with_logits
+            self.loss_func = xent
             self.vae_model = vae_model
             self.forward = self.forward_fc
-            self.construct_weights = weights
-            self.model_z_int = vae_model.model_z_int
+            self.construct_weights = self.getWeightVar
         else:
             raise ValueError('Unrecognized data source.')
 
@@ -74,9 +52,13 @@ class MAML:
             if 'weights' in dir(self):
                 training_scope.reuse_variables()
                 weights = self.weights
+                tf.Print(self.weights['w1'], [self.weights['w1']])
+                print("==========================================")
             else:
                 # Define the weights
-                self.weights = weights = self.construct_weights
+                self.weights = weights = self.construct_weights()
+                tf.Print(self.weights['w1'], [self.weights['w1']])
+                print("==========================================2")
 
             # outputbs[i] and lossesb[i] is the output and loss after i+1 gradient updates
             lossesa, outputas, lossesb, outputbs = [], [], [], []
@@ -90,35 +72,23 @@ class MAML:
                 """ Perform gradient descent for one task in the meta-batch. """
                 inputa, inputb, labela, labelb = inp
                 temp =int(inputa.shape[0])
-                inputa = tf.reshape(inputa, [temp, 160,240,1])
-                inputb = tf.reshape(inputb, [temp, 160,240,1])
+                inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]),1])
+                inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]),1])
 
+                labela= tf.cast(labela, tf.float32)
+                labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])])
+                labelb= tf.cast(labelb, tf.float32)
+                labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
                 task_outputbs, task_lossesb = [], []
 
                 if self.classification:
                     task_accuraciesb = []
 
+                task_outputa = self.forward(inputa, weights, reuse=reuse)  # only reuse on the first iter
 
+                task_lossa = self.loss_func(task_outputa, labela) # 2,1
 
-                t = self.model_z_int.trainable
-                t2 = self.model_z_int.trainable_weights
-                #
-                # z= self.vae_model.model_z_int.predict(inputa)[0]
-                task_outputa = self.forward(self.vae_model.z, weights, reuse=reuse)  # only reuse on the first iter
-                labela= tf.cast(labela, tf.float32)
-                task_lossa = self.loss_func(logits=task_outputa, labels=labela)
-
-
-                # aa = self.forward.get_weights()
-                # bb = weights
-                # self.model_train.set_weights(weights)
-                #
-                # task_outputa = self.forward.output[0]
-                #
-                # task_lossa = self.loss_func(labela, task_outputa)
-
-
-                grads = tf.gradients(task_lossa, list(weights.values()))
+                grads = tf.gradients(task_lossa, list(weights.values())) # 2000,1,2
                 if FLAGS.stop_grad:
                     grads = [tf.stop_gradient(grad) for grad in grads]
                 gradients = dict(zip(weights.keys(), grads))
@@ -196,69 +166,24 @@ class MAML:
             if self.classification:
                 tf.summary.scalar(prefix+'Post-update accuracy, step ' + str(j+1), total_accuracies2[j])
 
-    ### Network construction functions (fc networks and conv networks)
-    def construct_fc_weights(self):
-        weights = {}
-        weights['w1'] = tf.Variable(tf.truncated_normal([self.dim_input, self.dim_hidden[0]], stddev=0.01))
-        weights['b1'] = tf.Variable(tf.zeros([self.dim_hidden[0]]))
-        for i in range(1,len(self.dim_hidden)):
-            weights['w'+str(i+1)] = tf.Variable(tf.truncated_normal([self.dim_hidden[i-1], self.dim_hidden[i]], stddev=0.01))
-            weights['b'+str(i+1)] = tf.Variable(tf.zeros([self.dim_hidden[i]]))
-        weights['w'+str(len(self.dim_hidden)+1)] = tf.Variable(tf.truncated_normal([self.dim_hidden[-1], self.dim_output], stddev=0.01))
-        weights['b'+str(len(self.dim_hidden)+1)] = tf.Variable(tf.zeros([self.dim_output]))
-        return weights
 
     def forward_fc(self, inp, weights, reuse=False):
-        # hidden = normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
-        # for i in range(1,len(self.dim_hidden)):
-        #     hidden = normalize(tf.matmul(hidden, weights['w'+str(i+1)]) + weights['b'+str(i+1)], activation=tf.nn.relu, reuse=reuse, scope=str(i+1))
-        # return tf.matmul(hidden, weights['w'+str(len(self.dim_hidden)+1)]) + weights['b'+str(len(self.dim_hidden)+1)]
-        score =tf.matmul(inp, weights['w1']) + weights['b1']
-        # score = tf.reduce_sum(var_w*var_x,1) + var_b
-        print(score)
-        score2 = tf.sigmoid(score)
-        return score2
+        var_w = weights['w1'][ None, ::]
+        # add dimension for features
+        var_b = weights['b1'][ None, ::]
+        # add dimension for output and class
+        var_x = inp[ :, :, None]
 
-    def construct_conv_weights(self):
-        weights = {}
+        # matrix multiplication with dropout
+        z = tf.reduce_sum( var_w*var_x , 1) + var_b
+        score = tf.nn.softmax(z)
+        return score
 
-        dtype = tf.float32
-        conv_initializer =  tf.contrib.layers.xavier_initializer_conv2d(dtype=dtype)
-        fc_initializer =  tf.contrib.layers.xavier_initializer(dtype=dtype)
-        k = 3
 
-        weights['conv1'] = tf.get_variable('conv1', [k, k, self.channels, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b1'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv2'] = tf.get_variable('conv2', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b2'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv3'] = tf.get_variable('conv3', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b3'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        weights['conv4'] = tf.get_variable('conv4', [k, k, self.dim_hidden, self.dim_hidden], initializer=conv_initializer, dtype=dtype)
-        weights['b4'] = tf.Variable(tf.zeros([self.dim_hidden]))
-        if FLAGS.datasource == 'miniimagenet':
-            # assumes max pooling
-            weights['w5'] = tf.get_variable('w5', [self.dim_hidden*5*5, self.dim_output], initializer=fc_initializer)
-            weights['b5'] = tf.Variable(tf.zeros([self.dim_output]), name='b5')
-        else:
-            weights['w5'] = tf.Variable(tf.random_normal([self.dim_hidden, self.dim_output]), name='w5')
-            weights['b5'] = tf.Variable(tf.zeros([self.dim_output]), name='b5')
-        return weights
 
-    def forward_conv(self, inp, weights, reuse=False, scope=''):
-        # reuse is for the normalization parameters.
-        channels = self.channels
-        inp = tf.reshape(inp, [-1, self.img_size, self.img_size, channels])
-
-        hidden1 = conv_block(inp, weights['conv1'], weights['b1'], reuse, scope+'0')
-        hidden2 = conv_block(hidden1, weights['conv2'], weights['b2'], reuse, scope+'1')
-        hidden3 = conv_block(hidden2, weights['conv3'], weights['b3'], reuse, scope+'2')
-        hidden4 = conv_block(hidden3, weights['conv4'], weights['b4'], reuse, scope+'3')
-        if FLAGS.datasource == 'miniimagenet':
-            # last hidden layer is 6x6x64-ish, reshape to a vector
-            hidden4 = tf.reshape(hidden4, [-1, np.prod([int(dim) for dim in hidden4.get_shape()[1:]])])
-        else:
-            hidden4 = tf.reduce_mean(hidden4, [1, 2])
-
-        return tf.matmul(hidden4, weights['w5']) + weights['b5']
-
+    def getWeightVar(self):
+        w1 = tf.get_variable("w1",[2000,1,2])
+        b1 = tf.get_variable("b1",[1,2])
+        weight_tensor = {"w1": w1, "b1":b1}
+        return weight_tensor
 

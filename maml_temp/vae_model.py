@@ -7,6 +7,7 @@ import numpy as np
 import h5py
 import argparse
 from datetime import datetime
+import tensorflow as tf
 
 
 class VAE:
@@ -16,9 +17,7 @@ class VAE:
         self.img_shape = img_shape,
         self.label_shape =label_shape,
 
-    def build_vae_model(self, source_data, warming):
-
-        w_1 = warming / 50
+        w_1 = 1 / 50
         batch_size=2
         latent_dim = 2000
         target_std_vec = np.ones(latent_dim)
@@ -59,24 +58,18 @@ class VAE:
 
         print("Z: ", z)
         print(z.get_shape())
-        # aug_z = Reshape((latent_dim,1))(z_mean)
-        # print("aug_z: ", aug_z)
-        # print(aug_z.get_shape())
-        out_1 = EE.layers.logREG(label_shape[0])(z) # label_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
-
+        resized_z = Reshape((2000, 1))(z_mean)
+        out_1 = EE.layers.softmaxPDF(label_shape[0], label_shape[1])(resized_z)
 
         D1 = Dense(latent_dim, activation='relu')
         D2 = Dense(n_feat, activation='sigmoid')  # n_feat  = conv 결과 shape들의 곱이 ouputspace의 dim
         h_decoded = D1(z) # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
-        print(h_decoded)
-        print(n_feat)
+
         x_decoded_mean = D2(h_decoded)
-        print(x_decoded_mean)
 
         out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 layer로 디코더 실행. 근데 사실상 이 디코더에 오기까지 오리지날 트레인 x를 인코드하는거부터 시작됨. vae.
 
 
-        from keras import objectives
         def vae_loss(img, rec):
             print("img", img)
             print("rec", rec)
@@ -95,33 +88,22 @@ class VAE:
             print("y_true", y_true)
             print("y_pred", y_pred)
             print(">>>>>>>>> pred loss")
-            mse = EE.losses.mse(y_true, y_pred)
-            return (1-w_1)*mse
+            ce = EE.losses.categorical_crossentropy(y_true, y_pred)
+            return (1 - w_1) * ce
 
-        loss  = [rec_loss, pred_loss, vae_loss]
+        loss = [rec_loss, pred_loss, vae_loss]
 
         model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
-
         model_z_int = K.models.Model([inp_0], [z_mean, out_1])
-        model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
-        model_au_int= K.models.Model([inp_0], [out_1]) #??????????????????
 
         self.model_train = model_train
         self.model_z_int = model_z_int
         self.z = z
 
-        if(source_data != 'init'):
-            model_train.load_weights("../model.h5")
-            z = model_z_int.predict(dat_x)
-
-        weights = model_train.trainable_weights[-2:]
-        total_weights = model_train.get_weights()
-        weights = {"w1": weights[0], "b1":weights[1]}
 
 
 
-
-        return loss[1], weights
-
-
-
+    def computeLatentVal(self, x):
+        self.model_train.load_weights("../model.h5")
+        z, pred = self.model_z_int.predict(x, batch_size=len(x))
+        return self.model_train.get_weights()[-2:], z
