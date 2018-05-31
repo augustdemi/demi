@@ -12,7 +12,7 @@ path = "/home/ml1323/project/robert_data/DISFA/h5_au12/"
 
 
 files = os.listdir(path)
-files = files.sort()
+files.sort()
 file_idx = np.array(range(0,len(files)))
 train_index = file_idx[:14]
 test_index = file_idx[14:]
