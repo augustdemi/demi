@@ -6,7 +6,7 @@ import random
 
 
 ############### img ############
-path = "/home/ml1323/project/robert_data/DISFA/h5_au12/"
+path = "/home/ml1323/project/robert_data/DISFA/h5_detected_bin_intensity/"
 # path = "D:/연구/프로젝트/DISFA/h5/"
 
 
@@ -24,6 +24,7 @@ for key in data_idx.keys():
     labels =[]
     subjects =[]
     total_n = 0
+    print(key)
     for i in data_idx[key]:
         file = files[i]
         print(">>>> file: " + file)
@@ -61,6 +62,7 @@ for key in data_idx.keys():
     hfs.create_dataset('sub', data=reshaped_subjects)
     hfs.close()
     print(save_path + key + ".h5")
+    print("=========================================")
 
 
 
