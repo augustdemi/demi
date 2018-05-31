@@ -31,16 +31,16 @@ class DataGenerator(object):
         self.dim_input = np.prod(self.img_size)
         # data that is pre-resized using PIL with lanczos filter
         data_folder = config.get('data_folder', '../data/0')
-
-        subject_folders = [os.path.join(data_folder, subject) \
-                             for subject in os.listdir(data_folder)]
-        random.seed(1)
-        random.shuffle(subject_folders)
+        subjects = os.listdir(data_folder)
+        subjects.sort()
+        subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
+        # random.seed(1)
+        # random.shuffle(subject_folders)
         num_val = 0
         num_train = config.get('num_train', 14) - num_val
         self.metatrain_character_folders = subject_folders[:num_train]
-        if FLAGS.test_set:
-            self.metaval_character_folders = subject_folders[num_train + num_val:]
+        if FLAGS.test_set: # In test, runs only one test task for the entered subject
+            self.metaval_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
             self.metaval_character_folders = subject_folders[num_train:num_train + num_val]
         self.rotations = config.get('rotations', [0])
@@ -53,6 +53,7 @@ class DataGenerator(object):
             num_total_batches = 200000
         else:
             folders = self.metaval_character_folders
+            print("folders: ",folders)
             num_total_batches = 600
 
         # make list of files
@@ -68,7 +69,6 @@ class DataGenerator(object):
 
 
         #################################################################################
-        a=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
         import cv2
         imgs = []
         for filename in all_filenames:
@@ -91,18 +91,19 @@ class DataGenerator(object):
         vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
         weights, z = vae_model.computeLatentVal(img_arr)
         self.pred_weights = weights
-        b=tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
         #################################################################################
 
         # make queue for tensorflow to read from
         z_tensor = tf.convert_to_tensor(z)
-        examples_per_batch = self.num_classes * self.num_samples_per_class
-
-
+        examples_per_batch = self.num_classes * self.num_samples_per_class # 2NK = number of examples per task
+        print(len(all_filenames))
+        print(len(all_filenames)/examples_per_batch)
+        print(self.batch_size)
+        print(all_filenames)
 
         all_image_batches, all_label_batches = [], []
         print('Manipulating image data to be right shape')
-        for i in range(self.batch_size):
+        for i in range(self.batch_size): #  batch_size = number of task
             image_batch = z_tensor[i*examples_per_batch:(i+1)*examples_per_batch]
 
             label_batch = tf.convert_to_tensor(labels)

@@ -27,9 +27,7 @@ class MAML:
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
             self.classification = True
-            vae_model = VAE((160,240,1), (1,self.dim_output))
             self.loss_func = xent
-            self.vae_model = vae_model
             self.forward = self.forward_fc
             self.construct_weights = self.getWeightVar
         else:
@@ -52,13 +50,9 @@ class MAML:
             if 'weights' in dir(self):
                 training_scope.reuse_variables()
                 weights = self.weights
-                tf.Print(self.weights['w1'], [self.weights['w1']])
-                print("==========================================")
             else:
                 # Define the weights
                 self.weights = weights = self.construct_weights()
-                tf.Print(self.weights['w1'], [self.weights['w1']])
-                print("==========================================2")
 
             # outputbs[i] and lossesb[i] is the output and loss after i+1 gradient updates
             lossesa, outputas, lossesb, outputbs = [], [], [], []
@@ -118,9 +112,9 @@ class MAML:
 
                 return task_output
 
-            if FLAGS.norm is not 'None':
+            # if FLAGS.norm is not 'None':
                 # to initialize the batch norm vars, might want to combine this, and not run idx 0 twice.
-                unused = task_metalearn((self.inputa[0], self.inputb[0], self.labela[0], self.labelb[0]), False)
+            unused = task_metalearn((self.inputa[0], self.inputb[0], self.labela[0], self.labelb[0]), False)
 
             out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates]
             if self.classification:
