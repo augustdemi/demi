@@ -5,8 +5,8 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from maml_temp.utils import get_images2
-from maml_temp.vae_model import VAE
+from utils import get_images2
+from vae_model import VAE
 import EmoData as ED
 
 FLAGS = flags.FLAGS
@@ -71,39 +71,31 @@ class DataGenerator(object):
 
         #################################################################################
         import cv2
+        imgs = []
+        for filename in all_filenames:
+            img = cv2.imread(filename)
+            imgs.append(img)
 
+        pp = ED.image_pipeline.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
 
+        img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
 
-        nk = self.num_classes * FLAGS.update_batch_size
-        all_filenames_batch = np.reshape(all_filenames, [int(nk), int(len(all_filenames)/nk)]) # len(all_filenames)/nk = 2 * num of task
-
-        z_arr = []
-        for file_bath in all_filenames_batch:
-            imgs = []
-            for filename in file_bath:
-                img = cv2.imread(filename)
-                imgs.append(img)
-
-            pp = ED.image_pipeline.FACE_pipeline(
-                histogram_normalization=True,
-                grayscale=True,
-                resize=True,
-                rotation_range=3,
-                width_shift_range=0.03,
-                height_shift_range=0.03,
-                zoom_range=0.03,
-                random_flip=True,
-            )
-
-            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-            vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
-            weights, z = vae_model.computeLatentVal(img_arr)
-        z_arr = np.concatenate(z_arr)
+        vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
+        weights, z = vae_model.computeLatentVal(img_arr)
         self.pred_weights = weights
         #################################################################################
 
         # make queue for tensorflow to read from
-        z_tensor = tf.convert_to_tensor(z_arr)
+        z_tensor = tf.convert_to_tensor(z)
         examples_per_batch = self.num_classes * self.num_samples_per_class # 2NK = number of examples per task
         print(len(all_filenames))
         print(len(all_filenames)/examples_per_batch)
