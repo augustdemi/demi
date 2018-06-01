@@ -5,8 +5,8 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from utils import get_images2
-from vae_model import VAE
+from maml_temp.utils import get_images2
+from maml_temp.vae_model import VAE
 import EmoData as ED
 
 FLAGS = flags.FLAGS
@@ -30,7 +30,7 @@ class DataGenerator(object):
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         # data that is pre-resized using PIL with lanczos filter
-        data_folder = config.get('data_folder', '/home/ml1323/project/robert_data/DISFA/kshot/0')
+        data_folder = config.get('data_folder', '../data/0')
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
@@ -71,6 +71,7 @@ class DataGenerator(object):
 
         #################################################################################
         import cv2
+
         imgs = []
         for filename in all_filenames:
             img = cv2.imread(filename)
@@ -88,14 +89,22 @@ class DataGenerator(object):
         )
 
         img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-
         vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
-        weights, z = vae_model.computeLatentVal(img_arr)
+
+
+        nk = self.num_classes * FLAGS.update_batch_size
+        img_arr = np.reshape(img_arr, [int(nk), int(len(img_arr)/nk)]) # len(img_arr)/nk = 2 * num of task
+
+        z_arr = []
+        for img_batch in img_arr:
+            weights, z = vae_model.computeLatentVal(img_batch)
+            z_arr.append(z)
+        z_arr = np.concatenate(z_arr)
         self.pred_weights = weights
         #################################################################################
 
         # make queue for tensorflow to read from
-        z_tensor = tf.convert_to_tensor(z)
+        z_tensor = tf.convert_to_tensor(z_arr)
         examples_per_batch = self.num_classes * self.num_samples_per_class # 2NK = number of examples per task
         print(len(all_filenames))
         print(len(all_filenames)/examples_per_batch)
