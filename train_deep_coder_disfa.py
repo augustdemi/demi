@@ -6,8 +6,8 @@ import keras as K
 import numpy as np
 import h5py
 import argparse
-import tensorflow as tf
 from datetime import datetime
+import tensorflow as tf
 start_time = datetime.now()
 
 parser = argparse.ArgumentParser(description='extract feace images from raw datasets')
@@ -15,13 +15,8 @@ parser.add_argument("-i","--input",  type=str, default='init', help="files creat
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
 parser.add_argument("-n","--nb_iter",type=int, default=1, help="number of VAE iterations")
 parser.add_argument("-w","--warming",type=int, default=1, help="factor on kl loss")
-
-parser.add_argument("-tr","--training_data",type=str, default='/home/mihee/dev/project/robert_data/disfa/test.h5', help="path to training data set")
-parser.add_argument("-te","--test_data",type=str, default='/home/mihee/dev/project/robert_data/disfa/test.h5', help="path to test data set")
-
-#parser.add_argument("-tr","--training_data",type=str, default='/home/ml1323/project/robert_data/DISFA/kfold_detected/1/train.h5', help="path to training data set")
-#parser.add_argument("-te","--test_data",type=str, default='/home/ml1323/project/robert_data/DISFA/kfold_detected/1/test.h5', help="path to test data set")
-
+parser.add_argument("-tr","--training_data",type=str, default='/home/mihee/dev/project/robert_data/test.h5', help="path to training data set")
+parser.add_argument("-te","--test_data",type=str, default='/home/mihee/dev/project/robert_data/test.h5', help="path to test data set")
 parser.add_argument("-k","--kfold",type=int, default=1, help="for k fold")
 args = parser.parse_args()
 
@@ -29,8 +24,19 @@ args = parser.parse_args()
 source_data = args.input
 nb_iter = args.nb_iter
 
-target_std_vec = np.ones(2000)
-target_mean_vec = np.zeros(2000)
+
+if source_data=='init':
+    target_std_vec = np.ones(2000)
+    target_mean_vec = np.zeros(2000)
+else:
+
+    with h5py.File(source_data + '_va.h5') as f:
+        dat = f['mean_reconstr'][::]
+        target_mean_vec= dat.mean(0)
+        target_std_vec= dat.std(0)
+        print(target_mean_vec.mean())
+        print(target_std_vec.mean())
+
 
 
 batch_size = 10 # dont change it!
@@ -46,7 +52,7 @@ TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
 pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
         grayscale=True,
-        resize = True,
+        resize=True,
         rotation_range = 3,
         width_shift_range = 0.03,
         height_shift_range = 0.03,
@@ -65,8 +71,9 @@ def generator(dat_dict, aug, mod=0, s=False):
                 img,
                 preprocessing=True,
                 augmentation=aug)
-
-        lab = np.reshape(lab, (lab.shape[0], 1))
+        #lab = lab.argmax(2)
+        lab = lab[:,6]
+        lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         if mod==1:
             if(s): yield [img], [lab], [sub]
             else: yield [img], [lab]
@@ -108,8 +115,8 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
 
 z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma]) # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
-
-out_1 = EE.layers.logREG(out_0_shape[0])(z)
+aug_z = Reshape((2000,1))(z_mean)
+out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(aug_z) # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
 
 D1 = Dense(latent_dim, activation='relu')
@@ -133,8 +140,8 @@ def rec_loss(img, rec):
     return mse
 
 def pred_loss(y_true, y_pred):
-    ce = tf.nn.sigmoid_cross_entropy_with_logits(labels=y_true, logits=y_pred)
-    return ce
+    ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
+    return (1-w_1)*ce
 
 loss  = [rec_loss, pred_loss, vae_loss]
 
@@ -150,15 +157,9 @@ x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 
 out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
 
 
-
-
 rec = K.models.Model(inp_1, out_11)
-
-
 if source_data!='init':
-    rec.load_weights('./model.h5', by_name=True) # ========================== weight ==========================
-
-w5_2 = rec.get_weights()
+    rec.load_weights('./model_vae/model.h5', by_name=True) # ========================== weight ==========================
 
 
 model_train.compile(
@@ -171,6 +172,7 @@ model_train.compile(
         loss = loss
         )
 
+ww = model_train.get_weights()
 
 model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
         generator = GEN_TR,
@@ -185,6 +187,7 @@ model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
                 batch_size = batch_size,
                 title = ['TR','TE'],
+                one_hot = True,
                 log_dir = 'res_disfa_'+str(args.warming).zfill(4)+'.csv/' + str(args.kfold),
             ),
             EE.callbacks.summary_vac_disfa(
@@ -194,13 +197,9 @@ model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint('./model_log.h5'),
+            K.callbacks.ModelCheckpoint('./model78.h5'),
             ]
         )
-
-
-
-
 
 end_time = datetime.now()
 elapse = end_time - start_time
