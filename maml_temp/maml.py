@@ -16,14 +16,13 @@ from maml_temp.vae_model import VAE
 FLAGS = flags.FLAGS
 
 class MAML:
-    def __init__(self, dim_input=1, dim_output=1, test_num_updates=5):
+    def __init__(self, dim_input=1, dim_output=1):
         """ must call construct_model() after initializing MAML! """
         self.dim_input = dim_input
         self.dim_output = dim_output
         self.update_lr = FLAGS.update_lr
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
         self.classification = False
-        self.test_num_updates = test_num_updates
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
             self.classification = True
@@ -57,7 +56,7 @@ class MAML:
             # outputbs[i] and lossesb[i] is the output and loss after i+1 gradient updates
             lossesa, outputas, lossesb, outputbs = [], [], [], []
             accuraciesa, accuraciesb = [], []
-            num_updates = max(self.test_num_updates, FLAGS.num_updates)
+            num_updates = FLAGS.num_updates # TODO max(self.test_num_updates, FLAGS.num_updates)
             outputbs = [[]]*num_updates
             lossesb = [[]]*num_updates
             accuraciesb = [[]]*num_updates
@@ -65,7 +64,6 @@ class MAML:
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
                 inputa, inputb, labela, labelb = inp
-                temp =int(inputa.shape[0])
                 inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]),1])
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]),1])
 
@@ -73,7 +71,7 @@ class MAML:
                 labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])])
                 labelb= tf.cast(labelb, tf.float32)
                 labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
-                task_outputbs, task_lossesb = [], []
+                task_outputbs, task_lossesb, task_labelbs = [], [], []
 
                 if self.classification:
                     task_accuraciesb = []
@@ -89,6 +87,7 @@ class MAML:
                 fast_weights = dict(zip(weights.keys(), [weights[key] - self.update_lr*gradients[key] for key in weights.keys()]))
                 output = self.forward(inputb, fast_weights, reuse=True)
                 task_outputbs.append(output)
+                task_labelbs.append(labelb)
                 task_lossesb.append(self.loss_func(output, labelb))
 
                 for j in range(num_updates - 1):
@@ -100,9 +99,10 @@ class MAML:
                     fast_weights = dict(zip(fast_weights.keys(), [fast_weights[key] - self.update_lr*gradients[key] for key in fast_weights.keys()]))
                     output = self.forward(inputb, fast_weights, reuse=True)
                     task_outputbs.append(output)
+                    task_labelbs.append(labelb)
                     task_lossesb.append(self.loss_func(output, labelb))
 
-                task_output = [task_outputa, task_outputbs, task_lossa, task_lossesb]
+                task_output = [task_outputa, task_outputbs, labela, task_labelbs, task_lossa, task_lossesb]
 
                 if self.classification:
                     task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1), tf.argmax(labela, 1))
@@ -116,15 +116,12 @@ class MAML:
                 # to initialize the batch norm vars, might want to combine this, and not run idx 0 twice.
             unused = task_metalearn((self.inputa[0], self.inputb[0], self.labela[0], self.labelb[0]), False)
 
-            out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates]
-            if self.classification:
-                out_dtype.extend([tf.float32, [tf.float32]*num_updates])
+
+            out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates]
 
             result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb), dtype=out_dtype, parallel_iterations=FLAGS.meta_batch_size)
-            if self.classification:
-                outputas, outputbs, lossesa, lossesb, accuraciesa, accuraciesb = result
-            else:
-                outputas, outputbs, lossesa, lossesb  = result
+
+            outputas, outputbs, res_labela, res_labelbs, lossesa, lossesb, accuraciesa, accuraciesb = result
 
         ## Performance & Optimization
         if 'train' in prefix:
@@ -146,9 +143,14 @@ class MAML:
         else:
             self.metaval_total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
             self.metaval_total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
+            self.outputas, self.outputbs = outputas, outputbs
+            self.res_labela, self.res_labelbs = res_labela, res_labelbs
             if self.classification:
                 self.metaval_total_accuracy1 = total_accuracy1 = tf.reduce_sum(accuraciesa) / tf.to_float(FLAGS.meta_batch_size)
                 self.metaval_total_accuracies2 = total_accuracies2 =[tf.reduce_sum(accuraciesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
+                self.metaval_result1 = [outputas, res_labela]
+                self.metaval_result2= [outputbs, res_labelbs]
+
 
         ## Summaries
         tf.summary.scalar(prefix+'Pre-update loss', total_loss1)

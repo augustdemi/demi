@@ -27,7 +27,7 @@ def get_images2(path, label_int, nb_samples=None, shuffle=False):
         sampler = lambda x: random.sample(x, nb_samples)
     else:
         sampler = lambda x: x[:nb_samples]
-    #각 task별로 k*2개 씩의 label 과 img담게됨
+    #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject. os.list(path) = on/off = 0/1
     images = [(i, os.path.join(path,label, image)) \
         for i, label in zip(label_int, os.listdir(path))\
         for image in sampler(os.listdir(os.path.join(path, label)))]

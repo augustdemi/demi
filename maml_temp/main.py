@@ -80,6 +80,7 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     multitask_weights, reg_weights = [], []
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
+        print(iter, " starts")
         feed_dict = {}
         if itr < FLAGS.pretrain_iterations:
             input_tensors = [model.pretrain_op]
@@ -119,51 +120,62 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
 
             print('Validation results: ' + str(result[0]) + ', ' + str(result[1]))
 
-    saver.save(sess, FLAGS.logdir + '/' + exp_string +  '/model' + str(itr))
+    saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
 # calculated for omniglot
 NUM_TEST_POINTS = 600
 
-def test(model, saver, sess, exp_string, data_generator, test_num_updates=None):
-    num_classes = data_generator.num_classes # for classification, 1 otherwise
+def test(model, saver, sess, exp_string, data_generator):
 
     np.random.seed(1)
     random.seed(1)
 
     metaval_accuracies = []
 
-    for _ in range(NUM_TEST_POINTS):
+    from EmoEstimator.utils.evaluate import print_summary
+    for _ in range(1):
         feed_dict = {model.meta_lr: 0.0}
-        result = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
+        # acc = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
+        result = sess.run(model.metaval_result1, feed_dict)
+        result2 = sess.run(model.metaval_result2, feed_dict)
         metaval_accuracies.append(result)
+    print("------------------------------------------")
+    y_hata = np.array(result[0])[0]
+    y_laba = np.array(result[1])[0]
+    print_summary(y_hata, y_laba)
+    print("------------------------------------------")
+    y_hatb = np.mean(result2[0], 0)[0]
+    y_labb = np.mean(result2[1], 0)[0]
+    print_summary(y_hatb, y_labb)
+    print("------------------------------------------")
 
-    metaval_accuracies = np.array(metaval_accuracies)
-    means = np.mean(metaval_accuracies, 0)
-    stds = np.std(metaval_accuracies, 0)
-    ci95 = 1.96*stds/np.sqrt(NUM_TEST_POINTS)
-
-    print('Mean validation accuracy/loss, stddev, and confidence intervals')
-    print((means, stds, ci95))
-
-    out_filename = FLAGS.logdir +'/'+ exp_string + '/' + 'test_ubs' + str(FLAGS.update_batch_size) + '_stepsize' + str(FLAGS.update_lr) + '.csv'
-    out_pkl = FLAGS.logdir +'/'+ exp_string + '/' + 'test_ubs' + str(FLAGS.update_batch_size) + '_stepsize' + str(FLAGS.update_lr) + '.pkl'
-    with open(out_pkl, 'wb') as f:
-        pickle.dump({'mses': metaval_accuracies}, f)
-    with open(out_filename, 'w') as f:
-        writer = csv.writer(f, delimiter=',')
-        writer.writerow(['update'+str(i) for i in range(len(means))])
-        writer.writerow(means)
-        writer.writerow(stds)
-        writer.writerow(ci95)
+    # metaval_accuracies = np.array(metaval_accuracies)
+    # print(len(metaval_accuracies))
+    # means = np.mean(metaval_accuracies, 0)
+    # stds = np.std(metaval_accuracies, 0)
+    # ci95 = 1.96*stds/np.sqrt(NUM_TEST_POINTS)
+    #
+    #
+    # print('Mean validation accuracy/loss, stddev, and confidence intervals')
+    # print((means, stds, ci95))
+    #
+    # out_filename = FLAGS.logdir +'/'+ exp_string + '/' + 'test_ubs' + str(FLAGS.update_batch_size) + '_stepsize' + str(FLAGS.update_lr) + '.csv'
+    # out_pkl = FLAGS.logdir +'/'+ exp_string + '/' + 'test_ubs' + str(FLAGS.update_batch_size) + '_stepsize' + str(FLAGS.update_lr) + '.pkl'
+    # with open(out_pkl, 'wb') as f:
+    #     pickle.dump({'mses': metaval_accuracies}, f)
+    # with open(out_filename, 'w') as f:
+    #     writer = csv.writer(f, delimiter=',')
+    #     writer.writerow(['update'+str(i) for i in range(len(means))])
+    #     writer.writerow(means)
+    #     writer.writerow(stds)
+    #     writer.writerow(ci95)
 
 def main():
-    test_num_updates = 5
 
     if FLAGS.train == False:
         orig_meta_batch_size = FLAGS.meta_batch_size
         # always use meta batch size of 1 when testing.
         FLAGS.meta_batch_size = 1
-        FLAGS.subject_idx
 
     data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
 
@@ -176,7 +188,6 @@ def main():
     else:
         dim_input = data_generator.dim_input
 
-    tf_data_load = True
     num_classes = data_generator.num_classes
 
     if FLAGS.train:  # only construct training model if needed
@@ -197,10 +208,9 @@ def main():
         metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
-    model = MAML(dim_input, dim_output, test_num_updates=test_num_updates)
-    if FLAGS.train or not tf_data_load:
+    model = MAML(dim_input, dim_output)
+    if FLAGS.train:
         model.construct_model(input_tensors=input_tensors, prefix='metatrain_')
-    # if tf_data_load:
     else:
         model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
     model.summ_op = tf.summary.merge_all()
@@ -241,6 +251,7 @@ def main():
     tf.train.start_queue_runners()
 
     # print(sess.run(metaval_input_tensors))
+    # print(sess.run(input_tensors))
     print("========================================================================================")
     print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print('weights from vae : ', pred_weights)
@@ -270,7 +281,7 @@ def main():
     if FLAGS.train:
         train(model, saver, sess, exp_string, data_generator, resume_itr)
     else:
-        test(model, saver, sess, exp_string, data_generator, test_num_updates)
+        test(model, saver, sess, exp_string, data_generator)
 
 if __name__ == "__main__":
     main()

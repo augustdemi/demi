@@ -41,6 +41,7 @@ class DataGenerator(object):
         self.metatrain_character_folders = subject_folders[:num_train]
         if FLAGS.test_set: # In test, runs only one test task for the entered subject
             self.metaval_character_folders = [subject_folders[FLAGS.subject_idx]]
+            # self.metaval_character_folders = subject_folders[FLAGS.subject_idx:]
         else:
             self.metaval_character_folders = subject_folders[num_train:num_train + num_val]
         self.rotations = config.get('rotations', [0])
@@ -63,7 +64,7 @@ class DataGenerator(object):
             # random.shuffle(sampled_character_folders)
             labels_and_images = get_images2(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
             # make sure the above isn't randomized order
-            labels = [li[0] for li in labels_and_images]
+            labels = [li[0] for li in labels_and_images] # 0 0 1 1 = on on off off
             filenames = [li[1] for li in labels_and_images]
             all_filenames.extend(filenames)
 
