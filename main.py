@@ -32,7 +32,8 @@ import tensorflow as tf
 from data_generator import DataGenerator
 from maml import MAML
 from tensorflow.python.platform import flags
-
+from datetime import datetime
+start_time = datetime.now()
 FLAGS = flags.FLAGS
 
 ## Dataset/method options
@@ -282,6 +283,10 @@ def main():
         train(model, saver, sess, exp_string, data_generator, resume_itr)
     else:
         test(model, saver, sess, exp_string, data_generator)
-    print("========end")
+    end_time = datetime.now()
+    elapse = end_time - start_time
+    print("=======================================================")
+    print(">>>>>> elapse time: " + str(elapse))
+    print("=======================================================")
 if __name__ == "__main__":
     main()
