@@ -72,33 +72,32 @@ class DataGenerator(object):
         #################################################################################
         import cv2
 
-        imgs = []
-        for filename in all_filenames:
-            img = cv2.imread(filename)
-            imgs.append(img)
-
-        pp = ED.image_pipeline.FACE_pipeline(
-            histogram_normalization=True,
-            grayscale=True,
-            resize=True,
-            rotation_range=3,
-            width_shift_range=0.03,
-            height_shift_range=0.03,
-            zoom_range=0.03,
-            random_flip=True,
-        )
-
-        img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-        vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
 
 
         nk = self.num_classes * FLAGS.update_batch_size
-        img_arr = np.reshape(img_arr, [int(nk), int(len(img_arr)/nk)]) # len(img_arr)/nk = 2 * num of task
+        all_filenames_batch = np.reshape(all_filenames, [int(nk), int(len(all_filenames)/nk)]) # len(all_filenames)/nk = 2 * num of task
 
         z_arr = []
-        for img_batch in img_arr:
-            weights, z = vae_model.computeLatentVal(img_batch)
-            z_arr.append(z)
+        for file_bath in all_filenames_batch:
+            imgs = []
+            for filename in file_bath:
+                img = cv2.imread(filename)
+                imgs.append(img)
+
+            pp = ED.image_pipeline.FACE_pipeline(
+                histogram_normalization=True,
+                grayscale=True,
+                resize=True,
+                rotation_range=3,
+                width_shift_range=0.03,
+                height_shift_range=0.03,
+                zoom_range=0.03,
+                random_flip=True,
+            )
+
+            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+            vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
+            weights, z = vae_model.computeLatentVal(img_arr)
         z_arr = np.concatenate(z_arr)
         self.pred_weights = weights
         #################################################################################
