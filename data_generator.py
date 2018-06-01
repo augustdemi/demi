@@ -30,7 +30,7 @@ class DataGenerator(object):
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         # data that is pre-resized using PIL with lanczos filter
-        data_folder = config.get('data_folder', '../data/0')
+        data_folder = config.get('data_folder', '/home/ml1323/project/robert_data/DISFA/kshot/0')
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
