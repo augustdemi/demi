@@ -5,8 +5,8 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from utils import get_images2
-from vae_model import VAE
+from maml_temp.utils import get_images2
+from maml_temp.vae_model import VAE
 import EmoData as ED
 
 FLAGS = flags.FLAGS
@@ -30,7 +30,8 @@ class DataGenerator(object):
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         # data that is pre-resized using PIL with lanczos filter
-        data_folder = config.get('data_folder', '/home/ml1323/project/robert_data/DISFA/kshot/0')
+        data_folder = config.get('data_folder', './data/0')
+        # data_folder = config.get('data_folder', '/home/ml1323/project/robert_data/DISFA/kshot/0')
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
@@ -64,38 +65,49 @@ class DataGenerator(object):
             # random.shuffle(sampled_character_folders)
             labels_and_images = get_images2(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
             # make sure the above isn't randomized order
-            labels = [li[0] for li in labels_and_images] # 0 0 1 1 = on on off off
+            labels = [li[0] for li in labels_and_images] # 0 0 1 1 = off off on on
             filenames = [li[1] for li in labels_and_images]
             all_filenames.extend(filenames)
 
 
         #################################################################################
         import cv2
-        imgs = []
-        for filename in all_filenames:
-            img = cv2.imread(filename)
-            imgs.append(img)
 
-        pp = ED.image_pipeline.FACE_pipeline(
-            histogram_normalization=True,
-            grayscale=True,
-            resize=True,
-            rotation_range=3,
-            width_shift_range=0.03,
-            height_shift_range=0.03,
-            zoom_range=0.03,
-            random_flip=True,
-        )
+        # all file names has (2 * nk * num_of_task) files.
+        # make it to batch of which size is (num_of_task) : thus, the total number of batch = 2*nk
+        N_batch = int(2 * self.num_classes * FLAGS.update_batch_size)
+        batch_size = int(len(all_filenames)/N_batch)
+        all_filenames_batch = np.reshape(all_filenames, [N_batch, batch_size]) # len(all_filenames)/nk = 2 * num of task
 
-        img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+        vae_model = VAE((self.img_size[0], self.img_size[1],1), (1, self.num_classes))
+        z_arr = []
+        for file_bath in all_filenames_batch:
+            imgs = []
+            for filename in file_bath:
+                img = cv2.imread(filename)
+                imgs.append(img)
 
-        vae_model = VAE(img_arr.shape[1:], (1, self.num_classes))
-        weights, z = vae_model.computeLatentVal(img_arr)
+            pp = ED.image_pipeline.FACE_pipeline(
+                histogram_normalization=True,
+                grayscale=True,
+                resize=True,
+                rotation_range=3,
+                width_shift_range=0.03,
+                height_shift_range=0.03,
+                zoom_range=0.03,
+                random_flip=True,
+            )
+
+            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+
+            weights, z = vae_model.computeLatentVal(img_arr)
+            z_arr.append(z)
+        z_arr = np.concatenate(z_arr)
         self.pred_weights = weights
         #################################################################################
 
         # make queue for tensorflow to read from
-        z_tensor = tf.convert_to_tensor(z)
+        z_tensor = tf.convert_to_tensor(z_arr)
         examples_per_batch = self.num_classes * self.num_samples_per_class # 2NK = number of examples per task
         print(len(all_filenames))
         print(len(all_filenames)/examples_per_batch)
