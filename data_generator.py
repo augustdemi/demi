@@ -30,15 +30,15 @@ class DataGenerator(object):
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         # data that is pre-resized using PIL with lanczos filter
-        data_folder = config.get('data_folder', './data/0')
-        # data_folder = config.get('data_folder', '/home/ml1323/project/robert_data/DISFA/kshot/0')
+        # data_folder = config.get('data_folder', './data/0')
+        data_folder = config.get('data_folder', '/home/ml1323/project/robert_data/DISFA/kshot/0')
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
         # random.seed(1)
         # random.shuffle(subject_folders)
         num_val = 0
-        num_train = config.get('num_train', 14) - num_val
+        num_train = FLAGS.meta_batch_size
         self.metatrain_character_folders = subject_folders[:num_train]
         if FLAGS.test_set: # In test, runs only one test task for the entered subject
             self.metaval_character_folders = [subject_folders[FLAGS.subject_idx]]
