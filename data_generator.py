@@ -5,8 +5,8 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from maml_temp.utils import get_images2
-from maml_temp.vae_model import VAE
+from utils import get_images2
+from vae_model import VAE
 import EmoData as ED
 
 FLAGS = flags.FLAGS
