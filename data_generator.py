@@ -26,12 +26,10 @@ class DataGenerator(object):
         self.num_samples_per_class = num_samples_per_class
         self.num_classes = 1  # by default 1 (only relevant for classification problems)
 
-        self.num_classes = config.get('num_classes', FLAGS.num_classes)
+        self.num_classes = FLAGS.num_classes
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
-        # data that is pre-resized using PIL with lanczos filter
-        # data_folder = config.get('data_folder', './data/0')
-        data_folder = config.get('data_folder', '/home/ml1323/project/robert_data/DISFA/kshot/0')
+        data_folder = FLAGS.datadir
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
@@ -131,7 +129,7 @@ class DataGenerator(object):
                 # 해당 라벨에서 k번째 인스턴스를 취해오는것. 그럼 결과는: 라벨명은 랜덤 순서인데, 각 라벨에서 모두 k번째 인스턴스만 뽑아온 이미지와 라벨 배치가됨(각각 길이 N)
                 new_list.append(tf.gather(image_batch,true_idxs)) # img_batch에서 true_idx(길이N)에 해당하는 부분만 발췌
                 new_label_list.append(tf.gather(label_batch, true_idxs)) #길이 N짜리 배치를 2k번 append하니까 new_list의 길이는 2NK
-            new_list = tf.concat(new_list, 0)  # has shape [self.num_classes*self.num_samples_per_class, self.dim_input]
+            new_list = tf.concat(new_list, 0)  # has shape [self.num_classes*self.num_samples_per_class, 2000]
             new_label_list = tf.concat(new_label_list, 0)
             all_image_batches.append(new_list) #2NK짜리 new_list를 계속 append => all_img_batch의 길이는 2NK*num_of_task가 됨.
             all_label_batches.append(new_label_list)
