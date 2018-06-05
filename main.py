@@ -81,7 +81,7 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     multitask_weights, reg_weights = [], []
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
-        print(iter, " starts")
+        print(itr, " starts")
         feed_dict = {}
         if itr < FLAGS.pretrain_iterations:
             input_tensors = [model.pretrain_op]
@@ -114,10 +114,10 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
             saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
         # sinusoid is infinite data, so no need to test on meta-validation set.
-        if (itr!=0) and itr % TEST_PRINT_INTERVAL == 0:
-            input_tensors = [model.metaval_total_accuracy1, model.metaval_total_accuracies2[FLAGS.num_updates - 1],
-                             model.summ_op]
-            result = sess.run(input_tensors, feed_dict)
+        # if (itr!=0) and itr % TEST_PRINT_INTERVAL == 0:
+        #     input_tensors = [model.metaval_total_accuracy1, model.metaval_total_accuracies2[FLAGS.num_updates - 1],
+        #                      model.summ_op]
+        #     result = sess.run(input_tensors, feed_dict)
 
             print('Validation results: ' + str(result[0]) + ', ' + str(result[1]))
 
