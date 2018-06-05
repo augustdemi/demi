@@ -117,25 +117,27 @@ class DataGenerator(object):
         all_image_batches, all_label_batches = [], []
         print('Manipulating image data to be right shape')
         for i in range(self.batch_size): #  batch_size = number of task
-            image_batch = z_tensor[i*examples_per_batch:(i+1)*examples_per_batch]
+            image_batch = z_tensor[i*examples_per_batch:(i+1)*examples_per_batch] # image_batch하나의 길이는 2NK
 
             label_batch = tf.convert_to_tensor(labels)
             new_list, new_label_list = [], []
-            for k in range(self.num_samples_per_class):
+            for k in range(self.num_samples_per_class): #num_samples_per_class = 2k
                 class_idxs = tf.range(0, self.num_classes)
                 class_idxs = tf.random_shuffle(class_idxs)
 
                 true_idxs = class_idxs*self.num_samples_per_class + k
-
-                new_list.append(tf.gather(image_batch,true_idxs))
-                new_label_list.append(tf.gather(label_batch, true_idxs))
+                # class_idxs는 0~N-1사이의 랜던 넘버. 즉 라벨 값 하나씩 할당.
+                # 라벨및 이미지는 각 라벨순으로 2K씩(=num_samples_per_class) 쌓여 있는상태. 따라서 2K만큼씩 이동하면 라벨 값이 하나씩 변화함
+                # 해당 라벨에서 k번째 인스턴스를 취해오는것. 그럼 결과는: 라벨명은 랜덤 순서인데, 각 라벨에서 모두 k번째 인스턴스만 뽑아온 이미지와 라벨 배치가됨(각각 길이 N)
+                new_list.append(tf.gather(image_batch,true_idxs)) # img_batch에서 true_idx(길이N)에 해당하는 부분만 발췌
+                new_label_list.append(tf.gather(label_batch, true_idxs)) #길이 N짜리 배치를 2k번 append하니까 new_list의 길이는 2NK
             new_list = tf.concat(new_list, 0)  # has shape [self.num_classes*self.num_samples_per_class, self.dim_input]
             new_label_list = tf.concat(new_label_list, 0)
-            all_image_batches.append(new_list)
+            all_image_batches.append(new_list) #2NK짜리 new_list를 계속 append => all_img_batch의 길이는 2NK*num_of_task가 됨.
             all_label_batches.append(new_label_list)
-        all_image_batches = tf.stack(all_image_batches)
-        all_label_batches = tf.stack(all_label_batches)
+        all_image_batches = tf.stack(all_image_batches) # (num_of_task, 2NK, 2000)
+        all_label_batches = tf.stack(all_label_batches) # (num_of_tast, 2NK)
         # all_label_batches = tf.reshape(all_label_batches, [int(all_label_batches.shape[0]), int(all_label_batches.shape[1]),1])
-        all_label_batches = tf.one_hot(all_label_batches, self.num_classes)
+        all_label_batches = tf.one_hot(all_label_batches, self.num_classes) ## (num_of_tast, 2NK, N)
         return all_image_batches, all_label_batches
 
