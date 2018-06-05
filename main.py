@@ -139,7 +139,7 @@ def test(model, saver, sess, exp_string, data_generator):
     np.random.seed(1)
     random.seed(1)
 
-    metaval_accuracies = []
+    result_arr = []
 
 
     for _ in range(NUM_TEST_POINTS):
@@ -147,14 +147,14 @@ def test(model, saver, sess, exp_string, data_generator):
         # acc = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
-        metaval_accuracies.append(result)
-    y_hata = np.vstack(np.array(result[0][0]))  # length = num_of_task * N * K
-    y_laba = np.vstack(np.array(result[0][1]))
+        result_arr.append(result)
+    y_hata = np.vstack(np.array(result_arr[:][0][0]))  # length = num_of_task * N * K
+    y_laba = np.vstack(np.array(result_arr[:][0][1]))
     print_summary(y_hata, y_laba)
     print("------------------------------------------------------------------------------------")
-    recent_y_hatb = np.array(result[1][0][FLAGS.num_updates - 1])
+    recent_y_hatb = np.array(result_arr[:][1][0][FLAGS.num_updates - 1])
     y_hatb = np.vstack(recent_y_hatb)
-    recent_y_labb = np.array(result[1][1][FLAGS.num_updates - 1])
+    recent_y_labb = np.array(result_arr[:][1][1][FLAGS.num_updates - 1])
     y_labb = np.vstack(recent_y_labb)
     print_summary(y_hatb, y_labb)
     print("====================================================================================")
