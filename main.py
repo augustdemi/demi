@@ -127,12 +127,12 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
         #                      model.summ_op]
         #     result = sess.run(input_tensors, feed_dict)
 
-            print('Validation results: ' + str(result[0]) + ', ' + str(result[1]))
+            # print('Validation results: ' + str(result[0]) + ', ' + str(result[1]))
 
     saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
 # calculated for omniglot
-NUM_TEST_POINTS = 600
+NUM_TEST_POINTS = 1
 
 def test(model, saver, sess, exp_string, data_generator):
 
@@ -148,14 +148,12 @@ def test(model, saver, sess, exp_string, data_generator):
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         result_arr.append(result)
-    y_hata = np.vstack(np.array(result_arr[:][0][0]))  # length = num_of_task * N * K
-    y_laba = np.vstack(np.array(result_arr[:][0][1]))
+    y_hata = np.array(result[0][0])[0]
+    y_laba = np.array(result[0][1])[0]
     print_summary(y_hata, y_laba)
     print("------------------------------------------------------------------------------------")
-    recent_y_hatb = np.array(result_arr[:][1][0][FLAGS.num_updates - 1])
-    y_hatb = np.vstack(recent_y_hatb)
-    recent_y_labb = np.array(result_arr[:][1][1][FLAGS.num_updates - 1])
-    y_labb = np.vstack(recent_y_labb)
+    y_hatb = np.mean(result[1][0], 0)[0]
+    y_labb = np.mean(result[1][1], 0)[0]
     print_summary(y_hatb, y_labb)
     print("====================================================================================")
 
