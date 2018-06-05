@@ -132,7 +132,8 @@ class MAML:
             if self.classification:
                 self.total_accuracy1 = total_accuracy1 = tf.reduce_sum(accuraciesa) / tf.to_float(FLAGS.meta_batch_size)
                 self.total_accuracies2 = total_accuracies2 = [tf.reduce_sum(accuraciesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
-
+                self.result1 = [outputas, res_labela]
+                self.result2= [outputbs, res_labelbs]
             self.pretrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_loss1)
 
             if FLAGS.metatrain_iterations > 0:

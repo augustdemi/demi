@@ -92,7 +92,7 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
         if (itr % SUMMARY_INTERVAL == 0):
             input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates-1]])
             input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates-1]])
-            input_tensors.extend([model.metaval_result1, model.metaval_result2])
+            input_tensors.extend([model.result1, model.result2])
         result = sess.run(input_tensors, feed_dict)
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
