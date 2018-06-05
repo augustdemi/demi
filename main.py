@@ -29,6 +29,7 @@ import pickle
 import random
 import tensorflow as tf
 
+from EmoEstimator.utils.evaluate import print_summary
 from data_generator import DataGenerator
 from maml import MAML
 from tensorflow.python.platform import flags
@@ -57,6 +58,7 @@ flags.DEFINE_bool('stop_grad', False, 'if True, do not use second derivatives in
 ## Logging, saving, and testing options
 flags.DEFINE_bool('log', True, 'if false, do not log summaries, for debugging code.')
 flags.DEFINE_string('datadir', '/home/ml1323/project/robert_data/DISFA/kshot/0', 'directory for data.')
+flags.DEFINE_string('valdir', '/home/ml1323/project/robert_data/DISFA/kshot/1', 'directory for val.')
 flags.DEFINE_string('logdir', '/tmp/data', 'directory for summaries and checkpoints.')
 flags.DEFINE_bool('resume', True, 'resume training if there is a model available')
 flags.DEFINE_bool('train', True, 'True to train, False to test.')
@@ -69,17 +71,14 @@ flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step dur
 def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 1000
-    PRINT_INTERVAL = 100
-    TEST_PRINT_INTERVAL = PRINT_INTERVAL * 5
+    TEST_PRINT_INTERVAL = SUMMARY_INTERVAL * 5
+
 
 
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + exp_string, sess.graph)
     print('Done initializing, starting training.')
-    prelosses, postlosses = [], []
 
-    num_classes = data_generator.num_classes # for classification, 1 otherwise
-    multitask_weights, reg_weights = [], []
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
         print(itr, " starts")
@@ -89,28 +88,38 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
         else:
             input_tensors = [model.metatrain_op]
 
-        if (itr % SUMMARY_INTERVAL == 0 or itr % PRINT_INTERVAL == 0):
+        # SUMMARY_INTERVAL 혹은 PRINT_INTERVAL 마다 accuracy 계산해둠
+        if (itr % SUMMARY_INTERVAL == 0):
             input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates-1]])
-            if model.classification:
-                input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates-1]])
-
+            input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates-1]])
+            input_tensors.extend([model.metaval_result1, model.metaval_result2])
         result = sess.run(input_tensors, feed_dict)
 
+        # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if itr % SUMMARY_INTERVAL == 0:
-            prelosses.append(result[-2])
             if FLAGS.log:
                 train_writer.add_summary(result[1], itr)
-            postlosses.append(result[-1])
+            if itr!=0:
+                if itr < FLAGS.pretrain_iterations:
+                    print_str = 'Pretrain Iteration ' + str(itr)
+                else:
+                    print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
+                print(print_str)
+                y_hata = np.array(result[-2][0])[0]
+                y_laba = np.array(result[-2][1])[0]
+                print_summary(y_hata, y_laba)
+                print("------------------------------------------")
+                y_hatb = np.mean(result[-1][0], 0)[0]  # TODO last element? average?
+                y_labb = np.mean(result[-1][1], 0)[0]
+                print_summary(y_hatb, y_labb)
+                print("------------------------------------------")
+                y_hatb = np.array(result[-1][0][FLAGS.num_updates-1])[0]
+                y_labb = np.array(result[-1][1][FLAGS.num_updates-1])[0]
+                print_summary(y_hatb, y_labb)
+                print("------------------------------------------")
 
-        if (itr!=0) and itr % PRINT_INTERVAL == 0:
-            if itr < FLAGS.pretrain_iterations:
-                print_str = 'Pretrain Iteration ' + str(itr)
-            else:
-                print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
-            print_str += ': ' + str(np.mean(prelosses)) + ', ' + str(np.mean(postlosses))
-            print(print_str)
-            prelosses, postlosses = [], []
 
+        # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr!=0) and itr % SAVE_INTERVAL == 0:
             saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
@@ -134,20 +143,20 @@ def test(model, saver, sess, exp_string, data_generator):
 
     metaval_accuracies = []
 
-    from EmoEstimator.utils.evaluate import print_summary
+
     for _ in range(1):
         feed_dict = {model.meta_lr: 0.0}
         # acc = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
-        result = sess.run(model.metaval_result1, feed_dict)
-        result2 = sess.run(model.metaval_result2, feed_dict)
+        input_tensor = [model.metaval_result1, model.metaval_result2]
+        result = sess.run(input_tensor, feed_dict)
         metaval_accuracies.append(result)
     print("------------------------------------------")
-    y_hata = np.array(result[0])[0]
-    y_laba = np.array(result[1])[0]
+    y_hata = np.array(result[0][0])[0]
+    y_laba = np.array(result[0][1])[0]
     print_summary(y_hata, y_laba)
     print("------------------------------------------")
-    y_hatb = np.mean(result2[0], 0)[0]
-    y_labb = np.mean(result2[1], 0)[0]
+    y_hatb = np.mean(result[1][0], 0)[0] # TODO last element? average?
+    y_labb = np.mean(result[1][1], 0)[0]
     print_summary(y_hatb, y_labb)
     print("------------------------------------------")
 

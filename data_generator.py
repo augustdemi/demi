@@ -30,6 +30,7 @@ class DataGenerator(object):
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         data_folder = FLAGS.datadir
+        val_folder = FLAGS.valdir
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
