@@ -5,7 +5,7 @@ import random
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from utils import get_images2
+from utils import get_images
 from vae_model import VAE
 import EmoData as ED
 
@@ -62,7 +62,7 @@ class DataGenerator(object):
         all_filenames = []
         for sub_folder in folders: # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
-            labels_and_images = get_images2(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
+            labels_and_images = get_images(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
             # make sure the above isn't randomized order
             labels = [li[0] for li in labels_and_images] # 0 0 1 1 = off off on on
             filenames = [li[1] for li in labels_and_images]

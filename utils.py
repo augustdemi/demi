@@ -10,26 +10,15 @@ from tensorflow.python.platform import flags
 FLAGS = flags.FLAGS
 
 ## Image helper
-def get_images(paths, labels, nb_samples=None, shuffle=True):
-    if nb_samples is not None:
-        sampler = lambda x: random.sample(x, nb_samples)
-    else:
-        sampler = lambda x: x
-    images = [(i, os.path.join(path, image)) \
-        for i, path in zip(labels, paths) \
-        for image in sampler(os.listdir(path))]
-    if shuffle:
-        random.shuffle(images)
-    return images
-
-def get_images2(path, label_int, nb_samples=None, shuffle=False):
+def get_images(path, label_int, nb_samples=None, shuffle=False):
     if shuffle:
         sampler = lambda x: random.sample(x, nb_samples)
     else:
         sampler = lambda x: x[:nb_samples]
-    #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject. os.list(path) = on/off = 0/1
+    labels = ['off', 'on'] # off = 0, on =1
+    #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     images = [(i, os.path.join(path,label, image)) \
-        for i, label in zip(label_int, os.listdir(path))\
+        for i, label in zip(label_int, labels)\
         for image in sampler(os.listdir(os.path.join(path, label)))]
 
     if shuffle:
