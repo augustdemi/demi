@@ -151,10 +151,12 @@ def test(model, saver, sess, exp_string, data_generator):
     y_hata = np.array(result[0][0])[0]
     y_laba = np.array(result[0][1])[0]
     print_summary(y_hata, y_laba)
+    print_summary(y_hata, y_laba, log_dir="./test1log.txt")
     print("------------------------------------------------------------------------------------")
     y_hatb = np.mean(result[1][0], 0)[0]
     y_labb = np.mean(result[1][1], 0)[0]
     print_summary(y_hatb, y_labb)
+    print_summary(y_hatb, y_labb, log_dir="./test2log.txt")
     print("====================================================================================")
 
     # metaval_accuracies = np.array(metaval_accuracies)
