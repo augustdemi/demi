@@ -107,13 +107,13 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
                 y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
                 y_laba = np.vstack(np.array(result[-2][1]))
                 print_summary(y_hata, y_laba)
-                print("------------------------------------------")
+                print("------------------------------------------------------------------------------------")
                 recent_y_hatb = np.array(result[-1][0][FLAGS.num_updates-1])
                 y_hatb = np.vstack(recent_y_hatb)
                 recent_y_labb = np.array(result[-1][1][FLAGS.num_updates-1])
                 y_labb = np.vstack(recent_y_labb)
                 print_summary(y_hatb, y_labb)
-                print("------------------------------------------")
+                print("====================================================================================")
 
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
