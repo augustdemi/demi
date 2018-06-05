@@ -69,7 +69,7 @@ flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for
 flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step during training. (use if you want to test with a different value)') # 0.1 for omniglot
 
 def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
-    SUMMARY_INTERVAL = 100
+    SUMMARY_INTERVAL = 50
     SAVE_INTERVAL = 1000
     TEST_PRINT_INTERVAL = SUMMARY_INTERVAL * 5
 
@@ -81,7 +81,6 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
 
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
-        print(itr, " starts")
         feed_dict = {}
         if itr < FLAGS.pretrain_iterations:
             input_tensors = [model.pretrain_op]
@@ -105,16 +104,14 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
                 else:
                     print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
                 print(print_str)
-                y_hata = np.array(result[-2][0])[0]
-                y_laba = np.array(result[-2][1])[0]
+                y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
+                y_laba = np.vstack(np.array(result[-2][1]))
                 print_summary(y_hata, y_laba)
                 print("------------------------------------------")
-                y_hatb = np.mean(result[-1][0], 0)[0]  # TODO last element? average?
-                y_labb = np.mean(result[-1][1], 0)[0]
-                print_summary(y_hatb, y_labb)
-                print("------------------------------------------")
-                y_hatb = np.array(result[-1][0][FLAGS.num_updates-1])[0]
-                y_labb = np.array(result[-1][1][FLAGS.num_updates-1])[0]
+                recent_y_hatb = np.array(result[-1][0][FLAGS.num_updates-1])
+                y_hatb = np.vstack(recent_y_hatb)
+                recent_y_labb = np.array(result[-1][1][FLAGS.num_updates-1])
+                y_labb = np.vstack(recent_y_labb)
                 print_summary(y_hatb, y_labb)
                 print("------------------------------------------")
 
