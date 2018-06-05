@@ -67,6 +67,7 @@ flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, F
 flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
 flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
 flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step during training. (use if you want to test with a different value)') # 0.1 for omniglot
+flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 
 def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 50
@@ -147,15 +148,16 @@ def test(model, saver, sess, exp_string, data_generator):
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         metaval_accuracies.append(result)
-    print("------------------------------------------")
-    y_hata = np.array(result[0][0])[0]
-    y_laba = np.array(result[0][1])[0]
+    y_hata = np.vstack(np.array(result[0][0]))  # length = num_of_task * N * K
+    y_laba = np.vstack(np.array(result[0][1]))
     print_summary(y_hata, y_laba)
-    print("------------------------------------------")
-    y_hatb = np.mean(result[1][0], 0)[0] # TODO last element? average?
-    y_labb = np.mean(result[1][1], 0)[0]
+    print("------------------------------------------------------------------------------------")
+    recent_y_hatb = np.array(result[1][0][FLAGS.num_updates - 1])
+    y_hatb = np.vstack(recent_y_hatb)
+    recent_y_labb = np.array(result[1][1][FLAGS.num_updates - 1])
+    y_labb = np.vstack(recent_y_labb)
     print_summary(y_hatb, y_labb)
-    print("------------------------------------------")
+    print("====================================================================================")
 
     # metaval_accuracies = np.array(metaval_accuracies)
     # print(len(metaval_accuracies))
@@ -264,8 +266,9 @@ def main():
     print("========================================================================================")
     print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print('weights from vae : ', pred_weights)
-    model.weights['w1'].load(pred_weights[0], sess)
-    model.weights['b1'].load(pred_weights[1], sess)
+    if FLAGS.init_weight:
+        model.weights['w1'].load(pred_weights[0], sess)
+        model.weights['b1'].load(pred_weights[1], sess)
     print('updated weights from vae: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
