@@ -70,7 +70,7 @@ flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step dur
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 
 def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
-    SUMMARY_INTERVAL = 50
+    SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 1000
     TEST_PRINT_INTERVAL = SUMMARY_INTERVAL * 5
 
@@ -240,7 +240,7 @@ def main():
     if FLAGS.train_update_lr == -1:
         FLAGS.train_update_lr = FLAGS.update_lr
 
-    exp_string = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr)
+    exp_string = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.initweight' + str(FLAGS.init_weight)
 
 
     if FLAGS.stop_grad:
