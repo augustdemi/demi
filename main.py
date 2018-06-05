@@ -142,8 +142,8 @@ def test(model, saver, sess, exp_string, data_generator):
     metaval_accuracies = []
 
 
-    for _ in range(1):
-        feed_dict = {model.meta_lr: 0.0}
+    for _ in range(NUM_TEST_POINTS):
+        feed_dict = {model.meta_lr: 0.0} # do not optimize in test
         # acc = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
