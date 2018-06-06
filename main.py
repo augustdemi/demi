@@ -29,7 +29,7 @@ import pickle
 import random
 import tensorflow as tf
 
-from EmoEstimator.utils.evaluate import print_summary
+from evaluate import print_summary
 from data_generator import DataGenerator
 from maml import MAML
 from tensorflow.python.platform import flags
@@ -150,13 +150,11 @@ def test(model, saver, sess, exp_string, data_generator):
         result_arr.append(result)
     y_hata = np.array(result[0][0])[0]
     y_laba = np.array(result[0][1])[0]
-    print_summary(y_hata, y_laba)
-    print_summary(y_hata, y_laba, log_dir="./test1log.txt")
+    print_summary(y_hata, y_laba, log_dir="./logs/result/outa_" + str(FLAGS.subject_idx) + ".txt")
     print("------------------------------------------------------------------------------------")
     y_hatb = np.mean(result[1][0], 0)[0]
     y_labb = np.mean(result[1][1], 0)[0]
-    print_summary(y_hatb, y_labb)
-    print_summary(y_hatb, y_labb, log_dir="./test2log.txt")
+    print_summary(y_hatb, y_labb, log_dir="./logs/result/outb_" + str(FLAGS.subject_idx) + ".txt")
     print("====================================================================================")
 
     # metaval_accuracies = np.array(metaval_accuracies)
