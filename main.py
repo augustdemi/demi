@@ -34,6 +34,7 @@ from data_generator import DataGenerator
 from maml import MAML
 from tensorflow.python.platform import flags
 from datetime import datetime
+import os
 start_time = datetime.now()
 FLAGS = flags.FLAGS
 
@@ -107,13 +108,16 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
                 print(print_str)
                 y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
                 y_laba = np.vstack(np.array(result[-2][1]))
-                print_summary(y_hata, y_laba, log_dir="./logs/result/train/outa_" + str(itr) + ".txt")
+                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/train"
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
+                print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
                 print("------------------------------------------------------------------------------------")
                 recent_y_hatb = np.array(result[-1][0][FLAGS.num_updates-1])
                 y_hatb = np.vstack(recent_y_hatb)
                 recent_y_labb = np.array(result[-1][1][FLAGS.num_updates-1])
                 y_labb = np.vstack(recent_y_labb)
-                print_summary(y_hatb, y_labb, log_dir="./logs/result/train/outb_" + str(itr) + ".txt")
+                print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + str(itr) + ".txt")
                 print("====================================================================================")
 
 
@@ -143,11 +147,14 @@ def test(model, saver, sess, exp_string, data_generator):
         result_arr.append(result)
     y_hata = np.array(result[0][0])[0]
     y_laba = np.array(result[0][1])[0]
-    print_summary(y_hata, y_laba, log_dir="./logs/result/test/outa_" + str(FLAGS.subject_idx) + ".txt")
+    save_path="./logs/result/" + str(FLAGS.update_batch_size) + "shot/test/" + str(FLAGS.meta_batch_size)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    print_summary(y_hata, y_laba, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".txt")
     print("------------------------------------------------------------------------------------")
     y_hatb = np.mean(result[1][0], 0)[0]
     y_labb = np.mean(result[1][1], 0)[0]
-    print_summary(y_hatb, y_labb, log_dir="./logs/result/test/outb_" + str(FLAGS.subject_idx) + ".txt")
+    print_summary(y_hatb, y_labb, log_dir= save_path + "/outb_" + str(FLAGS.subject_idx) + ".txt")
     print("====================================================================================")
 
 
