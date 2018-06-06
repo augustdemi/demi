@@ -107,13 +107,13 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
                 print(print_str)
                 y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
                 y_laba = np.vstack(np.array(result[-2][1]))
-                print_summary(y_hata, y_laba)
+                print_summary(y_hata, y_laba, log_dir="./logs/result/train/outa_" + str(itr) + ".txt")
                 print("------------------------------------------------------------------------------------")
                 recent_y_hatb = np.array(result[-1][0][FLAGS.num_updates-1])
                 y_hatb = np.vstack(recent_y_hatb)
                 recent_y_labb = np.array(result[-1][1][FLAGS.num_updates-1])
                 y_labb = np.vstack(recent_y_labb)
-                print_summary(y_hatb, y_labb)
+                print_summary(y_hatb, y_labb, log_dir="./logs/result/train/outb_" + str(itr) + ".txt")
                 print("====================================================================================")
 
 
@@ -121,13 +121,6 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
         if (itr!=0) and itr % SAVE_INTERVAL == 0:
             saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
-        # sinusoid is infinite data, so no need to test on meta-validation set.
-        # if (itr!=0) and itr % TEST_PRINT_INTERVAL == 0:
-        #     input_tensors = [model.metaval_total_accuracy1, model.metaval_total_accuracies2[FLAGS.num_updates - 1],
-        #                      model.summ_op]
-        #     result = sess.run(input_tensors, feed_dict)
-
-            # print('Validation results: ' + str(result[0]) + ', ' + str(result[1]))
 
     saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
@@ -150,33 +143,13 @@ def test(model, saver, sess, exp_string, data_generator):
         result_arr.append(result)
     y_hata = np.array(result[0][0])[0]
     y_laba = np.array(result[0][1])[0]
-    print_summary(y_hata, y_laba, log_dir="./logs/result/outa_" + str(FLAGS.subject_idx) + ".txt")
+    print_summary(y_hata, y_laba, log_dir="./logs/result/test/outa_" + str(FLAGS.subject_idx) + ".txt")
     print("------------------------------------------------------------------------------------")
     y_hatb = np.mean(result[1][0], 0)[0]
     y_labb = np.mean(result[1][1], 0)[0]
-    print_summary(y_hatb, y_labb, log_dir="./logs/result/outb_" + str(FLAGS.subject_idx) + ".txt")
+    print_summary(y_hatb, y_labb, log_dir="./logs/result/test/outb_" + str(FLAGS.subject_idx) + ".txt")
     print("====================================================================================")
 
-    # metaval_accuracies = np.array(metaval_accuracies)
-    # print(len(metaval_accuracies))
-    # means = np.mean(metaval_accuracies, 0)
-    # stds = np.std(metaval_accuracies, 0)
-    # ci95 = 1.96*stds/np.sqrt(NUM_TEST_POINTS)
-    #
-    #
-    # print('Mean validation accuracy/loss, stddev, and confidence intervals')
-    # print((means, stds, ci95))
-    #
-    # out_filename = FLAGS.logdir +'/'+ exp_string + '/' + 'test_ubs' + str(FLAGS.update_batch_size) + '_stepsize' + str(FLAGS.update_lr) + '.csv'
-    # out_pkl = FLAGS.logdir +'/'+ exp_string + '/' + 'test_ubs' + str(FLAGS.update_batch_size) + '_stepsize' + str(FLAGS.update_lr) + '.pkl'
-    # with open(out_pkl, 'wb') as f:
-    #     pickle.dump({'mses': metaval_accuracies}, f)
-    # with open(out_filename, 'w') as f:
-    #     writer = csv.writer(f, delimiter=',')
-    #     writer.writerow(['update'+str(i) for i in range(len(means))])
-    #     writer.writerow(means)
-    #     writer.writerow(stds)
-    #     writer.writerow(ci95)
 
 def main():
 
