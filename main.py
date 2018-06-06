@@ -29,7 +29,7 @@ import pickle
 import random
 import tensorflow as tf
 
-from evaluate import print_summary
+from EmoEstimator.utils.evaluate import print_summary
 from data_generator import DataGenerator
 from maml import MAML
 from tensorflow.python.platform import flags
