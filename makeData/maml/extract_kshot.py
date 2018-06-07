@@ -8,13 +8,13 @@ import numpy as np
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 n_class = 2
-k_shot = 10
+k_shot = 100
 k_fold = 3
 for subject in os.listdir(original_frame_path):
     # subject = "SN001"
     ####### label ############
-    # label_path= "D:/연구/프로젝트/DISFA/label/" + subject + "/" + subject + "_au12.txt"
-    label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_au12.txt"
+    label_path= "D:/연구/프로젝트/DISFA/label/" + subject + "/" + subject + "_au12.txt"
+    # label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_au12.txt"
     intensities_for_one_au = []
     with open(label_path, 'r') as f:
         for line in f:
@@ -32,6 +32,7 @@ for subject in os.listdir(original_frame_path):
 
     on_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 1]
     print(on_intst_idx)
+    print(">>>>>>>>>>>", len(on_intst_idx))
     off_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 0]
 
     adap_on_pool = on_intst_idx[:int(len(on_intst_idx) / 2)]
@@ -39,10 +40,10 @@ for subject in os.listdir(original_frame_path):
     adap_off_pool = off_intst_idx[:int(len(off_intst_idx) / 2)]
     meta_off_pool = off_intst_idx[int(len(off_intst_idx) / 2):]
 
-    adap_on_idx = random.sample(adap_on_pool, n_class * k_shot * k_fold)
-    meta_on_idx = random.sample(meta_on_pool, n_class * k_shot * k_fold)
-    adap_off_idx = random.sample(adap_off_pool, n_class * k_shot * k_fold)
-    meta_off_idx = random.sample(meta_off_pool, n_class * k_shot * k_fold)
+    adap_on_idx = random.sample(adap_on_pool, k_shot * k_fold)
+    meta_on_idx = random.sample(meta_on_pool, k_shot * k_fold)
+    adap_off_idx = random.sample(adap_off_pool, k_shot * k_fold)
+    meta_off_idx = random.sample(meta_off_pool, k_shot * k_fold)
 
     on_idx = np.append(adap_on_idx, meta_on_idx)
     off_idx = np.append(adap_off_idx, meta_off_idx)
