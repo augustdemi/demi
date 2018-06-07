@@ -7,6 +7,9 @@ import numpy as np
 
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
+n_class = 2
+k_shot = 10
+k_fold = 3
 for subject in os.listdir(original_frame_path):
     # subject = "SN001"
     ####### label ############
@@ -30,10 +33,6 @@ for subject in os.listdir(original_frame_path):
     on_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 1]
     print(on_intst_idx)
     off_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 0]
-
-    n_class = 2
-    k_shot = 10
-    k_fold = 3
 
     adap_on_pool = on_intst_idx[:int(len(on_intst_idx) / 2)]
     meta_on_pool = on_intst_idx[int(len(on_intst_idx) / 2):]
