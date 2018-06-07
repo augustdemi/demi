@@ -108,7 +108,7 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
                 print(print_str)
                 y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
                 y_laba = np.vstack(np.array(result[-2][1]))
-                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/train"
+                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/train"
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
@@ -147,7 +147,7 @@ def test(model, saver, sess, exp_string, data_generator):
         result_arr.append(result)
     y_hata = np.array(result[0][0])[0]
     y_laba = np.array(result[0][1])[0]
-    save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/test/" + str(FLAGS.metatrain_iterations)
+    save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.metatrain_iterations)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     print_summary(y_hata, y_laba, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".txt")
