@@ -3,6 +3,7 @@ import random
 import os
 from shutil import copyfile
 import numpy as np
+#on/off intensity를 라벨로 매칭시킨 h5로부터 maml을 위한 이미지 경로와 이미지 파일 생성
 
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
@@ -53,10 +54,12 @@ for subject in os.listdir(original_frame_path):
         if not os.path.exists(kshot_path + "/on"): os.makedirs(kshot_path + "/on")
         if not os.path.exists(kshot_path + "/off"): os.makedirs(kshot_path + "/off")
 
+        # copy on intensity frames to kshot folder
         for i in on_idx[k * n_class * k_shot: (k + 1) * n_class * k_shot]:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
                      kshot_path + "/on/frame" + str(i) + ".jpg")
 
+        # copy off intensity frames to kshot folder
         for i in off_idx[k * n_class * k_shot: (k + 1) * n_class * k_shot]:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
                      kshot_path + "/off/frame" + str(i) + ".jpg")
