@@ -108,7 +108,7 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
                 print(print_str)
                 y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
                 y_laba = np.vstack(np.array(result[-2][1]))
-                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight'+str(FLAGS.init_weight)+'.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/train"
+                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/train"
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
@@ -147,7 +147,7 @@ def test(model, saver, sess, exp_string, data_generator):
         result_arr.append(result)
     y_hata = np.array(result[0][0])[0]
     y_laba = np.array(result[0][1])[0]
-    save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight'+str(FLAGS.init_weight)+'.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.metatrain_iterations)
+    save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.metatrain_iterations)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     print_summary(y_hata, y_laba, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".txt")
@@ -186,7 +186,7 @@ def main():
         inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])  #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
         labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])  #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
         labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
-        input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+        input_tensors = {'inputa': inputa, 'inputb': inputa, 'labela': labela, 'labelb': labela}
     else:
         random.seed(6)
         image_tensor, label_tensor = data_generator.make_data_tensor(train=False)
@@ -194,7 +194,7 @@ def main():
         inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])
         labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])
         labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])
-        metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+        metaval_input_tensors = {'inputa': inputa, 'inputb': inputa, 'labela': labela, 'labelb': labela}
 
     pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
