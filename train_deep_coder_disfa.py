@@ -24,6 +24,9 @@ args = parser.parse_args()
 source_data = args.input
 nb_iter = args.nb_iter
 
+target_std_vec = np.ones(2000)
+target_mean_vec = np.zeros(2000)
+
 
 batch_size = 10 # dont change it!
 log_dir_model = './model'
@@ -91,13 +94,10 @@ emb = Dropout(0.5)(emb)
 z_mean      = Dense(latent_dim)(emb) # latent_dim는 output space의 dim이 될것. activation함수는 none임 out_1(라벨값 y)을 위한 layer쌓는중  classifier?????????????
 z_log_sigma = Dense(latent_dim)(emb) #
 
-
 def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
-    import keras.backend as KB
-    batch_size = 10
     z_mean, z_log_sigma = args
     epsilon = []
-    for m, s in zip(np.ones(2000), np.zeros(2000)):
+    for m, s in zip(target_mean_vec, target_std_vec):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
     epsilon = KB.concatenate(epsilon, 1)
     return z_mean + KB.exp(z_log_sigma) * epsilon
