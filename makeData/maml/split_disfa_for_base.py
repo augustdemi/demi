@@ -1,10 +1,9 @@
 import numpy as np
 import os
 import h5py
-from sklearn.model_selection import KFold
 import random
 
-
+# MAML을 위한 base model에서 쓰일 train/test 셋을 만들기위해 h5파일을 split함
 ############### img ############
 path = "/home/ml1323/project/robert_data/DISFA/h5_detected_bin_intensity/"
 # path = "D:/연구/프로젝트/DISFA/h5/"
@@ -17,14 +16,13 @@ file_idx = np.array(range(0,len(files)))
 train_index = file_idx[:14]
 test_index = file_idx[14:]
 
-print("TRAIN:", train_index, "TEST:", test_index)
+print("TRAIN:", files[train_index], "TEST:", files[test_index])
 data_idx = {'train': train_index, 'test': test_index}
 for key in data_idx.keys():
     imgs = []
     labels =[]
     subjects =[]
     total_n = 0
-    print(key)
     for i in data_idx[key]:
         file = files[i]
         print(">>>> file: " + file)
