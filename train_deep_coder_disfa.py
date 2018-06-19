@@ -24,19 +24,8 @@ args = parser.parse_args()
 source_data = args.input
 nb_iter = args.nb_iter
 
-
-if source_data=='init':
-    target_std_vec = np.ones(2000)
-    target_mean_vec = np.zeros(2000)
-else:
-
-    with h5py.File(source_data + '_va.h5') as f:
-        dat = f['mean_reconstr'][::]
-        target_mean_vec= dat.mean(0)
-        target_std_vec= dat.std(0)
-        print(target_mean_vec.mean())
-        print(target_std_vec.mean())
-
+target_std_vec = np.ones(2000)
+target_mean_vec = np.zeros(2000)
 
 
 batch_size = 10 # dont change it!
@@ -197,7 +186,7 @@ model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint('./model78.h5'),
+            K.callbacks.ModelCheckpoint('./model.h5'),
             ]
         )
 
