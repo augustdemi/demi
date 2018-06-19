@@ -8,7 +8,6 @@ path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 # path = "D:/연구/프로젝트/SN001/detected/"
 
 for subject in os.listdir(path):
-    subject="SN001"
     img_arr = []
     img_files=os.listdir(path + subject)
     detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in img_files]
@@ -42,7 +41,7 @@ for subject in os.listdir(path):
     hf.create_dataset('lab', data=lab)
     print("img shape:", hf['img'].shape)
     print("lab shape:", hf['lab'].shape)
-    on_indices = [j for j in range(len(lab)) if lab[j] == 1]
+    on_indices = [j for j in range(len(lab)) if lab[j][1] == 1]
     print("AU12: " + str(i), len(on_indices))
     print(">>>>>>>>>>>>>>>>> end: " + subject)
     hf.close()
