@@ -23,10 +23,7 @@ Usage Instructions:
 
     For omniglot and miniimagenet training, acquire the dataset online, put it in the correspoding data directory, and see the python script instructions in that directory to preprocess the data.
 """
-import csv
 import numpy as np
-import pickle
-import random
 import tensorflow as tf
 
 from EmoEstimator.utils.evaluate import print_summary
@@ -113,7 +110,7 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
                     os.makedirs(save_path)
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
                 print("------------------------------------------------------------------------------------")
-                recent_y_hatb = np.array(result[-1][0][FLAGS.num_updates-1])
+                recent_y_hatb = np.array(result[-1][0][FLAGS.num_updates-1]) # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
                 y_hatb = np.vstack(recent_y_hatb)
                 recent_y_labb = np.array(result[-1][1][FLAGS.num_updates-1])
                 y_labb = np.vstack(recent_y_labb)
@@ -122,7 +119,7 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
 
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
-        if (itr!=0) and itr % SAVE_INTERVAL == 0:
+        if (itr == 100) or ((itr!=0) and itr % SAVE_INTERVAL == 0):
             saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
 
@@ -133,9 +130,6 @@ NUM_TEST_POINTS = 1
 
 def test(model, saver, sess, exp_string, data_generator):
 
-    np.random.seed(1)
-    random.seed(1)
-
     result_arr = []
 
 
@@ -145,7 +139,7 @@ def test(model, saver, sess, exp_string, data_generator):
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         result_arr.append(result)
-    y_hata = np.array(result[0][0])[0]
+    y_hata = np.array(result[0][0])[0] # test task는 항상 1개니까 마지막에 0인덱스만 불러와도 상관없음
     y_laba = np.array(result[0][1])[0]
     save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.metatrain_iterations)
     if not os.path.exists(save_path):
@@ -179,7 +173,7 @@ def main():
     num_classes = data_generator.num_classes
 
     if FLAGS.train:  # only construct training model if needed
-        random.seed(5)
+
         image_tensor, label_tensor = data_generator.make_data_tensor()
         inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1]) #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
         #여기서 NK는 N개씩 K번 쌓은것. N개씩 쌓을때 0~N-1의 라벨을 하나씩 담되 랜덤 순서로 담음.
@@ -188,7 +182,7 @@ def main():
         labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
         input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
     else:
-        random.seed(6)
+
         image_tensor, label_tensor = data_generator.make_data_tensor(train=False)
         inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])
         inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])
