@@ -61,6 +61,7 @@ flags.DEFINE_string('logdir', '/tmp/data', 'directory for summaries and checkpoi
 flags.DEFINE_bool('resume', True, 'resume training if there is a model available')
 flags.DEFINE_bool('train', True, 'True to train, False to test.')
 flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest model)')
+flags.DEFINE_integer('num_test_pts', 1, 'number of iteration to increase the test points')
 flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, False for the validation set.')
 flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
 flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
@@ -125,30 +126,46 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
 
     saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
 
-# calculated for omniglot
-NUM_TEST_POINTS = 1
+
 
 def test(model, saver, sess, exp_string, data_generator):
 
     result_arr = []
 
 
-    for _ in range(NUM_TEST_POINTS):
+    for _ in range(FLAGS.num_test_pts):
         feed_dict = {model.meta_lr: 0.0} # do not optimize in test
         # acc = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         result_arr.append(result)
-    y_hata = np.array(result[0][0])[0] # test task는 항상 1개니까 마지막에 0인덱스만 불러와도 상관없음
-    y_laba = np.array(result[0][1])[0]
     save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.metatrain_iterations)
+
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    print_summary(y_hata, y_laba, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".txt")
+
+    y_hata_arr = []
+    y_laba_arr = []
+    y_hatb_arr = []
+    y_labb_arr = []
+    for result in result_arr:
+        y_hata = np.array(result[0][0])[0] # result[0][0]=y_hata: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label); test task는 항상 1개니까 0인덱스만 불러와도 상관없음
+        y_laba = np.array(result[0][1])[0]
+        y_hata_arr.append(y_hata)
+        y_laba_arr.append(y_laba)
+        y_hatb = result[1][0][FLAGS.num_updates-1][0] #result[1][0]=y_hat: has (num_updates) elts. We see only the recent elt.==>result[1][0][FLAGS.num_updates-1]: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label)
+        y_labb = result[1][1][FLAGS.num_updates-1][0]
+        y_hatb_arr.append(y_hatb)
+        y_labb_arr.append(y_labb)
+    y_hata_arr = np.array(y_hata_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
+    y_laba_arr = np.array(y_laba_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
+    y_hatb_arr = np.array(y_hatb_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
+    y_labb_arr = np.array(y_labb_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
+
+    print_summary(y_hata_arr, y_laba_arr, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".txt")
     print("------------------------------------------------------------------------------------")
-    y_hatb = np.mean(result[1][0], 0)[0]
-    y_labb = np.mean(result[1][1], 0)[0]
-    print_summary(y_hatb, y_labb, log_dir= save_path + "/outb_" + str(FLAGS.subject_idx) + ".txt")
+
+    print_summary(y_hatb_arr, y_labb_arr, log_dir= save_path + "/outb_" + str(FLAGS.subject_idx) + ".txt")
     print("====================================================================================")
 
 
