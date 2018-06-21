@@ -134,7 +134,9 @@ def test(model, saver, sess, exp_string, data_generator):
     NUM_TEST_POINTS=FLAGS.num_test_pts
 
     for _ in range(NUM_TEST_POINTS):
-        print("test weight: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
+        print("labela: ", sess.run('Slice_3:0'))
+        print("labelb: ", sess.run('Slice_4:0'))
+        # print("test weight: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
         feed_dict = {model.meta_lr: 0.0} # do not optimize in test because it needs to be iterated.
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
@@ -144,29 +146,20 @@ def test(model, saver, sess, exp_string, data_generator):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    y_hata_arr = []
-    y_laba_arr = []
-    y_hatb_arr = []
-    y_labb_arr = []
+    i=0
     for result in result_arr:
         y_hata = np.array(result[0][0])[0] # result[0][0]=y_hata: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label); test task는 항상 1개니까 0인덱스만 불러와도 상관없음
         y_laba = np.array(result[0][1])[0]
-        y_hata_arr.append(y_hata)
-        y_laba_arr.append(y_laba)
+
         y_hatb = result[1][0][FLAGS.num_updates-1][0] #result[1][0]=y_hat: has (num_updates) elts. We see only the recent elt.==>result[1][0][FLAGS.num_updates-1]: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label)
         y_labb = result[1][1][FLAGS.num_updates-1][0]
-        y_hatb_arr.append(y_hatb)
-        y_labb_arr.append(y_labb)
-    y_hata_arr = np.array(y_hata_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
-    y_laba_arr = np.array(y_laba_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
-    y_hatb_arr = np.array(y_hatb_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
-    y_labb_arr = np.array(y_labb_arr).reshape(y_hata.shape[0], NUM_TEST_POINTS, y_hata.shape[2])
 
-    print_summary(y_hata_arr, y_laba_arr, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".txt")
-    print("------------------------------------------------------------------------------------")
+        print_summary(y_hata, y_laba, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
+        print("------------------------------------------------------------------------------------")
 
-    print_summary(y_hatb_arr, y_labb_arr, log_dir= save_path + "/outb_" + str(FLAGS.subject_idx) + ".txt")
-    print("====================================================================================")
+        print_summary(y_hatb, y_labb, log_dir= save_path + "/outb_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
+        print("====================================================================================")
+        i+=1
 
 
 def main():
@@ -204,7 +197,7 @@ def main():
         inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])
         inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])
         labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])
-        labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])
+        labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label)
         metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
