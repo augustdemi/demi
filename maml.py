@@ -97,7 +97,7 @@ class MAML:
                         grads = [tf.stop_gradient(grad) for grad in grads]
                     gradients = dict(zip(fast_weights.keys(), grads))
                     fast_weights = dict(zip(fast_weights.keys(), [fast_weights[key] - self.update_lr*gradients[key] for key in fast_weights.keys()]))
-                    output = self.forward(inputb, fast_weights, reuse=True)
+                    output = self.forward(inputb, fast_weights, reuse=True) #(2,1,2) = (2*k, # of au, onehot label)
                     task_outputbs.append(output)
                     task_labelbs.append(labelb)
                     task_lossesb.append(self.loss_func(output, labelb))
@@ -120,7 +120,7 @@ class MAML:
             out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates]
 
             result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb), dtype=out_dtype, parallel_iterations=FLAGS.meta_batch_size)
-
+            # In result, outa has shape (1,2,1,2) = (num.of.task, 2*k, num.of.au, one-hot label)
             outputas, outputbs, res_labela, res_labelbs, lossesa, lossesb, accuraciesa, accuraciesb = result
 
         ## Performance & Optimization
