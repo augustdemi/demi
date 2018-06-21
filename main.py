@@ -134,8 +134,8 @@ def test(model, saver, sess, exp_string, data_generator):
     NUM_TEST_POINTS=FLAGS.num_test_pts
 
     for _ in range(NUM_TEST_POINTS):
-        feed_dict = {model.meta_lr: 0.0} # do not optimize in test
-        # acc = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
+        print("test weight: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
+        feed_dict = {model.meta_lr: 0.0} # do not optimize in test because it needs to be iterated.
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         result_arr.append(result)
