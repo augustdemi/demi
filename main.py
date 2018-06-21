@@ -131,16 +131,16 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
 def test(model, saver, sess, exp_string, data_generator):
 
     result_arr = []
+    NUM_TEST_POINTS=FLAGS.num_test_pts
 
-
-    for _ in range(FLAGS.num_test_pts):
+    for _ in range(NUM_TEST_POINTS):
         feed_dict = {model.meta_lr: 0.0} # do not optimize in test
         # acc = sess.run([model.metaval_total_accuracy1] + model.metaval_total_accuracies2, feed_dict)
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         result_arr.append(result)
-    save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.metatrain_iterations)
 
+    save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.test_iter)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
