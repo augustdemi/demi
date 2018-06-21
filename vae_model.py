@@ -1,13 +1,8 @@
 import EmoEstimator as EE
-import EmoData as ED
 import keras.backend as KB
 from keras.layers import Dense, Lambda, Input, Reshape
 import keras as K
 import numpy as np
-import h5py
-import argparse
-from datetime import datetime
-import tensorflow as tf
 
 
 class VAE:
