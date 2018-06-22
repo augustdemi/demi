@@ -61,7 +61,7 @@ flags.DEFINE_string('logdir', '/tmp/data', 'directory for summaries and checkpoi
 flags.DEFINE_bool('resume', True, 'resume training if there is a model available')
 flags.DEFINE_bool('train', True, 'True to train, False to test.')
 flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest model)')
-flags.DEFINE_integer('num_test_pts', 3, 'number of iteration to increase the test points')
+flags.DEFINE_integer('num_test_pts', 1, 'number of iteration to increase the test points')
 flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, False for the validation set.')
 flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
 flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
@@ -203,7 +203,7 @@ def main():
         inputa, inputb, labela, labelb= data_generator.make_data_tensor()
         input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
     else:
-        inputa, inputb, labela, labelb= data_generator.make_data_tensor()
+        inputa, inputb, labela, labelb= data_generator.make_data_tensor(train=False)
         metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
