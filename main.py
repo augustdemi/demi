@@ -61,7 +61,7 @@ flags.DEFINE_string('logdir', '/tmp/data', 'directory for summaries and checkpoi
 flags.DEFINE_bool('resume', True, 'resume training if there is a model available')
 flags.DEFINE_bool('train', True, 'True to train, False to test.')
 flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest model)')
-flags.DEFINE_integer('num_test_pts', 1, 'number of iteration to increase the test points')
+flags.DEFINE_integer('num_test_pts', 3, 'number of iteration to increase the test points')
 flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, False for the validation set.')
 flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
 flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
@@ -132,11 +132,21 @@ def test(model, saver, sess, exp_string, data_generator):
 
     result_arr = []
     NUM_TEST_POINTS=FLAGS.num_test_pts
+    print("===========================================================================")
+    # print("labela: ", sess.run('Slice_3:0'))
+    # print("labelb: ", sess.run('Slice_4:0'))
+    print("inputa: ", sess.run('Reshape_78:0'))
+    print("inputb: ", sess.run('Reshape_79:0'))
+    print("labela: ", sess.run('Reshape_80:0'))
+    print("labelb: ", sess.run('Reshape_81:0'))
+    # print("")
+    # print("model/inputa: ", sess.run('model/Reshape:0'))
+    # print("model/inputb: ", sess.run('model/Reshape_1:0'))
+    # print("model/labela: ", sess.run('model/Reshape_2:0'))
+    # print("model/labelb: ", sess.run('model/Reshape_3:0'))
+    # print("test weight: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
 
     for _ in range(NUM_TEST_POINTS):
-        print("labela: ", sess.run('Slice_3:0'))
-        print("labelb: ", sess.run('Slice_4:0'))
-        # print("test weight: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
         feed_dict = {model.meta_lr: 0.0} # do not optimize in test because it needs to be iterated.
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
@@ -184,20 +194,16 @@ def main():
 
     if FLAGS.train:  # only construct training model if needed
 
-        image_tensor, label_tensor = data_generator.make_data_tensor()
-        inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1]) #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
-        #여기서 NK는 N개씩 K번 쌓은것. N개씩 쌓을때 0~N-1의 라벨을 하나씩 담되 랜덤 순서로 담음.
-        inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])  #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
-        labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])  #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
-        labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
+        # image_tensor, label_tensor = data_generator.make_data_tensor()
+        # inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1]) #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
+        # #여기서 NK는 N개씩 K번 쌓은것. N개씩 쌓을때 0~N-1의 라벨을 하나씩 담되 랜덤 순서로 담음.
+        # inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])  #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
+        # labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])  #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
+        # labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
+        inputa, inputb, labela, labelb= data_generator.make_data_tensor()
         input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
     else:
-
-        image_tensor, label_tensor = data_generator.make_data_tensor(train=False)
-        inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])
-        inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])
-        labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])
-        labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label)
+        inputa, inputb, labela, labelb= data_generator.make_data_tensor()
         metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
