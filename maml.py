@@ -22,7 +22,6 @@ class MAML:
         self.dim_output = dim_output
         self.update_lr = FLAGS.update_lr
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
-        self.test_iter = 0
         self.classification = False
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
@@ -64,12 +63,12 @@ class MAML:
 
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
-                inputa, inputb, labela, labelb = inp # input = (NK,2000) label = (NK, N)
-                inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]),1]) #(NK,2000,1)
+                inputa, inputb, labela, labelb = inp
+                inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]),1])
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]),1])
 
                 labela= tf.cast(labela, tf.float32)
-                labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])]) #(NK,1,N)
+                labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])])
                 labelb= tf.cast(labelb, tf.float32)
                 labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
                 task_outputbs, task_lossesb, task_labelbs = [], [], []
@@ -115,16 +114,12 @@ class MAML:
 
             # if FLAGS.norm is not 'None':
                 # to initialize the batch norm vars, might want to combine this, and not run idx 0 twice.
-            # unused = task_metalearn((self.inputa[0], self.inputb[0], self.labela[0], self.labelb[0]), False)
+            unused = task_metalearn((self.inputa[0], self.inputb[0], self.labela[0], self.labelb[0]), False)
 
 
             out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates]
 
-            if 'train' in prefix:
-                result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb), dtype=out_dtype, parallel_iterations=FLAGS.meta_batch_size)
-            else:
-                result = tf.map_fn(task_metalearn, elems=(self.inputa[self.test_iter], self.inputb[self.test_iter], self.labela[self.test_iter], self.labelb[self.test_iter]), dtype=out_dtype)
-
+            result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb), dtype=out_dtype, parallel_iterations=FLAGS.meta_batch_size)
             # In result, outa has shape (1,2,1,2) = (num.of.task, 2*k, num.of.au, one-hot label)
             outputas, outputbs, res_labela, res_labelbs, lossesa, lossesb, accuraciesa, accuraciesb = result
 

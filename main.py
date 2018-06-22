@@ -133,13 +133,21 @@ def test(model, saver, sess, exp_string, data_generator):
     result_arr = []
     NUM_TEST_POINTS=FLAGS.num_test_pts
     print("===========================================================================")
+    # print("labela: ", sess.run('Slice_3:0'))
+    # print("labelb: ", sess.run('Slice_4:0'))
     print("inputa: ", sess.run('Reshape_78:0'))
     print("inputb: ", sess.run('Reshape_79:0'))
     print("labela: ", sess.run('Reshape_80:0'))
     print("labelb: ", sess.run('Reshape_81:0'))
+    # print("")
+    # print("model/inputa: ", sess.run('model/Reshape:0'))
+    # print("model/inputb: ", sess.run('model/Reshape_1:0'))
+    # print("model/labela: ", sess.run('model/Reshape_2:0'))
+    # print("model/labelb: ", sess.run('model/Reshape_3:0'))
+    # print("test weight: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
 
-    for i in range(NUM_TEST_POINTS):
-        feed_dict = {model.meta_lr: 0.0, model.iter: i} # do not optimize in test because it needs to be iterated.
+    for _ in range(NUM_TEST_POINTS):
+        feed_dict = {model.meta_lr: 0.0} # do not optimize in test because it needs to be iterated.
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         result_arr.append(result)

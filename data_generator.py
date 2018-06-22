@@ -34,7 +34,11 @@ class DataGenerator(object):
         num_val = 0
         num_train = FLAGS.meta_batch_size
         self.metatrain_character_folders = subject_folders[:num_train]
-        self.metaval_character_folders = [subject_folders[FLAGS.subject_idx]]
+        if FLAGS.test_set: # In test, runs only one test task for the entered subject
+            self.metaval_character_folders = [subject_folders[FLAGS.subject_idx]]
+            # self.metaval_character_folders = subject_folders[FLAGS.subject_idx:]
+        else:
+            self.metaval_character_folders = subject_folders[num_train:num_train + num_val]
         self.rotations = config.get('rotations', [0])
 
 
@@ -73,9 +77,8 @@ class DataGenerator(object):
             for labels_per_class in labels:
                 labelas.extend(labels_per_class[:k])
                 labelbs.extend(labels_per_class[k:])
+
             all_filenames.extend(filenames) # just for debugging
-
-
 
         print("all_filenames: ", all_filenames)
         print("inputa_files: ", inputa_files)
