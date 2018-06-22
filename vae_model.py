@@ -18,9 +18,6 @@ class VAE:
         target_mean_vec = np.zeros(latent_dim)
 
 
-
-        print("img_shape", self.img_shape[0])
-        print("label_shape", self.label_shape[0])
         img_shape = self.img_shape[0]
         label_shape = self.label_shape[0]
         inp_0       = Input(shape=img_shape)
@@ -28,9 +25,7 @@ class VAE:
 
         from numpy import prod
         from keras.layers import Dropout
-        print("shape before flatten: ", shape)
         n_feat = prod(shape)
-        print("shape after flatten: ", emb.get_shape(), n_feat)
 
 
         emb = Dropout(0.5)(emb)
