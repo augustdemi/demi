@@ -302,14 +302,14 @@ def main():
         test_file_names = []
         y_lab = []
         for subject_folder in subject_folders:
-            off_files = random.sample(os.listdir(subject_folder + "/off"), 10)
+            off_files = random.sample(os.listdir(subject_folder + "/off"), FLAGS.test_num)
             test_file_names.extend([os.path.join(subject_folder + "/off", off_file) for off_file in off_files])
-            on_files = random.sample(os.listdir(subject_folder + "/on"), 10)
+            on_files = random.sample(os.listdir(subject_folder + "/on"), FLAGS.test_num)
             test_file_names.extend([os.path.join(subject_folder + "/on", on_file) for on_file in on_files])
-            lab = np.zeros((10,2))
+            lab = np.zeros((FLAGS.test_num,2))
             lab[:,0] = 1
             y_lab.extend(lab)
-            lab = np.zeros((10,2))
+            lab = np.zeros((FLAGS.test_num,2))
             lab[:,1] = 1
             y_lab.extend(lab)
         np.random.seed(3)
