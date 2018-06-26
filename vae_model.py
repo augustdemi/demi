@@ -75,8 +75,8 @@ class VAE:
         self.model_train.load_weights(weight_dir)
         print("loadWeihgt_robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
         if (w != None and b !=None):
-            self.model_train.layers[35].weights[0].load(w)
-            self.model_train.layers[35].weights[1].load(b)
+            self.model_train.layers[35].weights[0].load(np.array(w))
+            self.model_train.layers[35].weights[1].load(np.array(b))
             print("loadWeihgt_maml : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
 
     def testWithSavedModel(self, x):

@@ -283,8 +283,8 @@ def main():
             resume_itr = int(model_file[ind1+5:])
             print("Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
-            w = sess.run('model/w1:0')
-            b = sess.run('model/b1:0')
+            w = sess.run('model/w1:0').tolist()
+            b = sess.run('model/b1:0').tolist()
             print("updated weights from ckpt: ", w, b)
             print('resume_itr: ', resume_itr)
             print("=====================================================================================")
@@ -313,21 +313,19 @@ def main():
         )
         def get_y_hat(test_file_names):
             file_names_batch = np.reshape(test_file_names, [N_batch, batch_size])
-
             yhat_arr = []
             for file_bath in file_names_batch:
                 imgs = []
                 for filename in file_bath:
                     img = cv2.imread(filename)
                     imgs.append(img)
-
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-
                 pred = vae_model.testWithSavedModel(img_arr)
                 yhat_arr.append(pred)
             return np.concatenate(yhat_arr)
 
         y_hat = get_y_hat(data['test_file_names'])
+        print(y_hat.shape)
         save_path="./logs/result/test_test/"
         print_summary(y_hat, data['y_lab'], log_dir=save_path + FLAGS.test_log_file + ".txt")
 
