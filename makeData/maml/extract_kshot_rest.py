@@ -8,7 +8,6 @@ import numpy as np
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 k_shot = 50
-k_fold = 3
 for subject in os.listdir(original_frame_path):
     # subject = "SN001"
     ####### label ############
@@ -37,20 +36,33 @@ for subject in os.listdir(original_frame_path):
     random_on_idx = random.sample(total_on_intst_idx, 2 * k_shot)
     random_off_idx = random.sample(total_off_intst_idx, 2 * k_shot)
 
-    rest_on_idx = total_on_intst_idx
+    rest_on_idx = [i for i in total_on_intst_idx if i not in random_on_idx]
+    rest_off_idx = [i for i in total_off_intst_idx if i not in random_off_idx]
 
-    for k in range(k_fold):
-        # kshot_path = "D:/연구/프로젝트/SN001/maml/kshot/" + str(k)
-        kshot_path = "/home/ml1323/project/robert_data/DISFA/kshot_rest/" + str(k) + "/" + subject
-        if not os.path.exists(kshot_path + "/on"): os.makedirs(kshot_path + "/on")
-        if not os.path.exists(kshot_path + "/off"): os.makedirs(kshot_path + "/off")
 
-        # copy on intensity frames to kshot folder
-        for i in random_on_idx[k * k_shot: (k + 1) * k_shot]:
-            copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     kshot_path + "/on/frame" + str(i) + ".jpg")
+    kshot_path = "/home/ml1323/project/robert_data/DISFA/kshot_rest/"
+    if not os.path.exists(kshot_path + "kshot/" + subject + "/on"): os.makedirs(kshot_path + "kshot/" + subject + "/on")
+    if not os.path.exists(kshot_path + "kshot/" + subject + "/off"): os.makedirs(kshot_path + "kshot/" + subject + "/off")
 
-        # copy off intensity frames to kshot folder
-        for i in random_off_idx[k * k_shot: (k + 1) * k_shot]:
-            copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     kshot_path + "/off/frame" + str(i) + ".jpg")
+    # copy on intensity frames to kshot folder
+    for i in random_on_idx:
+        copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
+                 kshot_path + "/on/frame" + str(i) + ".jpg")
+
+    # copy off intensity frames to kshot folder
+    for i in random_off_idx:
+        copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
+                 kshot_path + "/off/frame" + str(i) + ".jpg")
+
+    if not os.path.exists(kshot_path + "kshot_rest/" + subject + "/on"): os.makedirs(kshot_path + "kshot_rest/" + subject + "/on")
+    if not os.path.exists(kshot_path + "kshot_rest/" + subject + "/off"): os.makedirs(kshot_path + "kshot_rest/" + subject + "/off")
+
+    # copy on intensity frames to kshot folder
+    for i in rest_on_idx:
+        copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
+                 kshot_path + "/on/frame" + str(i) + ".jpg")
+
+    # copy off intensity frames to kshot folder
+    for i in rest_off_idx:
+        copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
+                 kshot_path + "/off/frame" + str(i) + ".jpg")
