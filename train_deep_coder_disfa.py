@@ -161,16 +161,15 @@ model_train.compile(
         loss = loss
         )
 
-ww = model_train.get_weights()
 
-model_train.fit_generator( # 레알 도는부분. 작업이 진짜 실행됨
+model_train.fit_generator(
         generator = GEN_TR,
-        samples_per_epoch = 1000,
-        validation_data=GEN_TE,
-        nb_val_samples = 5000,
+        samples_per_epoch = 1000, #number of samples to process before going to the next epoch.
+        validation_data=GEN_TE, # integer, total number of iterations on the data.
+        nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
         nb_epoch = nb_iter,
         max_q_size = 4,
-        callbacks=[ # 트레인 한 후 실행될 것
+        callbacks=[
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
@@ -195,37 +194,3 @@ elapse = end_time - start_time
 print("=======================================================")
 print(">>>>>> elapse time: " + str(elapse))
 print("=======================================================")
-
-#import numpy as np
-#for dat, dset in zip(['/gpu/homedirs/ml1323/project/robert_data/data1.h5','/gpu/homedirs/ml1323/project/robert_data/data1.h5'],['_va','_te']):
-#
-#    TR = ED.providero.flow_from_hdf5(dat, batch_size, padding='same', type = 'val')
-#    def generator(dat_dict):
-#        while True:
-#            img = next(dat_dict['img'])
-#           lab = next(dat_dict['lab'])
-#            img, pts, pts_raw = pp.batch_transform(
-#                    img, 
-#                    preprocessing=True,
-#                    augmentation=False)
-#            yield img, lab
-#
-#    GEN_TR = generator(TR)
-#
-#    X_out, Y_out, Z_out = [], [], []
-#    for i in range(500):
-#        img, lab = next(GEN_TR)
-#        rec, feat, pred = model_rec_z_y.predict(img) # out_0 : reconstruted img, z_mean, out_1: predicted label
-#        X_out.append(feat)
-#        Y_out.append(lab)
-#        Z_out.append(pred)
-#
-#    X_out = np.vstack(X_out)
-#    Y_out = np.vstack(Y_out)
-#    Z_out = np.vstack(Z_out)
-#    print(Y_out.shape)
-#
-#    with h5py.File(args.output+dset+'.h5') as f:
-#        f.create_dataset('lab',data=Y_out)
-#        f.create_dataset('feat',data=X_out)
-#        f.create_dataset('pred',data=Z_out)
