@@ -47,22 +47,22 @@ for subject in os.listdir(original_frame_path):
     # copy on intensity frames to kshot folder
     for i in random_on_idx:
         copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                 kshot_path + "/on/frame" + str(i) + ".jpg")
+                 kshot_path + "kshot/" + subject + "/on/frame" + str(i) + ".jpg")
 
     # copy off intensity frames to kshot folder
     for i in random_off_idx:
         copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                 kshot_path + "/off/frame" + str(i) + ".jpg")
+                 kshot_path + "kshot/" + subject + "/off/frame" + str(i) + ".jpg")
 
-    if not os.path.exists(kshot_path + "kshot_rest/" + subject + "/on"): os.makedirs(kshot_path + "kshot_rest/" + subject + "/on")
-    if not os.path.exists(kshot_path + "kshot_rest/" + subject + "/off"): os.makedirs(kshot_path + "kshot_rest/" + subject + "/off")
+    if not os.path.exists(kshot_path + "rest/" + subject + "/on"): os.makedirs(kshot_path + "rest/" + subject + "/on")
+    if not os.path.exists(kshot_path + "rest/" + subject + "/off"): os.makedirs(kshot_path + "rest/" + subject + "/off")
 
     # copy on intensity frames to kshot folder
     for i in rest_on_idx:
         copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                 kshot_path + "/on/frame" + str(i) + ".jpg")
+                 kshot_path + "rest/" + subject + "/on/frame" + str(i) + ".jpg")
 
     # copy off intensity frames to kshot folder
     for i in rest_off_idx:
         copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                 kshot_path + "/off/frame" + str(i) + ".jpg")
+                 kshot_path + "rest/" + subject + "/off/frame" + str(i) + ".jpg")
