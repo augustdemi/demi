@@ -293,34 +293,14 @@ def main():
         from vae_model import VAE
         import EmoData as ED
         import cv2
+        import pickle
         import random
         vae_model = VAE((160, 240, 1), (1, 2))
         vae_model.loadWeight("./model78.h5", w,b)
-        subjects = os.listdir(FLAGS.test_dir)
-        subjects.sort()
-        subject_folders = [os.path.join(FLAGS.test_dir, subject) for subject in subjects][FLAGS.start_idx:FLAGS.end_idx+1]
-        test_file_names = []
-        y_lab = []
-        for subject_folder in subject_folders:
-            off_files = random.sample(os.listdir(subject_folder + "/off"), FLAGS.test_num)
-            test_file_names.extend([os.path.join(subject_folder + "/off", off_file) for off_file in off_files])
-            on_files = random.sample(os.listdir(subject_folder + "/on"), FLAGS.test_num)
-            test_file_names.extend([os.path.join(subject_folder + "/on", on_file) for on_file in on_files])
-            lab = np.zeros((FLAGS.test_num,2))
-            lab[:,0] = 1
-            y_lab.extend(lab)
-            lab = np.zeros((FLAGS.test_num,2))
-            lab[:,1] = 1
-            y_lab.extend(lab)
-        np.random.seed(3)
-        np.random.shuffle(test_file_names)
-        y_lab = np.array(y_lab)
-        y_lab = y_lab.reshape(y_lab.shape[0],1,2)
-        np.random.seed(3)
-        np.random.shuffle(y_lab)
+        data = pickle.load(open(FLAGS.test_dir, "rb"), encoding='latin1')
 
         batch_size = 10
-        N_batch = int(len(test_file_names) / batch_size)
+        N_batch = int(len(data['test_file_names']) / batch_size)
         pp = ED.image_pipeline.FACE_pipeline(
             histogram_normalization=True,
             grayscale=True,
@@ -347,9 +327,9 @@ def main():
                 yhat_arr.append(pred)
             return np.concatenate(yhat_arr)
 
-        y_hat = get_y_hat(test_file_names)
+        y_hat = get_y_hat(data['test_file_names'])
         save_path="./logs/result/test_test/"
-        print_summary(y_hat, y_lab, log_dir=save_path + FLAGS.test_log_file + ".txt")
+        print_summary(y_hat, data['y_lab'], log_dir=save_path + FLAGS.test_log_file + ".txt")
 
 
 
