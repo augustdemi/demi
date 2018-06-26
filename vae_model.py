@@ -56,9 +56,10 @@ class VAE:
 
         model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
         model_z_int = K.models.Model([inp_0], [z_mean, out_1])
-
+        model_au_int = K.models.Model([inp_0], [out_1])
         self.model_train = model_train
         self.model_z_int = model_z_int
+        self.model_au_int = model_au_int
         self.z = z
 
 
@@ -66,5 +67,18 @@ class VAE:
 
     def computeLatentVal(self, x):
         self.model_train.load_weights("./model78.h5")
-        z, pred = self.model_z_int.predict(x, batch_size=len(x))
+        z, _ = self.model_z_int.predict(x, batch_size=len(x))
         return self.model_train.get_weights()[-2:], z
+
+
+    def loadWeight(self, weight_dir, w=None, b=None):
+        self.model_train.load_weights(weight_dir)
+        print("loadWeihgt_robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
+        if (w != None and b !=None):
+            self.model_train.layers[35].weights[0].load(w)
+            self.model_train.layers[35].weights[1].load(b)
+            print("loadWeihgt_maml : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
+
+    def testWithSavedModel(self, x):
+        z, pred = self.model_z_int.predict(x, batch_size=len(x))
+        return pred
