@@ -68,6 +68,13 @@ flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for
 flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step during training. (use if you want to test with a different value)') # 0.1 for omniglot
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 
+flags.DEFINE_string('test_test', False, 'test_test')
+flags.DEFINE_string('test_dir', './data/1/', 'directory for test set')
+flags.DEFINE_string('test_log_file', 'robert', 'directory for test log')
+flags.DEFINE_string('start_idx', 14, 'directory for summaries and checkpoints.')
+flags.DEFINE_string('end_idx', 26, 'directory for summaries and checkpoints.')
+flags.DEFINE_string('test_num', 100, 'number of instances for each subject')
+
 def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
@@ -264,6 +271,8 @@ def main():
     if FLAGS.resume or not FLAGS.train:
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + exp_string)
+        w = None
+        b = None
         print(">>>> model_file1: ", model_file)
         # model_file = tf.train.latest_checkpoint('../model.h5')
         if FLAGS.test_iter > 0:
@@ -274,14 +283,81 @@ def main():
             resume_itr = int(model_file[ind1+5:])
             print("Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
-            print("updated weights from ckpt: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
+            w = sess.run('model/w1:0')
+            b = sess.run('model/b1:0')
+            print("updated weights from ckpt: ", w, b)
             print('resume_itr: ', resume_itr)
             print("=====================================================================================")
 
-    if FLAGS.train:
-        train(model, saver, sess, exp_string, data_generator, resume_itr)
+    if FLAGS.test_test:
+        from vae_model import VAE
+        import EmoData as ED
+        import cv2
+        import random
+        vae_model = VAE((160, 240, 1), (1, 2))
+        vae_model.loadWeight("./model78.h5", w,b)
+        subjects = os.listdir(FLAGS.test_dir)
+        subjects.sort()
+        subject_folders = [os.path.join(FLAGS.test_dir, subject) for subject in subjects][FLAGS.start_idx:FLAGS.end_idx+1]
+        test_file_names = []
+        y_lab = []
+        for subject_folder in subject_folders:
+            off_files = random.sample(os.listdir(subject_folder + "/off"), 10)
+            test_file_names.extend([os.path.join(subject_folder + "/off", off_file) for off_file in off_files])
+            on_files = random.sample(os.listdir(subject_folder + "/on"), 10)
+            test_file_names.extend([os.path.join(subject_folder + "/on", on_file) for on_file in on_files])
+            lab = np.zeros((10,2))
+            lab[:,0] = 1
+            y_lab.extend(lab)
+            lab = np.zeros((10,2))
+            lab[:,1] = 1
+            y_lab.extend(lab)
+        np.random.seed(3)
+        np.random.shuffle(test_file_names)
+        y_lab = np.array(y_lab)
+        y_lab = y_lab.reshape(y_lab.shape[0],1,2)
+        np.random.seed(3)
+        np.random.shuffle(y_lab)
+
+        batch_size = 10
+        N_batch = int(len(test_file_names) / batch_size)
+        pp = ED.image_pipeline.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
+        def get_y_hat(test_file_names):
+            file_names_batch = np.reshape(test_file_names, [N_batch, batch_size])
+
+            yhat_arr = []
+            for file_bath in file_names_batch:
+                imgs = []
+                for filename in file_bath:
+                    img = cv2.imread(filename)
+                    imgs.append(img)
+
+                img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+
+                pred = vae_model.testWithSavedModel(img_arr)
+                yhat_arr.append(pred)
+            return np.concatenate(yhat_arr)
+
+        y_hat = get_y_hat(test_file_names)
+        save_path="./logs/result/test_test/"
+        print_summary(y_hat, y_lab, log_dir=save_path + FLAGS.test_log_file + ".txt")
+
+
+
     else:
-        test(model, saver, sess, exp_string, data_generator)
+        if FLAGS.train:
+            train(model, saver, sess, exp_string, data_generator, resume_itr)
+        else:
+            test(model, saver, sess, exp_string, data_generator)
     end_time = datetime.now()
     elapse = end_time - start_time
     print("=======================================================")
