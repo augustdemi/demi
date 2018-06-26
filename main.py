@@ -68,12 +68,12 @@ flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for
 flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step during training. (use if you want to test with a different value)') # 0.1 for omniglot
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 
-flags.DEFINE_string('test_test', False, 'test_test')
+flags.DEFINE_bool('test_test', False, 'test_test')
 flags.DEFINE_string('test_dir', './data/1/', 'directory for test set')
 flags.DEFINE_string('test_log_file', 'robert', 'directory for test log')
-flags.DEFINE_string('start_idx', 14, 'directory for summaries and checkpoints.')
-flags.DEFINE_string('end_idx', 26, 'directory for summaries and checkpoints.')
-flags.DEFINE_string('test_num', 100, 'number of instances for each subject')
+flags.DEFINE_integer('start_idx', 14, 'directory for summaries and checkpoints.')
+flags.DEFINE_integer('end_idx', 26, 'directory for summaries and checkpoints.')
+flags.DEFINE_integer('test_num', 100, 'number of instances for each subject')
 
 def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
