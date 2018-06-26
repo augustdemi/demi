@@ -7,8 +7,7 @@ import numpy as np
 
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
-n_class = 2
-k_shot = 100
+k_shot = 50
 k_fold = 3
 for subject in os.listdir(original_frame_path):
     # subject = "SN001"
@@ -30,23 +29,13 @@ for subject in os.listdir(original_frame_path):
     detected_frame_idx = list(set(detected_frame_idx))
     min_len = np.min([len(detected_frame_idx), len(lab_au12)])
 
-    on_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 1]
-    print(on_intst_idx)
-    print(">>>>>>>>>>>", len(on_intst_idx))
-    off_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 0]
+    total_on_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 1]
+    print(total_on_intst_idx)
+    print(">>>>>>>>>>>", len(total_on_intst_idx))
+    total_off_intst_idx = [i for i in detected_frame_idx[:min_len] if lab_au12[i] == 0]
 
-    adap_on_pool = on_intst_idx[:int(len(on_intst_idx) / 2)]
-    meta_on_pool = on_intst_idx[int(len(on_intst_idx) / 2):]
-    adap_off_pool = off_intst_idx[:int(len(off_intst_idx) / 2)]
-    meta_off_pool = off_intst_idx[int(len(off_intst_idx) / 2):]
-
-    adap_on_idx = random.sample(adap_on_pool, k_shot * k_fold)
-    meta_on_idx = random.sample(meta_on_pool, k_shot * k_fold)
-    adap_off_idx = random.sample(adap_off_pool, k_shot * k_fold)
-    meta_off_idx = random.sample(meta_off_pool, k_shot * k_fold)
-
-    on_idx = np.append(adap_on_idx, meta_on_idx)
-    off_idx = np.append(adap_off_idx, meta_off_idx)
+    random_on_idx = random.sample(total_on_intst_idx, 2 * k_shot * k_fold)
+    random_off_idx = random.sample(total_off_intst_idx, 2 * k_shot * k_fold)
 
     for k in range(k_fold):
         # kshot_path = "D:/연구/프로젝트/SN001/maml/kshot/" + str(k)
@@ -55,11 +44,11 @@ for subject in os.listdir(original_frame_path):
         if not os.path.exists(kshot_path + "/off"): os.makedirs(kshot_path + "/off")
 
         # copy on intensity frames to kshot folder
-        for i in on_idx[k * n_class * k_shot: (k + 1) * n_class * k_shot]:
+        for i in random_on_idx[k * k_shot: (k + 1) * k_shot]:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
                      kshot_path + "/on/frame" + str(i) + ".jpg")
 
         # copy off intensity frames to kshot folder
-        for i in off_idx[k * n_class * k_shot: (k + 1) * n_class * k_shot]:
+        for i in random_off_idx[k * k_shot: (k + 1) * k_shot]:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
                      kshot_path + "/off/frame" + str(i) + ".jpg")
