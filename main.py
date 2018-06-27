@@ -311,9 +311,10 @@ def main():
             for file_path in file_names_batch:
                 pred = predict_label(file_path)
                 yhat_arr.extend(pred)
-            rest_pred = predict_label(test_file_names[N_batch * batch_size:])
-            yhat_arr.extend(rest_pred)
-            return yhat_arr
+            if N_batch * batch_size != len(data['test_file_names']):
+                rest_pred = predict_label(test_file_names[N_batch * batch_size:])
+                yhat_arr.extend(rest_pred)
+            return np.array(yhat_arr)
 
         test_subjects = os.listdir(FLAGS.test_dir)
         test_subjects.sort()
