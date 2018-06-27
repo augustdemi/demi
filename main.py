@@ -282,46 +282,53 @@ def main():
         import EmoData as ED
         import cv2
         import pickle
-        import random
         vae_model = VAE((160, 240, 1), (1, 2))
         vae_model.loadWeight("./model78.h5", w,b)
+
+        pp = ED.image_pipeline.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
+
+        def predict_label(file_path):
+            imgs = []
+            for filename in file_path:
+                img = cv2.imread(filename)
+                imgs.append(img)
+            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+            vae_model.testWithSavedModel(img_arr)
+
+        def get_y_hat(test_file_names):
+            file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
+
+            yhat_arr = []
+            for file_path in file_names_batch:
+                pred = predict_label(file_path)
+                yhat_arr.extend(pred)
+            rest_pred = predict_label(test_file_names[N_batch * batch_size:])
+            yhat_arr.extend(rest_pred)
+            return yhat_arr
+
         test_subjects = os.listdir(FLAGS.test_dir)
         test_subjects.sort()
+
         for test_subject in test_subjects:
             data = pickle.load(open(FLAGS.test_dir + test_subject, "rb"), encoding='latin1')
 
             batch_size = 10
-            N_batch = int(4600 / batch_size)
-            pp = ED.image_pipeline.FACE_pipeline(
-                histogram_normalization=True,
-                grayscale=True,
-                resize=True,
-                rotation_range=3,
-                width_shift_range=0.03,
-                height_shift_range=0.03,
-                zoom_range=0.03,
-                random_flip=True,
-            )
-            def get_y_hat(test_file_names):
-                file_names_batch = np.reshape(test_file_names, [N_batch, batch_size])
-                yhat_arr = []
-                for file_bath in file_names_batch:
-                    imgs = []
-                    for filename in file_bath:
-                        img = cv2.imread(filename)
-                        imgs.append(img)
-                    img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-                    pred = vae_model.testWithSavedModel(img_arr)
-                    yhat_arr.append(pred)
-                return np.concatenate(yhat_arr)
+            N_batch = int(data['test_file_names'] / batch_size)
 
             print(test_subject.split(".")[0], " total len:" , len(data['test_file_names']))
-            y_hat = get_y_hat(data['test_file_names'][:4600])
+            y_hat = get_y_hat(data['test_file_names'])
             print(y_hat.shape)
             save_path="./logs/result/test_test/" + FLAGS.test_log_file
-            print_summary(y_hat, data['y_lab'][:4600], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
-
-
+            print_summary(y_hat, data['y_lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
     else:
         if FLAGS.train:
