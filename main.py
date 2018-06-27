@@ -302,7 +302,7 @@ def main():
                 img = cv2.imread(filename)
                 imgs.append(img)
             img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-            vae_model.testWithSavedModel(img_arr)
+            return vae_model.testWithSavedModel(img_arr)
 
         def get_y_hat(test_file_names):
             file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
@@ -322,7 +322,7 @@ def main():
             data = pickle.load(open(FLAGS.test_dir + test_subject, "rb"), encoding='latin1')
 
             batch_size = 10
-            N_batch = int(data['test_file_names'] / batch_size)
+            N_batch = int(len(data['test_file_names']) / batch_size)
 
             print(test_subject.split(".")[0], " total len:" , len(data['test_file_names']))
             y_hat = get_y_hat(data['test_file_names'])
