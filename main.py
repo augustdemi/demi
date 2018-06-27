@@ -140,18 +140,6 @@ def test(model, saver, sess, exp_string, data_generator):
     result_arr = []
     NUM_TEST_POINTS=FLAGS.num_test_pts
     print("===========================================================================")
-    # print("labela: ", sess.run('Slice_3:0'))
-    # print("labelb: ", sess.run('Slice_4:0'))
-    print("inputa: ", sess.run('Reshape_78:0'))
-    print("inputb: ", sess.run('Reshape_79:0'))
-    print("labela: ", sess.run('Reshape_80:0'))
-    print("labelb: ", sess.run('Reshape_81:0'))
-    # print("")
-    # print("model/inputa: ", sess.run('model/Reshape:0'))
-    # print("model/inputb: ", sess.run('model/Reshape_1:0'))
-    # print("model/labela: ", sess.run('model/Reshape_2:0'))
-    # print("model/labelb: ", sess.run('model/Reshape_3:0'))
-    # print("test weight: ", sess.run('model/w1:0'), sess.run('model/b1:0'))
 
     for _ in range(NUM_TEST_POINTS):
         feed_dict = {model.meta_lr: 0.0} # do not optimize in test because it needs to be iterated.
@@ -297,37 +285,40 @@ def main():
         import random
         vae_model = VAE((160, 240, 1), (1, 2))
         vae_model.loadWeight("./model78.h5", w,b)
-        data = pickle.load(open(FLAGS.test_dir, "rb"), encoding='latin1')
+        test_subjects = os.listdir(FLAGS.test_dir)
+        test_subjects.sort()
+        for test_subject in test_subjects:
+            data = pickle.load(open(FLAGS.test_dir + test_subjects, "rb"), encoding='latin1')
 
-        batch_size = 10
-        N_batch = int(len(data['test_file_names']) / batch_size)
-        pp = ED.image_pipeline.FACE_pipeline(
-            histogram_normalization=True,
-            grayscale=True,
-            resize=True,
-            rotation_range=3,
-            width_shift_range=0.03,
-            height_shift_range=0.03,
-            zoom_range=0.03,
-            random_flip=True,
-        )
-        def get_y_hat(test_file_names):
-            file_names_batch = np.reshape(test_file_names, [N_batch, batch_size])
-            yhat_arr = []
-            for file_bath in file_names_batch:
-                imgs = []
-                for filename in file_bath:
-                    img = cv2.imread(filename)
-                    imgs.append(img)
-                img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-                pred = vae_model.testWithSavedModel(img_arr)
-                yhat_arr.append(pred)
-            return np.concatenate(yhat_arr)
+            batch_size = 10
+            N_batch = int(len(data['test_file_names']) / batch_size)
+            pp = ED.image_pipeline.FACE_pipeline(
+                histogram_normalization=True,
+                grayscale=True,
+                resize=True,
+                rotation_range=3,
+                width_shift_range=0.03,
+                height_shift_range=0.03,
+                zoom_range=0.03,
+                random_flip=True,
+            )
+            def get_y_hat(test_file_names):
+                file_names_batch = np.reshape(test_file_names, [N_batch, batch_size])
+                yhat_arr = []
+                for file_bath in file_names_batch:
+                    imgs = []
+                    for filename in file_bath:
+                        img = cv2.imread(filename)
+                        imgs.append(img)
+                    img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+                    pred = vae_model.testWithSavedModel(img_arr)
+                    yhat_arr.append(pred)
+                return np.concatenate(yhat_arr)
 
-        y_hat = get_y_hat(data['test_file_names'])
-        print(y_hat.shape)
-        save_path="./logs/result/test_test/"
-        print_summary(y_hat, data['y_lab'], log_dir=save_path + FLAGS.test_log_file + ".txt")
+            y_hat = get_y_hat(data['test_file_names'])
+            print(y_hat.shape)
+            save_path="./logs/result/test_test/" + FLAGS.test_log_file
+            print_summary(y_hat, data['y_lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
 
