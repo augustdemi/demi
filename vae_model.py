@@ -80,6 +80,5 @@ class VAE:
             print("loadWeihgt_maml : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
 
     def testWithSavedModel(self, x):
-        print("z_int weight : ", self.model_z_int.get_weights()[-2:])
         z, pred = self.model_z_int.predict(x, batch_size=len(x))
         return pred
