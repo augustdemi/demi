@@ -288,7 +288,7 @@ def main():
         test_subjects = os.listdir(FLAGS.test_dir)
         test_subjects.sort()
         for test_subject in test_subjects:
-            data = pickle.load(open(FLAGS.test_dir + test_subjects, "rb"), encoding='latin1')
+            data = pickle.load(open(FLAGS.test_dir + test_subject, "rb"), encoding='latin1')
 
             batch_size = 10
             N_batch = int(len(data['test_file_names']) / batch_size)
@@ -315,10 +315,11 @@ def main():
                     yhat_arr.append(pred)
                 return np.concatenate(yhat_arr)
 
-            y_hat = get_y_hat(data['test_file_names'])
+            print(test_subject.split(".")[0], " total len:" , len(data['test_file_names']))
+            y_hat = get_y_hat(data['test_file_names'][:4600])
             print(y_hat.shape)
             save_path="./logs/result/test_test/" + FLAGS.test_log_file
-            print_summary(y_hat, data['y_lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
+            print_summary(y_hat, data['y_lab'][:4600], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
 
