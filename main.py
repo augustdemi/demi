@@ -291,7 +291,7 @@ def main():
             data = pickle.load(open(FLAGS.test_dir + test_subject, "rb"), encoding='latin1')
 
             batch_size = 10
-            N_batch = int(len(data['test_file_names']) / batch_size)
+            N_batch = int(4600 / batch_size)
             pp = ED.image_pipeline.FACE_pipeline(
                 histogram_normalization=True,
                 grayscale=True,
