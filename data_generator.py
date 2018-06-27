@@ -80,12 +80,6 @@ class DataGenerator(object):
 
             all_filenames.extend(filenames) # just for debugging
 
-        print("all_filenames: ", all_filenames)
-        print("inputa_files: ", inputa_files)
-        print("inputb_files: ", inputb_files)
-        print("labela: ", labelas)
-        print("labelb: ", labelbs)
-        print("=========================================================================")
         #################################################################################
 
 
