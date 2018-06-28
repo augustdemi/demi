@@ -32,6 +32,7 @@ from maml import MAML
 from tensorflow.python.platform import flags
 from datetime import datetime
 import os
+
 start_time = datetime.now()
 FLAGS = flags.FLAGS
 
@@ -43,11 +44,13 @@ flags.DEFINE_string('baseline', None, 'oracle, or None')
 
 ## Training options
 flags.DEFINE_integer('pretrain_iterations', 0, 'number of pre-training iterations.')
-flags.DEFINE_integer('metatrain_iterations', 100, 'number of metatraining iterations.') # 15k for omniglot, 50k for sinusoid
+flags.DEFINE_integer('metatrain_iterations', 100,
+                     'number of metatraining iterations.')  # 15k for omniglot, 50k for sinusoid
 flags.DEFINE_integer('meta_batch_size', 14, 'number of tasks sampled per meta-update')
 flags.DEFINE_float('meta_lr', 0.001, 'the base learning rate of the generator')
-flags.DEFINE_integer('update_batch_size', 5, 'number of examples used for inner gradient update (K for K-shot learning).')
-flags.DEFINE_float('update_lr', 1e-3, 'step size alpha for inner gradient update.') # 0.1 for omniglot
+flags.DEFINE_integer('update_batch_size', 5,
+                     'number of examples used for inner gradient update (K for K-shot learning).')
+flags.DEFINE_float('update_lr', 1e-3, 'step size alpha for inner gradient update.')  # 0.1 for omniglot
 flags.DEFINE_integer('num_updates', 1, 'number of inner gradient updates during training.')
 
 ## Model options
@@ -64,20 +67,26 @@ flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest mo
 flags.DEFINE_integer('num_test_pts', 1, 'number of iteration to increase the test points')
 flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, False for the validation set.')
 flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
-flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
-flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step during training. (use if you want to test with a different value)') # 0.1 for omniglot
-
-flags.DEFINE_integer('train_start_idx', 0, 'start index of task for training')
-flags.DEFINE_integer('test_start_idx', 14, 'start index of task for test')
-flags.DEFINE_integer('test_num', 1, 'num of task for test')
+flags.DEFINE_integer('train_update_batch_size', -1,
+                     'number of examples used for gradient update during training (use if you want to test with a different number).')
+flags.DEFINE_float('train_update_lr', -1,
+                   'value of inner gradient step step during training. (use if you want to test with a different value)')  # 0.1 for omniglot
 
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 flags.DEFINE_bool('train_test', False, 're-train model')
 flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
 flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
+# for train, train_test
+flags.DEFINE_integer('train_start_idx', 0, 'start index of task for training')
+# for test_test, test_train
+flags.DEFINE_integer('test_start_idx', 14, 'start index of task for test')
+flags.DEFINE_integer('test_num', 1, 'num of task for test')
 flags.DEFINE_string('testset_dir', './data/1/', 'directory for test set')
 flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log')
-flags.DEFINE_string('keep_train_dir', None, 'directory to read already trained model when training the model again with test set')
+# for train_test, test_test
+flags.DEFINE_string('keep_train_dir', None,
+                    'directory to read already trained model when training the model again with test set')
+
 
 def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
@@ -86,12 +95,9 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
     if FLAGS.train_test:
         resume_itr = 0
 
-
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
     print('Done initializing, starting training.')
-
-
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
         feed_dict = {}
@@ -102,8 +108,8 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
 
         # SUMMARY_INTERVAL 혹은 PRINT_INTERVAL 마다 accuracy 계산해둠
         if (itr % SUMMARY_INTERVAL == 0):
-            input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates-1]])
-            input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates-1]])
+            input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates - 1]])
+            input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
             input_tensors.extend([model.result1, model.result2])
         result = sess.run(input_tensors, feed_dict)
 
@@ -111,32 +117,50 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
         if itr % SUMMARY_INTERVAL == 0:
             if FLAGS.log:
                 train_writer.add_summary(result[1], itr)
-            if itr!=0:
+            if itr != 0:
                 if itr < FLAGS.pretrain_iterations:
                     print_str = 'Pretrain Iteration ' + str(itr)
                 else:
                     print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
                 print(print_str)
-                y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
+                y_hata = np.vstack(np.array(result[-2][0]))  # length = num_of_task * N * K
                 y_laba = np.vstack(np.array(result[-2][1]))
-                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':'+ str(
-                    FLAGS.meta_batch_size) +'.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/train"
+                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
+                    FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':' + str(
+                    FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
+                    FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/train"
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
+
+                save_path = "./logs/result/"
+                if FLAGS.train_test:
+                    retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                        FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                        FLAGS.num_updates) + '.updatelr' + str(
+                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                    save_path += retrained_model_dir
+                save_path += '/train'
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
+
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
                 print("------------------------------------------------------------------------------------")
-                recent_y_hatb = np.array(result[-1][0][FLAGS.num_updates-1]) # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
+                recent_y_hatb = np.array(result[-1][0][
+                                             FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
                 y_hatb = np.vstack(recent_y_hatb)
-                recent_y_labb = np.array(result[-1][1][FLAGS.num_updates-1])
+                recent_y_labb = np.array(result[-1][1][FLAGS.num_updates - 1])
                 y_labb = np.vstack(recent_y_labb)
                 print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + str(itr) + ".txt")
                 print("====================================================================================")
 
-
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
-        if (itr == 100) or ((itr!=0) and itr % SAVE_INTERVAL == 0):
+        if (itr == 100) or ((itr != 0) and itr % SAVE_INTERVAL == 0):
             if FLAGS.train_test:
-                retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':'+ str(FLAGS.meta_batch_size)
+                retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                    FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                    FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+
                 save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
@@ -145,7 +169,7 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
     if FLAGS.train_test:
-        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':'+ str(FLAGS.meta_batch_size)
+        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(FLAGS.meta_batch_size)
         save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
@@ -154,41 +178,42 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
         saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-
 def test(model, saver, sess, trained_model_dir, data_generator):
-
     result_arr = []
-    NUM_TEST_POINTS=FLAGS.num_test_pts
+    NUM_TEST_POINTS = FLAGS.num_test_pts
     print("===========================================================================")
 
     for _ in range(NUM_TEST_POINTS):
-        feed_dict = {model.meta_lr: 0.0} # do not optimize in test because it needs to be iterated.
+        feed_dict = {model.meta_lr: 0.0}  # do not optimize in test because it needs to be iterated.
         input_tensor = [model.metaval_result1, model.metaval_result2]
         result = sess.run(input_tensor, feed_dict)
         result_arr.append(result)
 
-    save_path="./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/test/" + str(FLAGS.test_iter)
+    save_path = "./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(
+        FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
+        FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/test/" + str(FLAGS.test_iter)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    i=0
+    i = 0
     for result in result_arr:
-        y_hata = np.array(result[0][0])[0] # result[0][0]=y_hata: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label); test task는 항상 1개니까 0인덱스만 불러와도 상관없음
+        y_hata = np.array(result[0][0])[
+            0]  # result[0][0]=y_hata: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label); test task는 항상 1개니까 0인덱스만 불러와도 상관없음
         y_laba = np.array(result[0][1])[0]
 
-        y_hatb = result[1][0][FLAGS.num_updates-1][0] #result[1][0]=y_hat: has (num_updates) elts. We see only the recent elt.==>result[1][0][FLAGS.num_updates-1]: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label)
-        y_labb = result[1][1][FLAGS.num_updates-1][0]
+        y_hatb = result[1][0][FLAGS.num_updates - 1][
+            0]  # result[1][0]=y_hat: has (num_updates) elts. We see only the recent elt.==>result[1][0][FLAGS.num_updates-1]: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label)
+        y_labb = result[1][1][FLAGS.num_updates - 1][0]
 
-        print_summary(y_hata, y_laba, log_dir= save_path + "/outa_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
+        print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
         print("------------------------------------------------------------------------------------")
 
-        print_summary(y_hatb, y_labb, log_dir= save_path + "/outb_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
+        print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
         print("====================================================================================")
-        i+=1
+        i += 1
 
 
-
-def test_test(w,b,trained_model_dir): # In case when test the model with the whole rest frames
+def test_test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -229,7 +254,7 @@ def test_test(w,b,trained_model_dir): # In case when test the model with the who
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
-    test_subjects = test_subjects[FLAGS.test_start_idx -14:FLAGS.test_start_idx -14 + FLAGS.test_num]
+    test_subjects = test_subjects[FLAGS.test_start_idx - 14:FLAGS.test_start_idx - 14 + FLAGS.test_num]
     print("test_subjects: ", test_subjects)
 
     for test_subject in test_subjects:
@@ -250,7 +275,6 @@ def test_test(w,b,trained_model_dir): # In case when test the model with the who
 
 
 def main():
-
     if FLAGS.train == False:
         orig_meta_batch_size = FLAGS.meta_batch_size
         # always use meta batch size of 1 when testing.
@@ -269,10 +293,10 @@ def main():
         # inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])  #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
         # labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])  #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
         # labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
-        inputa, inputb, labela, labelb= data_generator.make_data_tensor()
+        inputa, inputb, labela, labelb = data_generator.make_data_tensor()
         input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
     else:
-        inputa, inputb, labela, labelb= data_generator.make_data_tensor(train=False)
+        inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
         metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
@@ -287,7 +311,6 @@ def main():
 
     sess = tf.InteractiveSession()
 
-
     if not FLAGS.train:
         # change to original meta batch size when loading model.
         FLAGS.meta_batch_size = orig_meta_batch_size
@@ -297,13 +320,17 @@ def main():
     if FLAGS.train_update_lr == -1:
         FLAGS.train_update_lr = FLAGS.update_lr
 
-
-    trained_model_dir = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+    trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
+        FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
     if FLAGS.train_test:
-        trained_model_dir = FLAGS.keep_train_dir #TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
+        trained_model_dir = FLAGS.keep_train_dir  # TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
     elif FLAGS.test_test:
-        trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num)
-
+        trained_model_dir = FLAGS.keep_train_dir
+        trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
+            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+    print(">>>>> trained_model_dir: ", trained_model_dir)
 
     # if FLAGS.stop_grad:
     #     trained_model_dir += 'stopgrad'
@@ -327,7 +354,6 @@ def main():
     print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
-
     if FLAGS.resume or not FLAGS.train:
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
@@ -340,7 +366,7 @@ def main():
             print(">>>> model_file2: ", model_file)
         if model_file:
             ind1 = model_file.index('model')
-            resume_itr = int(model_file[ind1+5:])
+            resume_itr = int(model_file[ind1 + 5:])
             print("Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
             w = sess.run('model/w1:0').tolist()
@@ -350,7 +376,7 @@ def main():
             print("=====================================================================================")
 
     if FLAGS.test_test or FLAGS.test_train:
-            test_test(w,b,trained_model_dir)
+        test_test(w, b, trained_model_dir)
     else:
         if FLAGS.train:
             train(model, saver, sess, trained_model_dir, data_generator, resume_itr)
@@ -361,5 +387,7 @@ def main():
     print("=======================================================")
     print(">>>>>> elapse time: " + str(elapse))
     print("=======================================================")
+
+
 if __name__ == "__main__":
     main()
