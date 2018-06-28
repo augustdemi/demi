@@ -72,7 +72,7 @@ flags.DEFINE_integer('test_start_idx', 14, 'start index of task for test')
 flags.DEFINE_integer('test_num', 1, 'num of task for test')
 
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
-flags.DEFINE_bool('train_train', False, 're-train model')
+flags.DEFINE_bool('train_test', False, 're-train model')
 flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
 flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
 flags.DEFINE_string('testset_dir', './data/1/', 'directory for test set')
@@ -83,7 +83,7 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
 
-    if FLAGS.train_train:
+    if FLAGS.train_test:
         resume_itr = 0
 
 
@@ -135,7 +135,7 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr == 100) or ((itr!=0) and itr % SAVE_INTERVAL == 0):
-            if FLAGS.train_train:
+            if FLAGS.train_test:
                 retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':'+ str(FLAGS.meta_batch_size)
                 save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
                 if not os.path.exists(save_path):
@@ -144,7 +144,7 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
             else:
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
-    if FLAGS.train_train:
+    if FLAGS.train_test:
         retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':'+ str(FLAGS.meta_batch_size)
         save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
         if not os.path.exists(save_path):
@@ -297,7 +297,7 @@ def main():
 
 
     trained_model_dir = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
-    if FLAGS.train_train:
+    if FLAGS.train_test:
         trained_model_dir = FLAGS.keep_train_dir #TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
     elif FLAGS.test_test:
         trained_model_dir += '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(FLAGS.meta_batch_size)
