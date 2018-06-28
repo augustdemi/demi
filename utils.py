@@ -21,8 +21,8 @@ def get_images(path, label_int, nb_samples=None, shuffle=False):
         for i, label in zip(label_int, labels)\
         for image in sampler(os.listdir(os.path.join(path, label)))]
 
-    if shuffle:
-        random.shuffle(images)
+    # if shuffle:
+    #     random.shuffle(images)
     return images
 
 ## Network helpers

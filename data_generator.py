@@ -58,7 +58,7 @@ class DataGenerator(object):
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders: # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
-            labels_and_images = get_images(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=False)
+            labels_and_images = get_images(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=True)
             # make sure the above isn't randomized order
             labels = [li[0] for li in labels_and_images] # 0 0 1 1 = off off on on
             filenames = [li[1] for li in labels_and_images]
