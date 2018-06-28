@@ -117,7 +117,8 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
                 print(print_str)
                 y_hata = np.vstack(np.array(result[-2][0])) #length = num_of_task * N * K
                 y_laba = np.vstack(np.array(result[-2][1]))
-                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/train"
+                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':'+ str(
+                    FLAGS.meta_batch_size) +'.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) +"/train"
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
