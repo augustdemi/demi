@@ -43,7 +43,7 @@ flags.DEFINE_string('baseline', None, 'oracle, or None')
 
 ## Training options
 flags.DEFINE_integer('pretrain_iterations', 0, 'number of pre-training iterations.')
-flags.DEFINE_integer('metatrain_iterations', 15000, 'number of metatraining iterations.') # 15k for omniglot, 50k for sinusoid
+flags.DEFINE_integer('metatrain_iterations', 100, 'number of metatraining iterations.') # 15k for omniglot, 50k for sinusoid
 flags.DEFINE_integer('meta_batch_size', 14, 'number of tasks sampled per meta-update')
 flags.DEFINE_float('meta_lr', 0.001, 'the base learning rate of the generator')
 flags.DEFINE_integer('update_batch_size', 5, 'number of examples used for inner gradient update (K for K-shot learning).')
@@ -66,25 +66,29 @@ flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, F
 flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
 flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for gradient update during training (use if you want to test with a different number).')
 flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step during training. (use if you want to test with a different value)') # 0.1 for omniglot
+
+flags.DEFINE_integer('train_start_idx', 0, 'start index of task for training')
+
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 
 flags.DEFINE_bool('test_test', False, 'test_test')
-flags.DEFINE_string('test_dir', './data/1/', 'directory for test set')
-flags.DEFINE_string('test_log_file', 'robert', 'directory for test log')
-flags.DEFINE_integer('start_idx', 14, 'directory for summaries and checkpoints.')
-flags.DEFINE_integer('end_idx', 26, 'directory for summaries and checkpoints.')
-flags.DEFINE_integer('test_num', 100, 'number of instances for each subject')
+flags.DEFINE_string('testset_dir', './data/1/', 'directory for test set')
+flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log')
 
-def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
+flags.DEFINE_string('keep_train_dir', None, 'directory to read already trained model when training the model again with test set')
+
+def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
-    TEST_PRINT_INTERVAL = SUMMARY_INTERVAL * 5
 
+    if FLAGS.keep_train_dir is not None:
+        resume_itr = 0
 
 
     if FLAGS.log:
-        train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + exp_string, sess.graph)
+        train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
     print('Done initializing, starting training.')
+
 
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
@@ -128,14 +132,24 @@ def train(model, saver, sess, exp_string, data_generator, resume_itr=0):
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr == 100) or ((itr!=0) and itr % SAVE_INTERVAL == 0):
-            saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
+            if FLAGS.keep_train_dir is not None:
+                retrained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.sbjt_' + str(FLAGS.train_start_idx) + ':'+ str(
+                    FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                    FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
+                    FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+                save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
+                saver.save(sess, save_path + '/model' + str(itr))
+            else:
+                saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-    saver.save(sess, FLAGS.logdir + '/' + exp_string + '/model' + str(itr))
+    saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
 
-def test(model, saver, sess, exp_string, data_generator):
+def test(model, saver, sess, trained_model_dir, data_generator):
 
     result_arr = []
     NUM_TEST_POINTS=FLAGS.num_test_pts
@@ -167,6 +181,62 @@ def test(model, saver, sess, exp_string, data_generator):
         i+=1
 
 
+
+def test_test(w,b): # In case when test the model with the whole rest frames
+    from vae_model import VAE
+    import EmoData as ED
+    import cv2
+    import pickle
+    vae_model = VAE((160, 240, 1), (1, 2))
+    vae_model.loadWeight("./model78.h5", w, b)
+
+    pp = ED.image_pipeline.FACE_pipeline(
+        histogram_normalization=True,
+        grayscale=True,
+        resize=True,
+        rotation_range=3,
+        width_shift_range=0.03,
+        height_shift_range=0.03,
+        zoom_range=0.03,
+        random_flip=True,
+    )
+
+    def predict_label(file_path):
+        imgs = []
+        for filename in file_path:
+            img = cv2.imread(filename)
+            imgs.append(img)
+        img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+        return vae_model.testWithSavedModel(img_arr)
+
+    def get_y_hat(test_file_names):
+        file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
+
+        yhat_arr = []
+        for file_path in file_names_batch:
+            pred = predict_label(file_path)
+            yhat_arr.extend(pred)
+        if N_batch * batch_size != len(data['test_file_names']):
+            rest_pred = predict_label(test_file_names[N_batch * batch_size:])
+            yhat_arr.extend(rest_pred)
+        return np.array(yhat_arr)
+
+    test_subjects = os.listdir(FLAGS.testset_dir)
+    test_subjects.sort()
+
+    for test_subject in test_subjects:
+        data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
+
+        batch_size = 10
+        N_batch = int(len(data['test_file_names']) / batch_size)
+
+        print(test_subject.split(".")[0], " total len:", len(data['test_file_names']))
+        y_hat = get_y_hat(data['test_file_names'])
+        print(y_hat.shape)
+        save_path = "./logs/result/test_test/" + FLAGS.test_result_dir
+        print_summary(y_hat, data['y_lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
+
+
 def main():
 
     if FLAGS.train == False:
@@ -177,15 +247,7 @@ def main():
     data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
 
     dim_output = data_generator.num_classes
-    if FLAGS.baseline == 'oracle':
-        assert FLAGS.datasource == 'sinusoid'
-        dim_input = 3
-        FLAGS.pretrain_iterations += FLAGS.metatrain_iterations
-        FLAGS.metatrain_iterations = 0
-    else:
-        dim_input = data_generator.dim_input
-
-    num_classes = data_generator.num_classes
+    dim_input = data_generator.dim_input
 
     if FLAGS.train:  # only construct training model if needed
 
@@ -223,42 +285,38 @@ def main():
     if FLAGS.train_update_lr == -1:
         FLAGS.train_update_lr = FLAGS.update_lr
 
-    exp_string = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+    trained_model_dir = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+
+    if FLAGS.keep_train_dir is not None:
+        trained_model_dir = FLAGS.keep_train_dir
 
 
-    if FLAGS.stop_grad:
-        exp_string += 'stopgrad'
-    if FLAGS.baseline:
-        exp_string += FLAGS.baseline
-
-    else:
-        print('Norm setting not recognized.')
-
-
-
+    # if FLAGS.stop_grad:
+    #     trained_model_dir += 'stopgrad'
+    # if FLAGS.baseline:
+    #     trained_model_dir += FLAGS.baseline
+    # else:
+    #     print('Norm setting not recognized.')
 
 
     resume_itr = 0
 
-
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
 
-    # print(sess.run(metaval_input_tensors))
-    # print(sess.run(input_tensors))
     print("========================================================================================")
     print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print('weights from vae : ', pred_weights)
     if FLAGS.init_weight:
         model.weights['w1'].load(pred_weights[0], sess)
         model.weights['b1'].load(pred_weights[1], sess)
-    print('updated weights from vae: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+    print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
 
     if FLAGS.resume or not FLAGS.train:
         model_file = None
-        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + exp_string)
+        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
         w = None
         b = None
         print(">>>> model_file1: ", model_file)
@@ -278,64 +336,12 @@ def main():
             print("=====================================================================================")
 
     if FLAGS.test_test:
-        from vae_model import VAE
-        import EmoData as ED
-        import cv2
-        import pickle
-        vae_model = VAE((160, 240, 1), (1, 2))
-        vae_model.loadWeight("./model78.h5", w,b)
-
-        pp = ED.image_pipeline.FACE_pipeline(
-            histogram_normalization=True,
-            grayscale=True,
-            resize=True,
-            rotation_range=3,
-            width_shift_range=0.03,
-            height_shift_range=0.03,
-            zoom_range=0.03,
-            random_flip=True,
-        )
-
-        def predict_label(file_path):
-            imgs = []
-            for filename in file_path:
-                img = cv2.imread(filename)
-                imgs.append(img)
-            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-            return vae_model.testWithSavedModel(img_arr)
-
-        def get_y_hat(test_file_names):
-            file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
-
-            yhat_arr = []
-            for file_path in file_names_batch:
-                pred = predict_label(file_path)
-                yhat_arr.extend(pred)
-            if N_batch * batch_size != len(data['test_file_names']):
-                rest_pred = predict_label(test_file_names[N_batch * batch_size:])
-                yhat_arr.extend(rest_pred)
-            return np.array(yhat_arr)
-
-        test_subjects = os.listdir(FLAGS.test_dir)
-        test_subjects.sort()
-
-        for test_subject in test_subjects:
-            data = pickle.load(open(FLAGS.test_dir + test_subject, "rb"), encoding='latin1')
-
-            batch_size = 10
-            N_batch = int(len(data['test_file_names']) / batch_size)
-
-            print(test_subject.split(".")[0], " total len:" , len(data['test_file_names']))
-            y_hat = get_y_hat(data['test_file_names'])
-            print(y_hat.shape)
-            save_path="./logs/result/test_test/" + FLAGS.test_log_file
-            print_summary(y_hat, data['y_lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
-
+            test_test(w,b)
     else:
         if FLAGS.train:
-            train(model, saver, sess, exp_string, data_generator, resume_itr)
+            train(model, saver, sess, trained_model_dir, data_generator, resume_itr)
         else:
-            test(model, saver, sess, exp_string, data_generator)
+            test(model, saver, sess, trained_model_dir, data_generator)
     end_time = datetime.now()
     elapse = end_time - start_time
     print("=======================================================")

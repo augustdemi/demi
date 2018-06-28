@@ -33,13 +33,9 @@ class DataGenerator(object):
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
         num_val = 0
         num_train = FLAGS.meta_batch_size
-        self.metatrain_character_folders = subject_folders[:num_train]
+        self.metatrain_character_folders = subject_folders[FLAGS.train_start_idx:FLAGS.train_start_idx + num_train]
         if FLAGS.test_set: # In test, runs only one test task for the entered subject
             self.metaval_character_folders = [subject_folders[FLAGS.subject_idx]]
-            # self.metaval_character_folders = subject_folders[FLAGS.subject_idx:]
-        else:
-            self.metaval_character_folders = subject_folders[num_train:num_train + num_val]
-        self.rotations = config.get('rotations', [0])
 
 
     def make_data_tensor(self, train=True):
