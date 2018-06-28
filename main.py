@@ -68,20 +68,22 @@ flags.DEFINE_integer('train_update_batch_size', -1, 'number of examples used for
 flags.DEFINE_float('train_update_lr', -1, 'value of inner gradient step step during training. (use if you want to test with a different value)') # 0.1 for omniglot
 
 flags.DEFINE_integer('train_start_idx', 0, 'start index of task for training')
+flags.DEFINE_integer('test_start_idx', 14, 'start index of task for test')
+flags.DEFINE_integer('test_num', 1, 'num of task for test')
 
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
-
-flags.DEFINE_bool('test_test', False, 'test_test')
+flags.DEFINE_bool('train_train', False, 're-train model')
+flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
+flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
 flags.DEFINE_string('testset_dir', './data/1/', 'directory for test set')
 flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log')
-
 flags.DEFINE_string('keep_train_dir', None, 'directory to read already trained model when training the model again with test set')
 
 def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
 
-    if FLAGS.keep_train_dir is not None:
+    if FLAGS.train_train:
         resume_itr = 0
 
 
@@ -133,11 +135,8 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr == 100) or ((itr!=0) and itr % SAVE_INTERVAL == 0):
-            if FLAGS.keep_train_dir is not None:
-                retrained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.sbjt_' + str(FLAGS.train_start_idx) + ':'+ str(
-                    FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
-                    FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
-                    FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+            if FLAGS.train_train:
+                retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':'+ str(FLAGS.meta_batch_size)
                 save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
@@ -145,8 +144,14 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
             else:
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
-
-    saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
+    if FLAGS.train_train:
+        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':'+ str(FLAGS.meta_batch_size)
+        save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        saver.save(sess, save_path + '/model' + str(itr))
+    else:
+        saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
 
@@ -183,7 +188,7 @@ def test(model, saver, sess, trained_model_dir, data_generator):
 
 
 
-def test_test(w,b): # In case when test the model with the whole rest frames
+def test_test(w,b,trained_model_dir): # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -224,6 +229,8 @@ def test_test(w,b): # In case when test the model with the whole rest frames
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
+    test_subjects = test_subjects[FLAGS.test_start_idx -14:FLAGS.test_start_idx -14 + FLAGS.test_num]
+    print("test_subjects: ", test_subjects)
 
     for test_subject in test_subjects:
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
@@ -234,7 +241,9 @@ def test_test(w,b): # In case when test the model with the whole rest frames
         print(test_subject.split(".")[0], " total len:", len(data['test_file_names']))
         y_hat = get_y_hat(data['test_file_names'])
         print(y_hat.shape)
-        save_path = "./logs/result/test_test/" + FLAGS.test_result_dir
+        save_path = "./logs/result/test_test/" + trained_model_dir
+        if FLAGS.test_train:
+            save_path = "./logs/result/test_train/" + trained_model_dir
         print_summary(y_hat, data['y_lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
@@ -277,7 +286,7 @@ def main():
     sess = tf.InteractiveSession()
 
 
-    if FLAGS.train == False:
+    if not FLAGS.train:
         # change to original meta batch size when loading model.
         FLAGS.meta_batch_size = orig_meta_batch_size
 
@@ -286,10 +295,12 @@ def main():
     if FLAGS.train_update_lr == -1:
         FLAGS.train_update_lr = FLAGS.update_lr
 
-    trained_model_dir = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
 
-    if FLAGS.keep_train_dir is not None:
-        trained_model_dir = FLAGS.keep_train_dir
+    trained_model_dir = 'cls_'+str(FLAGS.num_classes)+'.mbs_'+str(FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+    if FLAGS.train_train:
+        trained_model_dir = FLAGS.keep_train_dir #TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
+    elif FLAGS.test_test:
+        trained_model_dir += '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(FLAGS.meta_batch_size)
 
 
     # if FLAGS.stop_grad:
@@ -336,8 +347,8 @@ def main():
             print('resume_itr: ', resume_itr)
             print("=====================================================================================")
 
-    if FLAGS.test_test:
-            test_test(w,b)
+    if FLAGS.test_test or FLAGS.test_train:
+            test_test(w,b,trained_model_dir)
     else:
         if FLAGS.train:
             train(model, saver, sess, trained_model_dir, data_generator, resume_itr)
