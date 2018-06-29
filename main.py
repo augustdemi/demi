@@ -169,7 +169,10 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
     if FLAGS.train_test:
-        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(FLAGS.meta_batch_size)
+        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+            FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+            FLAGS.num_updates) + '.updatelr' + str(
+            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
         save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
