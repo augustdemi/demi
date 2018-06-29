@@ -46,7 +46,7 @@ flags.DEFINE_string('baseline', None, 'oracle, or None')
 flags.DEFINE_integer('pretrain_iterations', 0, 'number of pre-training iterations.')
 flags.DEFINE_integer('metatrain_iterations', 100,
                      'number of metatraining iterations.')  # 15k for omniglot, 50k for sinusoid
-flags.DEFINE_integer('meta_batch_size', 14, 'number of tasks sampled per meta-update')
+flags.DEFINE_integer('meta_batch_size', 1, 'number of tasks sampled per meta-update')
 flags.DEFINE_float('meta_lr', 0.001, 'the base learning rate of the generator')
 flags.DEFINE_integer('update_batch_size', 5,
                      'number of examples used for inner gradient update (K for K-shot learning).')
