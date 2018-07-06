@@ -39,7 +39,7 @@ TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
 
 
 pp = ED.image_pipeline.FACE_pipeline(
-        histogram_normalization=True,
+        # histogram_normalization=True,
         grayscale=True,
         resize=True,
         rotation_range = 3,
@@ -64,23 +64,23 @@ def generator(dat_dict, aug, mod=0, s=False):
         lab = lab[:,6]
         lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         if mod==1:
-            if(s): yield [img], [lab], [sub]
-            else: yield [img], [lab]
+            if(s): yield [img], [img], [sub]
+            else: yield [img], [img]
         else:
             if(s): yield [img], [img, lab, img], [sub]
             else: yield [img], [img, lab, img]
 
 
-GEN_TR = generator(TR, True) # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
-GEN_TE = generator(TE, False)
+GEN_TR = generator(TR, aug=True, mod=1) # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
+GEN_TE = generator(TE, aug=False, mod=1)
 
 # X,Y,C dimenstion # ========================== start ==========================
 X, Y = next(GEN_TR) # train data의 X = img batches , y = [img, lab, img]
 inp_0_shape = X[0].shape[1:]
-out_0_shape = Y[1].shape[1:]
-
-print("inp_0_shape", inp_0_shape)
-print("out_0_shape", out_0_shape)
+# out_0_shape = Y[1].shape[1:]
+#
+# print("inp_0_shape", inp_0_shape)
+# print("out_0_shape", out_0_shape)
 inp_0       = Input(shape=inp_0_shape) # 케라스의 텐서 선언 ???????? input shape만을 위해 X를 사용하고 데이터 사용 더이상 안함? 텐서는 사이즈만으로 뭘함?
 emb, shape  = EE.networks.encoder(inp_0, norm=1) # conv넷을 여러번 씌워준 결과 emb와 그 shape ???????????????????.
 
@@ -105,7 +105,7 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
 z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma]) # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
 aug_z = Reshape((2000,1))(z_mean)
-out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(aug_z) # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
+# out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(aug_z) # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
 
 D1 = Dense(latent_dim, activation='relu')
@@ -132,13 +132,24 @@ def pred_loss(y_true, y_pred):
     ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     return (1-w_1)*ce
 
-loss  = [rec_loss, pred_loss, vae_loss]
+# loss  = [rec_loss, pred_loss, vae_loss]
 
-model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
 
-model_rec_z = K.models.Model([inp_0], [out_0, z_mean])
-model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
-model_au_int= K.models.Model([inp_0], [out_1]) #??????????????????
+def vae_loss2(img, rec):
+    """ Calculate loss = reconstruction loss + KL loss for each data in minibatch """
+    # E[log P(X|z)]
+    recon = KB.mean(KB.mean(KB.mean(KB.square(img - rec), axis=-1),-1),-1)
+    # D_KL(Q(z|X) || P(z|X)); calculate in closed form as both dist. are Gaussian
+    kl = - 0.5 * KB.mean(1 + z_log_sigma - KB.square(z_mean) - KB.exp(z_log_sigma), axis=-1)
+
+    return recon + kl
+
+loss = vae_loss2
+model_train = K.models.Model(inp_0, out_0) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
+
+model_rec_z = K.models.Model(inp_0, [out_0, z_mean])
+# model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
+# model_au_int= K.models.Model([inp_0], [out_1]) #??????????????????
 
 inp_1 = Input(shape=[2000]) # latent dim 사이즈의 input 텐서
 h1 = D1(inp_1)
@@ -146,10 +157,10 @@ x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 
 out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
 
 
-rec = K.models.Model(inp_1, out_11)
-if source_data!='init':
-    rec.load_weights('./model_vae/model.h5', by_name=True) # ========================== weight ==========================
-
+# rec = K.models.Model(inp_1, out_11)
+# if source_data!='init':
+#     rec.load_weights('./model_vae/model.h5', by_name=True) # ========================== weight ==========================
+#
 
 model_train.compile(
         optimizer = K.optimizers.Adadelta(
@@ -161,31 +172,24 @@ model_train.compile(
         loss = loss
         )
 
-
+ww = model_train.get_weights()
+model_train.summary()
 model_train.fit_generator(
         generator = GEN_TR,
-        samples_per_epoch = 1000, #number of samples to process before going to the next epoch.
+        samples_per_epoch = 30, #number of samples to process before going to the next epoch.
         validation_data=GEN_TE, # integer, total number of iterations on the data.
         nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
         nb_epoch = nb_iter,
         max_q_size = 4,
         callbacks=[
-            EE.callbacks.summary_multi_output(
-                gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
-                predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
-                batch_size = batch_size,
-                title = ['TR','TE'],
-                one_hot = True,
-                log_dir = 'res_disfa_'+str(args.warming).zfill(4)+'.csv/' + str(args.kfold),
-            ),
-            EE.callbacks.summary_vac_disfa(
-                gen = generator(TE, False, s=True), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
-                predictor = model_rec_z_y.predict, # reconstructed x와 z mean얻어냄
+            EE.callbacks.summary_rec(
+                gen = generator(TE, aug=False, mod=1), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
+                predictor = model_rec_z.predict, # reconstructed x와 z mean얻어냄
                 log_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold),
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint('./model.h5'),
+            K.callbacks.ModelCheckpoint('./modelnew.h5'),
             ]
         )
 
@@ -194,3 +198,5 @@ elapse = end_time - start_time
 print("=======================================================")
 print(">>>>>> elapse time: " + str(elapse))
 print("=======================================================")
+
+
