@@ -18,22 +18,21 @@ class summary_rec(Callback):
         self.batch_size = batch_size
 
         # generate data from N batchs
-        X, Y = [], []
+        X, Y, S = [], [] ,[]
         for i in range(nb_batches):
-            x, y = next(gen)
+            x, y, s = next(gen)
             X.append(x)
+            S.append(s)
 
-        #        print("1111")
-        #        print(Y)
 
         X = list(map(list, zip(*X)))
         X = [np.vstack(i) for i in X]
+        S = list(map(list, zip(*S)))
+        S = [np.vstack(i) for i in S]
 
+        self.S = S
         self.X = X
 
-    # def set_model(self, model):
-    #     self.sess = K.get_session()
-    #     self.model = model
 
     def on_epoch_end(self, epoch, logs={}):
         REC, Z = self.predictor(self.X, batch_size=self.batch_size)
@@ -49,7 +48,7 @@ class summary_rec(Callback):
         #       print(Y_hat)
         import pickle
         z_out = open(path, 'wb')
-        pickle.dump({'z': Z, 'y': self.Y[1]}, z_out, protocol=2)
+        pickle.dump({'z': Z, 's':self.S}, z_out, protocol=2)
 
         # ==============================================
 

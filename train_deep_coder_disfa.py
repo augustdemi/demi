@@ -176,14 +176,14 @@ ww = model_train.get_weights()
 model_train.summary()
 model_train.fit_generator(
         generator = GEN_TR,
-        samples_per_epoch = 30, #number of samples to process before going to the next epoch.
+        samples_per_epoch = 1000, #number of samples to process before going to the next epoch.
         validation_data=GEN_TE, # integer, total number of iterations on the data.
         nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
         nb_epoch = nb_iter,
         max_q_size = 4,
         callbacks=[
             EE.callbacks.summary_rec(
-                gen = generator(TE, aug=False, mod=1), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
+                gen = generator(TE, aug=False, mod=1, s=True), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
                 predictor = model_rec_z.predict, # reconstructed x와 z mean얻어냄
                 log_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold),
                 nb_batches=10,
