@@ -70,7 +70,7 @@ class VAE:
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         return self.model_train.get_weights()[-2:], z
 
-
+    # only for test_test.(test_test는 사실 test_train 케이스도 포함임. 그래서 test_train인 경우 = w,b모두 None인 경우, 그냥 로버트 모델을 로드해서 씀)
     def loadWeight(self, weight_dir, w=None, b=None):
         self.model_train.load_weights(weight_dir)
         print("loadWeihgt_robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
@@ -79,6 +79,7 @@ class VAE:
             self.model_train.layers[35].weights[1].load(np.array(b))
             print("loadWeihgt_maml : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
 
+    # only for test_test. 로드한 weight으로 pred값 도출. 배치로 한방에 predict하기 위해 로버트 모델을 쓴것.
     def testWithSavedModel(self, x):
         z, pred = self.model_z_int.predict(x, batch_size=len(x))
         return pred
