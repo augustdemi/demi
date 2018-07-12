@@ -54,7 +54,7 @@ class VAE:
         out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 layer로 디코더 실행. 근데 사실상 이 디코더에 오기까지 오리지날 트레인 x를 인코드하는거부터 시작됨. vae.
 
 
-        model_train = K.models.Model(inp_0, out_0) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
+        model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
         model_z_int = K.models.Model([inp_0], [z_mean, out_1])
         model_au_int = K.models.Model([inp_0], [out_1])
         self.model_train = model_train
@@ -66,7 +66,7 @@ class VAE:
 
 
     def computeLatentVal(self, x):
-        self.model_train.load_weights("./modelnew.h5")
+        self.model_train.load_weights("./model78.h5")
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         return self.model_train.get_weights()[-2:], z
 

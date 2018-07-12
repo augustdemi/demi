@@ -350,10 +350,10 @@ def main():
 
     print("========================================================================================")
     print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
-    # print('weights from vae : ', pred_weights)
-    # if FLAGS.init_weight:
-    #     model.weights['w1'].load(pred_weights[0], sess)
-    #     model.weights['b1'].load(pred_weights[1], sess)
+    print('weights from vae : ', pred_weights)
+    if FLAGS.init_weight:
+        model.weights['w1'].load(pred_weights[0], sess)
+        model.weights['b1'].load(pred_weights[1], sess)
     print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
