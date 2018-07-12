@@ -148,7 +148,7 @@ out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레�
 
 rec = K.models.Model(inp_1, out_11)
 if source_data!='init':
-    rec.load_weights('./model_vae/model.h5', by_name=True) # ========================== weight ==========================
+    model_train.load_weights('./model.h5', by_name=True) # ========================== weight ==========================
 
 
 model_train.compile(
