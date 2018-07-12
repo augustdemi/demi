@@ -146,10 +146,6 @@ x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 
 out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
 
 
-rec = K.models.Model(inp_1, out_11)
-if source_data!='init':
-    model_train.load_weights('./model.h5', by_name=True) # ========================== weight ==========================
-
 
 model_train.compile(
         optimizer = K.optimizers.Adadelta(
@@ -161,6 +157,11 @@ model_train.compile(
         loss = loss
         )
 
+rec = K.models.Model(inp_1, out_11)
+if source_data!='init':
+    model_train.load_weights('./model.h5', by_name=True) # ========================== weight ==========================
+    w = model_train.get_weights()
+    print(model_train.get_weights()[0])
 
 model_train.fit_generator(
         generator = GEN_TR,
