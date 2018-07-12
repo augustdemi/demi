@@ -35,7 +35,9 @@ class DataGenerator(object):
         num_train = FLAGS.meta_batch_size
         self.metatrain_character_folders = subject_folders[FLAGS.train_start_idx:FLAGS.train_start_idx + num_train]
         if FLAGS.test_set: # In test, runs only one test task for the entered subject
-            self.metaval_character_folders = [subject_folders[FLAGS.subject_idx]]
+            self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
+        else:
+            self.metatest_character_folders = [subject_folders[26]]
 
 
     def make_data_tensor(self, train=True):
@@ -44,8 +46,8 @@ class DataGenerator(object):
             # number of tasks, not number of meta-iterations. (divide by metabatch size to measure)
             num_total_batches = 200000
         else:
-            folders = self.metaval_character_folders
-            print("folders: ",folders)
+            folders = self.metatest_character_folders
+            print("test folders: ",folders)
             num_total_batches = 600
 
         # make list of files

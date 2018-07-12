@@ -106,25 +106,27 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
         else:
             input_tensors = [model.metatrain_op]
 
-        # SUMMARY_INTERVAL 혹은 PRINT_INTERVAL 마다 accuracy 계산해둠
-        if (itr % SUMMARY_INTERVAL == 0):
-            input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates - 1]])
-            input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
-            input_tensors.extend([model.result1, model.result2])
-        result = sess.run(input_tensors, feed_dict)
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if itr % SUMMARY_INTERVAL == 0:
+
+            inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
+            input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates - 1]])
+            input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
+            input_tensors.extend([model.result1, model.result2])
+            feed_dict = {model.inputa: inputa, model.inputb: inputb, model.labela: labela, model.labelb: labelb, model.meta_lr:0}
+            result_val = sess.run(input_tensors, feed_dict)
+
             if FLAGS.log:
-                train_writer.add_summary(result[1], itr)
+                train_writer.add_summary(result_val[1], itr)
             if itr != 0:
                 if itr < FLAGS.pretrain_iterations:
                     print_str = 'Pretrain Iteration ' + str(itr)
                 else:
                     print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
                 print(print_str)
-                y_hata = np.vstack(np.array(result[-2][0]))  # length = num_of_task * N * K
-                y_laba = np.vstack(np.array(result[-2][1]))
+                y_hata = np.vstack(np.array(result_val[-2][0]))  # length = num_of_task * N * K
+                y_laba = np.vstack(np.array(result_val[-2][1]))
                 save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
                     FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':' + str(
                     FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
@@ -145,10 +147,10 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
 
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
                 print("------------------------------------------------------------------------------------")
-                recent_y_hatb = np.array(result[-1][0][
+                recent_y_hatb = np.array(result_val[-1][0][
                                              FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
                 y_hatb = np.vstack(recent_y_hatb)
-                recent_y_labb = np.array(result[-1][1][FLAGS.num_updates - 1])
+                recent_y_labb = np.array(result_val[-1][1][FLAGS.num_updates - 1])
                 y_labb = np.vstack(recent_y_labb)
                 print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + str(itr) + ".txt")
                 print("====================================================================================")
