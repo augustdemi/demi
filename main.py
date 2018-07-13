@@ -106,54 +106,65 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
         else:
             input_tensors = [model.metatrain_op]
 
+        # SUMMARY_INTERVAL 마다 accuracy 계산해둠
+        if itr % SUMMARY_INTERVAL == 0:
+            # input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates - 1]])
+            # input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
+            input_tensors.extend([model.result1, model.result2])
+
+        if itr % 2 == 0:
+            print(".>>>>")
+            inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+            feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(),
+                         model.labelb: labelb.eval()}
+
+        result = sess.run(input_tensors, feed_dict)
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if itr % SUMMARY_INTERVAL == 0:
+            # print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+            # inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+            # feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(), model.labelb: labelb.eval(), model.meta_lr:0}
+            # result_val = sess.run(input_tensors, feed_dict)
+            def summary(maml_result, set):
+                if itr != 0:
+                    if itr < FLAGS.pretrain_iterations:
+                        print_str = 'Pretrain Iteration ' + str(itr)
+                    else:
+                        print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
+                    print(print_str)
+                    y_hata = np.vstack(np.array(maml_result[-2][0]))  # length = num_of_task * N * K
+                    y_laba = np.vstack(np.array(maml_result[-2][1]))
+                    save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
+                        FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':' + str(
+                        FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
+                        FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/train"
+                    if not os.path.exists(save_path):
+                        os.makedirs(save_path)
 
-            inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
-            input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates - 1]])
-            input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
-            input_tensors.extend([model.result1, model.result2])
-            feed_dict = {model.inputa: inputa, model.inputb: inputb, model.labela: labela, model.labelb: labelb, model.meta_lr:0}
-            result_val = sess.run(input_tensors, feed_dict)
+                    save_path = "./logs/result/"
+                    if FLAGS.train_test:
+                        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                            FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                            FLAGS.num_updates) + '.updatelr' + str(
+                            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                        save_path += retrained_model_dir
+                    save_path += '/train'
+                    if not os.path.exists(save_path):
+                        os.makedirs(save_path)
 
-            if FLAGS.log:
-                train_writer.add_summary(result_val[1], itr)
-            if itr != 0:
-                if itr < FLAGS.pretrain_iterations:
-                    print_str = 'Pretrain Iteration ' + str(itr)
-                else:
-                    print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
-                print(print_str)
-                y_hata = np.vstack(np.array(result_val[-2][0]))  # length = num_of_task * N * K
-                y_laba = np.vstack(np.array(result_val[-2][1]))
-                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
-                    FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':' + str(
-                    FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
-                    FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/train"
-                if not os.path.exists(save_path):
-                    os.makedirs(save_path)
+                    print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + set + "_" + str(itr) + ".txt")
+                    print("------------------------------------------------------------------------------------")
+                    recent_y_hatb = np.array(maml_result[-1][0][
+                                                 FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
+                    y_hatb = np.vstack(recent_y_hatb)
+                    recent_y_labb = np.array(maml_result[-1][1][FLAGS.num_updates - 1])
+                    y_labb = np.vstack(recent_y_labb)
+                    print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
+                    print("====================================================================================")
 
-                save_path = "./logs/result/"
-                if FLAGS.train_test:
-                    retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
-                        FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
-                        FLAGS.num_updates) + '.updatelr' + str(
-                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-                    save_path += retrained_model_dir
-                save_path += '/train'
-                if not os.path.exists(save_path):
-                    os.makedirs(save_path)
-
-                print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(itr) + ".txt")
-                print("------------------------------------------------------------------------------------")
-                recent_y_hatb = np.array(result_val[-1][0][
-                                             FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
-                y_hatb = np.vstack(recent_y_hatb)
-                recent_y_labb = np.array(result_val[-1][1][FLAGS.num_updates - 1])
-                y_labb = np.vstack(recent_y_labb)
-                print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + str(itr) + ".txt")
-                print("====================================================================================")
+            summary(result, "TR")
+            # summary(result_val, "TE")
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr == 100) or ((itr != 0) and itr % SAVE_INTERVAL == 0):
@@ -170,17 +181,7 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
             else:
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
-    if FLAGS.train_test:
-        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
-            FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
-            FLAGS.num_updates) + '.updatelr' + str(
-            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-        save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        saver.save(sess, save_path + '/model' + str(itr))
-    else:
-        saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
+
 
 
 def test(model, saver, sess, trained_model_dir, data_generator):
