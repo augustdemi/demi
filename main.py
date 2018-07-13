@@ -88,7 +88,7 @@ flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 
 
-def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
+def train(model, saver, sess, trained_model_dir, data_generator, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
 
@@ -123,11 +123,13 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if (itr % SUMMARY_INTERVAL == 0) and itr > 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
-            inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
-            feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(), model.labelb: labelb.eval(), model.meta_lr:0}
+            feed_dict = {model.inputa: metaval_input_tensors.inputa.eval(),
+                         metaval_input_tensors.model.inputb: metaval_input_tensors.inputb.eval(),
+                         model.labela: metaval_input_tensors.labela.eval(),
+                         model.labelb: metaval_input_tensors.labelb.eval(), model.meta_lr: 0}
             result_val = sess.run(input_tensors, feed_dict)
             def summary(maml_result, set):
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>", set)
+                print(set)
                 if itr != 0:
                     if itr < FLAGS.pretrain_iterations:
                         print_str = 'Pretrain Iteration ' + str(itr)
@@ -302,9 +304,9 @@ def main():
         # labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
         inputa, inputb, labela, labelb = data_generator.make_data_tensor()
         input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
-    else:
-        inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
-        metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+
+    inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
+    metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
@@ -386,7 +388,7 @@ def main():
         test_test(w, b, trained_model_dir)
     else:
         if FLAGS.train:
-            train(model, saver, sess, trained_model_dir, data_generator, resume_itr)
+            train(model, saver, sess, trained_model_dir, data_generator, metaval_input_tensors, resume_itr)
         else:
             test(model, saver, sess, trained_model_dir, data_generator)
     end_time = datetime.now()
