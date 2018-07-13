@@ -88,7 +88,7 @@ flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 
 
-def train(model, saver, sess, trained_model_dir, data_generator, metaval_input_tensors, resume_itr=0):
+def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
 
@@ -100,7 +100,6 @@ def train(model, saver, sess, trained_model_dir, data_generator, metaval_input_t
     print('Done initializing, starting training.')
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
-        feed_dict = {}
         if itr < FLAGS.pretrain_iterations:
             input_tensors = [model.pretrain_op]
         else:
@@ -108,8 +107,6 @@ def train(model, saver, sess, trained_model_dir, data_generator, metaval_input_t
 
         # SUMMARY_INTERVAL 마다 accuracy 계산해둠
         if itr % SUMMARY_INTERVAL == 0:
-            # input_tensors.extend([model.summ_op, model.total_loss1, model.total_losses2[FLAGS.num_updates - 1]])
-            # input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
             input_tensors.extend([model.result1, model.result2])
 
         #if (itr % 1000 == 0) and itr > 0:
@@ -117,7 +114,10 @@ def train(model, saver, sess, trained_model_dir, data_generator, metaval_input_t
         #    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
         #    feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(),
         #                 model.labelb: labelb.eval()}
-
+        feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
+                     model.inputb: metatrain_input_tensors['inputb'].eval(),
+                     model.labela: metatrain_input_tensors['labela'].eval(),
+                     model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
         result = sess.run(input_tensors, feed_dict)
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
@@ -303,7 +303,7 @@ def main():
         # labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])  #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
         # labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
         inputa, inputb, labela, labelb = data_generator.make_data_tensor()
-        input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+        metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
     metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
@@ -311,7 +311,7 @@ def main():
     pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
     if FLAGS.train:
-        model.construct_model(input_tensors=input_tensors, prefix='metatrain_')
+        model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     else:
         model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
     model.summ_op = tf.summary.merge_all()
@@ -388,7 +388,7 @@ def main():
         test_test(w, b, trained_model_dir)
     else:
         if FLAGS.train:
-            train(model, saver, sess, trained_model_dir, data_generator, metaval_input_tensors, resume_itr)
+            train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
         else:
             test(model, saver, sess, trained_model_dir, data_generator)
     end_time = datetime.now()
