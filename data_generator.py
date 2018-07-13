@@ -38,7 +38,7 @@ class DataGenerator(object):
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
             self.metatest_character_folders = [subject_folders[26]]
-
+            self.metatest_character_folders.extend(subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2*num_train-1])
 
     def make_data_tensor(self, train=True):
         if train:

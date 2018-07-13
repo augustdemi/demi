@@ -122,10 +122,10 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if itr % SUMMARY_INTERVAL == 0:
-            # print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            # inputa, inputb, labela, labelb = data_generator.make_data_tensor()
-            # feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(), model.labelb: labelb.eval(), model.meta_lr:0}
-            # result_val = sess.run(input_tensors, feed_dict)
+            print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
+            inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
+            feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(), model.labelb: labelb.eval(), model.meta_lr:0}
+            result_val = sess.run(input_tensors, feed_dict)
             def summary(maml_result, set):
                 if itr != 0:
                     if itr < FLAGS.pretrain_iterations:
@@ -164,7 +164,7 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
                     print("====================================================================================")
 
             summary(result, "TR")
-            # summary(result_val, "TE")
+            summary(result_val, "TE")
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr == 100) or ((itr != 0) and itr % SAVE_INTERVAL == 0):
