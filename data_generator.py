@@ -98,7 +98,7 @@ class DataGenerator(object):
                     img = cv2.imread(filename)
                     imgs.append(img)
 
-                pp = ED.image_pipeline.FACE_pipeline(
+                pp = ED.image_pipeline2.FACE_pipeline(
                     histogram_normalization=True,
                     grayscale=True,
                     resize=True,

@@ -112,7 +112,7 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
             # input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
             input_tensors.extend([model.result1, model.result2])
 
-        if itr % 2 == 0:
+        if itr % 1000 == 0:
             print(".>>>>")
             inputa, inputb, labela, labelb = data_generator.make_data_tensor()
             feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(),
