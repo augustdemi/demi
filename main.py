@@ -74,6 +74,7 @@ flags.DEFINE_float('train_update_lr', -1,
 
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 flags.DEFINE_bool('train_test', False, 're-train model')
+flags.DEFINE_bool('train_test_inc', False, 're-train model increasingly')
 flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
 flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
 # for train, train_test
@@ -152,6 +153,12 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                             FLAGS.num_updates) + '.updatelr' + str(
                             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
                         save_path += retrained_model_dir
+                    elif FLAGS.train_test_inc:
+                        retrained_model_dir = 'inc.sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                            FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                            FLAGS.num_updates) + '.updatelr' + str(
+                            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                        save_path += retrained_model_dir
                     if not os.path.exists(save_path):
                         os.makedirs(save_path)
 
@@ -181,7 +188,18 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                     os.makedirs(save_path)
                 saver.save(sess, save_path + '/model' + str(itr))
             else:
+                # to train the model increasingly whenever new test is coming.
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
+                # save the model one more time to test per each test subject
+                if FLAGS.train_test_inc:
+                    retrained_model_dir = '/sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                        FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                        FLAGS.num_updates) + '.updatelr' + str(
+                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                    save_path += retrained_model_dir
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
+                saver.save(sess, save_path + '/model' + str(itr))
 
 
 
@@ -330,7 +348,7 @@ def main():
 
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight) + '/inc'
     if FLAGS.train_test:
         trained_model_dir = FLAGS.keep_train_dir  # TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
     elif FLAGS.test_test:
