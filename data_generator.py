@@ -119,8 +119,8 @@ class DataGenerator(object):
         inputb_latent_feat, self.pred_weights = latent_feature(inputb_files)
         #################################################################################
 
-        print("original inputa: ", inputa_latent_feat)
-        print("original inputb: ", inputb_latent_feat)
+        # print("original inputa: ", inputa_latent_feat)
+        # print("original inputb: ", inputb_latent_feat)
         np.random.seed(1)
         np.random.shuffle(inputa_latent_feat)
         np.random.seed(1)
