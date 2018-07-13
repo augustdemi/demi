@@ -78,7 +78,7 @@ class DataGenerator(object):
 
             all_filenames.extend(filenames) # just for debugging
 
-        print("all_filenames: ", all_filenames)
+        # print("all_filenames: ", all_filenames)
         #################################################################################
 
 
