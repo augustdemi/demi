@@ -145,14 +145,13 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                     if not os.path.exists(save_path):
                         os.makedirs(save_path)
 
-                    save_path = "./logs/result/"
+                    save_path = "./logs/result/train/" + trained_model_dir + "/"
                     if FLAGS.train_test:
-                        retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                        retrained_model_dir = 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
                             FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
                             FLAGS.num_updates) + '.updatelr' + str(
                             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
                         save_path += retrained_model_dir
-                    save_path += '/train'
                     if not os.path.exists(save_path):
                         os.makedirs(save_path)
 
