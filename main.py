@@ -123,10 +123,10 @@ def train(model, saver, sess, trained_model_dir, data_generator, metaval_input_t
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if (itr % SUMMARY_INTERVAL == 0) and itr > 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
-            feed_dict = {model.inputa: metaval_input_tensors.inputa.eval(),
-                         metaval_input_tensors.model.inputb: metaval_input_tensors.inputb.eval(),
-                         model.labela: metaval_input_tensors.labela.eval(),
-                         model.labelb: metaval_input_tensors.labelb.eval(), model.meta_lr: 0}
+            feed_dict = {model.inputa: metaval_input_tensors['inputa'].eval(),
+                         model.inputb: metaval_input_tensors['inputb'].eval(),
+                         model.labela: metaval_input_tensors['labela'].eval(),
+                         model.labelb: metaval_input_tensors['labelb'].eval(), model.meta_lr: 0}
             result_val = sess.run(input_tensors, feed_dict)
             def summary(maml_result, set):
                 print(set)
