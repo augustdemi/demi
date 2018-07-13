@@ -112,21 +112,22 @@ def train(model, saver, sess, trained_model_dir, data_generator, resume_itr=0):
             # input_tensors.extend([model.total_accuracy1, model.total_accuracies2[FLAGS.num_updates - 1]])
             input_tensors.extend([model.result1, model.result2])
 
-        if (itr % 1000 == 0) and itr > 0:
-            print(">>>> make new data set to train")
-            inputa, inputb, labela, labelb = data_generator.make_data_tensor()
-            feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(),
-                         model.labelb: labelb.eval()}
+        #if (itr % 1000 == 0) and itr > 0:
+        #    print(">>>> make new data set to train")
+        #    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+        #    feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(),
+        #                 model.labelb: labelb.eval()}
 
         result = sess.run(input_tensors, feed_dict)
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if (itr % SUMMARY_INTERVAL == 0) and itr > 0:
-            print("%%%%%%%%%%%%%%summary%%%%%%%%%%%%%%")
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
             inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
             feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(), model.labelb: labelb.eval(), model.meta_lr:0}
             result_val = sess.run(input_tensors, feed_dict)
             def summary(maml_result, set):
+                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>", set)
                 if itr != 0:
                     if itr < FLAGS.pretrain_iterations:
                         print_str = 'Pretrain Iteration ' + str(itr)
