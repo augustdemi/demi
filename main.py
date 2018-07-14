@@ -73,7 +73,7 @@ flags.DEFINE_float('train_update_lr', -1,
                    'value of inner gradient step step during training. (use if you want to test with a different value)')  # 0.1 for omniglot
 
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
-flags.DEFINE_bool('train_test', False, 're-train model')
+flags.DEFINE_bool('train_test', False, 're-train model with the test set')
 flags.DEFINE_bool('train_test_inc', False, 're-train model increasingly')
 flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
 flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
@@ -98,37 +98,43 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
+
+    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
+                 model.inputb: metatrain_input_tensors['inputb'].eval(),
+                 model.labela: metatrain_input_tensors['labela'].eval(),
+                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
+
     print('Done initializing, starting training.')
 
     for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
+
         if itr < FLAGS.pretrain_iterations:
             input_tensors = [model.pretrain_op]
         else:
             input_tensors = [model.metatrain_op]
 
+        # when train the model again with the test set, local weight needs to be saved at the last iteration.
+        if FLAGS.train_test and (itr == FLAGS.metatrain_iterations - 1):
+            input_tensors.extend([model.fast_weights])
+
         # SUMMARY_INTERVAL 마다 accuracy 계산해둠
-        if itr % SUMMARY_INTERVAL == 0:
+        if (itr % SUMMARY_INTERVAL) == 0 and (itr > 0):
             input_tensors.extend([model.result1, model.result2])
 
-        #if (itr % 1000 == 0) and itr > 0:
-        #    print(">>>> make new data set to train")
-        #    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
-        #    feed_dict = {model.inputa: inputa.eval(), model.inputb: inputb.eval(), model.labela: labela.eval(),
-        #                 model.labelb: labelb.eval()}
-        feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
-                     model.inputb: metatrain_input_tensors['inputb'].eval(),
-                     model.labela: metatrain_input_tensors['labela'].eval(),
-                     model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
         result = sess.run(input_tensors, feed_dict)
+
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if (itr % SUMMARY_INTERVAL == 0) and itr > 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
-            feed_dict = {model.inputa: metaval_input_tensors['inputa'].eval(),
+
+            # run for the validation
+            feed_dict_val = {model.inputa: metaval_input_tensors['inputa'].eval(),
                          model.inputb: metaval_input_tensors['inputb'].eval(),
                          model.labela: metaval_input_tensors['labela'].eval(),
                          model.labelb: metaval_input_tensors['labelb'].eval(), model.meta_lr: 0}
-            result_val = sess.run(input_tensors, feed_dict)
+            result_val = sess.run(input_tensors, feed_dict_val)
+
             def summary(maml_result, set):
                 print(set)
                 if itr != 0:
@@ -176,7 +182,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             summary(result_val, "TE")
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
-        if (itr == 100) or ((itr != 0) and itr % SAVE_INTERVAL == 0):
+        if (itr == 100) or ((itr != 0) and itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations - 1):
             if FLAGS.train_test:
                 retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
@@ -186,20 +192,32 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
-                saver.save(sess, save_path + '/model' + str(itr))
+                saver.save(sess, save_path + '/model' + str(itr+1))
+
+                # save local weight at the last iteration
+                if itr == FLAGS.metatrain_iterations - 1:
+                    print(">>>>>>>>>>>>>> local save !! : ", itr)
+                    local_w = result[1][0]
+                    local_b = result[1][1]
+                    for i in range(FLAGS.meta_batch_size):
+                        print("========================================================================================")
+                        print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+                        model.weights['w1'].load(local_w[i], sess)
+                        model.weights['b1'].load(local_b[i], sess)
+                        print('>>>>>> Local weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+                        print("========================================================================================")
+                        local_model_dir = '/local'
+                        save_path += local_model_dir
+                        if not os.path.exists(save_path):
+                            os.makedirs(save_path)
+                        saver.save(sess, save_path + '/subject' + str(i))
+
             else:
                 # to train the model increasingly whenever new test is coming.
-                saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
-                # save the model one more time to test per each test subject
-                if FLAGS.train_test_inc:
-                    retrained_model_dir = '/sbjt' + str(FLAGS.train_start_idx) + ':' + str(
-                        FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
-                        FLAGS.num_updates) + '.updatelr' + str(
-                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-                    save_path += retrained_model_dir
-                if not os.path.exists(save_path):
-                    os.makedirs(save_path)
-                saver.save(sess, save_path + '/model' + str(itr))
+                saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr+1))
+
+
+
 
 
 
