@@ -6,7 +6,7 @@ class logREG(Layer):
         '''
         '''
 
-        self.num_outputs = num_outputs
+        self.num_outputs = num_outputs # num of au
         super(logREG, self).__init__(**kwargs)
 
     def build(self, input_shape): #(10,2000)
@@ -36,10 +36,10 @@ class logREG(Layer):
         # var_b = self.b[None, :] #(n,1)
         # var_x = x[:,:, None] #(10,2000,n)
 
-        score =tf.matmul(x, self.w) + self.b
+        score =tf.matmul(x, self.w) + self.b # x= (10,2000), w=(2000,1), b= (1,), score=(10,1)
         # score = tf.reduce_sum(var_w*var_x,1) + var_b
         print(score)
-        score2 = tf.sigmoid(score)
+        score2 = tf.sigmoid(score) # score2=(10,1)
         print(score2)
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> logREG")
         return score2
