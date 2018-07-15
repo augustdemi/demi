@@ -72,6 +72,5 @@ class VAE:
 
     # only for test_test. 로드한 weight으로 pred값 도출. 배치로 한방에 predict하기 위해 로버트 모델을 쓴것.
     def testWithSavedModel(self, x):
-        print(">>>>>>>>>testWithSavedModel : ", len(x))
         z, pred = self.model_z_int.predict(x, batch_size=len(x))
         return pred
