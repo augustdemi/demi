@@ -414,14 +414,15 @@ def main():
             model_file = model_file[:model_file.index('subject')] + 'subject' + str(FLAGS.local_subj - 14)
             print(">>>> model_file2: ", model_file)
         if model_file:
-            ind1 = model_file.index('model')
-            resume_itr = int(model_file[ind1 + 5:])
             print("Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
             w = sess.run('model/w1:0').tolist()
             b = sess.run('model/b1:0').tolist()
             print("updated weights from ckpt: ", np.array(w), np.array(b))
-            print('resume_itr: ', resume_itr)
+            if not FLAGS.test_test:
+                ind1 = model_file.index('model')
+                resume_itr = int(model_file[ind1 + 5:])
+                print('resume_itr: ', resume_itr)
             print("=====================================================================================")
 
     if FLAGS.test_test or FLAGS.test_train:
