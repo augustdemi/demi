@@ -64,13 +64,9 @@ class MAML:
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
                 inputa, inputb, labela, labelb = inp
-                inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]),1])
-                inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]),1])
 
                 labela= tf.cast(labela, tf.float32)
-                labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])])
                 labelb= tf.cast(labelb, tf.float32)
-                labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
                 task_outputbs, task_lossesb, task_labelbs = [], [], []
 
                 if self.classification:

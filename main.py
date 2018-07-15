@@ -90,7 +90,7 @@ flags.DEFINE_string('keep_train_dir', None,
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 100
+    SUMMARY_INTERVAL = 5
     SAVE_INTERVAL = 500
 
     if FLAGS.train_test:
