@@ -1,6 +1,5 @@
 """ Code for the MAML algorithm and network definitions. """
 from __future__ import print_function
-import numpy as np
 import sys
 import tensorflow as tf
 try:
@@ -10,10 +9,10 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from utils import mse, xent, conv_block, normalize
-from vae_model import VAE
+from utils import mse, xent_sig, conv_block, normalize
 
 FLAGS = flags.FLAGS
+
 
 class MAML:
     def __init__(self, dim_input=1, dim_output=1):
@@ -24,9 +23,8 @@ class MAML:
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
         self.classification = False
         if FLAGS.datasource == 'disfa':
-            self.loss_func = xent
+            self.loss_func = xent_sig
             self.classification = True
-            self.loss_func = xent
             self.forward = self.forward_fc
             self.construct_weights = self.getWeightVar
         else:
@@ -64,13 +62,9 @@ class MAML:
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
                 inputa, inputb, labela, labelb = inp
-                inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]),1])
-                inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]),1])
 
                 labela= tf.cast(labela, tf.float32)
-                labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])])
                 labelb= tf.cast(labelb, tf.float32)
-                labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
                 task_outputbs, task_lossesb, task_labelbs = [], [], []
 
                 if self.classification:
@@ -160,22 +154,16 @@ class MAML:
 
 
     def forward_fc(self, inp, weights, reuse=False):
-        var_w = weights['w1'][ None, ::]
-        # add dimension for features
-        var_b = weights['b1'][ None, ::]
-        # add dimension for output and class
-        var_x = inp[ :, :, None]
+        score = tf.matmul(inp, weights['w1']) + weights['b1']  # x= (10,2000), w=(2000,1), b= (1,), score=(10,1)
+        score2 = tf.sigmoid(score)  # score2=(10,1)
+        return score2
 
-        # matrix multiplication with dropout
-        z = tf.reduce_sum( var_w*var_x , 1) + var_b
-        score = tf.nn.softmax(z)
-        return score
 
 
 
     def getWeightVar(self):
-        w1 = tf.get_variable("w1",[2000,1,2])
-        b1 = tf.get_variable("b1",[1,2])
+        w1 = tf.get_variable("w1", [2000, 1])
+        b1 = tf.get_variable("b1", [1, ])
         weight_tensor = {"w1": w1, "b1":b1}
         return weight_tensor
 

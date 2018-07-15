@@ -90,7 +90,7 @@ flags.DEFINE_string('keep_train_dir', None,
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 100
+    SUMMARY_INTERVAL = 5
     SAVE_INTERVAL = 500
 
     if FLAGS.train_test:
@@ -251,12 +251,12 @@ def test(model, saver, sess, trained_model_dir, data_generator):
 
 
 def test_test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
-    from vae_model import VAE
+    from vae_model_sig import VAE_sig
     import EmoData as ED
     import cv2
     import pickle
-    vae_model = VAE((160, 240, 1), (1, 2))
-    vae_model.loadWeight("./model78.h5", w, b)
+    vae_model = VAE_sig((160, 240, 1), (1, 2))
+    vae_model.loadWeight("./model_log300.h5", w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
@@ -367,6 +367,7 @@ def main():
         trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+    trained_model_dir += '.sig'
 
     print(">>>>> trained_model_dir: ", trained_model_dir)
 
