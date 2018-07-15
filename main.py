@@ -285,9 +285,9 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
         for file_path in file_names_batch:
             pred = predict_label(file_path)
             yhat_arr.extend(pred)
-        if N_batch * batch_size != len(data['test_file_names']):
-            rest_pred = predict_label(test_file_names[N_batch * batch_size:])
-            yhat_arr.extend(rest_pred)
+        # if N_batch * batch_size != len(data['test_file_names']):
+        #     rest_pred = predict_label(test_file_names[N_batch * batch_size:])
+        #     yhat_arr.extend(rest_pred)
         return np.array(yhat_arr)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
@@ -299,16 +299,19 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
 
         N_batch = int(len(data['test_file_names']) / batch_size)
+        test_file_names = data['test_file_names'][:N_batch * batch_size]
 
-        print(test_subject.split(".")[0], " total len:", len(data['test_file_names']))
-        y_hat = get_y_hat(data['test_file_names'], N_batch)
+        print(test_subject.split(".")[0], " original total len:", len(data['test_file_names']))
+        print(test_subject.split(".")[0], " rounded down total len:", len(test_file_names))
+        y_hat = get_y_hat(test_file_names, N_batch)
         print(y_hat.shape)
         save_path = "./logs/result/test_test/" + trained_model_dir
         if FLAGS.test_train:
             save_path = "./logs/result/test_train/" + trained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        print_summary(y_hat, data['y_lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
+        print_summary(y_hat, data['y_lab'][:N_batch * batch_size],
+                      log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
 def main():
