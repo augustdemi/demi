@@ -37,8 +37,11 @@ class DataGenerator(object):
         if FLAGS.test_set: # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
-            self.metatest_character_folders = [subject_folders[26]]
-            self.metatest_character_folders.extend(subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2*num_train-1])
+            if(FLAGS.train_test and num_train ==13):
+                self.metatrain_character_folders = subject_folders[:13]
+            else:
+                self.metatest_character_folders = [subject_folders[26]]
+                self.metatest_character_folders.extend(subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2*num_train-1])
 
     def make_data_tensor(self, train=True):
         if train:
