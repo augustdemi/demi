@@ -85,7 +85,7 @@ class DataGenerator(object):
         #################################################################################
 
 
-        vae_model = VAE((self.img_size[0], self.img_size[1]))
+        vae_model = VAE((self.img_size[0], self.img_size[1], 1), (1, self.num_classes))
         # inputa_files has (n*k * num_of_task) files.
         # make it to batch of which size is (n*k) : thus, the total number of batch = num_of_task
         batch_size = int(self.num_classes * FLAGS.update_batch_size)
