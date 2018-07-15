@@ -6,20 +6,14 @@ import numpy as np
 
 
 class VAE:
+    def __init__(self, img_shape):
 
-    def __init__(self, img_shape, label_shape):
-
-        self.img_shape = img_shape,
-        self.label_shape =label_shape,
-
-        batch_size=2
+        batch_size = 10
         latent_dim = 2000
         target_std_vec = np.ones(latent_dim)
         target_mean_vec = np.zeros(latent_dim)
 
 
-        img_shape = self.img_shape[0]
-        label_shape = self.label_shape[0]
         inp_0       = Input(shape=img_shape)
         emb, shape  = EE.networks.encoder(inp_0, norm=1)
 
@@ -42,8 +36,7 @@ class VAE:
 
         z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma]) # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
-        resized_z = Reshape((2000, 1))(z_mean)
-        out_1 = EE.layers.softmaxPDF(label_shape[0], label_shape[1])(resized_z)
+        out_1 = EE.layers.logREG(1)(z)  # 1= length of one label
 
         D1 = Dense(latent_dim, activation='relu')
         D2 = Dense(n_feat, activation='sigmoid')  # n_feat  = conv 결과 shape들의 곱이 ouputspace의 dim
@@ -66,7 +59,7 @@ class VAE:
 
 
     def computeLatentVal(self, x):
-        self.model_train.load_weights("./model78.h5")
+        self.model_train.load_weights("./model_log300.h5")
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         return self.model_train.get_weights()[-2:], z
 

@@ -160,22 +160,16 @@ class MAML:
 
 
     def forward_fc(self, inp, weights, reuse=False):
-        var_w = weights['w1'][ None, ::]
-        # add dimension for features
-        var_b = weights['b1'][ None, ::]
-        # add dimension for output and class
-        var_x = inp[ :, :, None]
+        score = tf.matmul(inp, weights['w1']) + weights['b1']  # x= (10,2000), w=(2000,1), b= (1,), score=(10,1)
+        score2 = tf.sigmoid(score)  # score2=(10,1)
+        return score2
 
-        # matrix multiplication with dropout
-        z = tf.reduce_sum( var_w*var_x , 1) + var_b
-        score = tf.nn.softmax(z)
-        return score
 
 
 
     def getWeightVar(self):
-        w1 = tf.get_variable("w1",[2000,1,2])
-        b1 = tf.get_variable("b1",[1,2])
+        w1 = tf.get_variable("w1", [2000, 1])
+        b1 = tf.get_variable("b1", [1, ])
         weight_tensor = {"w1": w1, "b1":b1}
         return weight_tensor
 
