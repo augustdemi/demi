@@ -1,6 +1,5 @@
 """ Code for the MAML algorithm and network definitions. """
 from __future__ import print_function
-import numpy as np
 import sys
 import tensorflow as tf
 try:
@@ -11,11 +10,11 @@ except KeyError as e:
 
 from tensorflow.python.platform import flags
 from utils import mse, xent, conv_block, normalize
-from vae_model import VAE
 
 FLAGS = flags.FLAGS
 
-class MAML:
+
+class MAML_sig:
     def __init__(self, dim_input=1, dim_output=1):
         """ must call construct_model() after initializing MAML! """
         self.dim_input = dim_input

@@ -7,12 +7,13 @@ import cv2
 
 from tensorflow.python.platform import flags
 from utils import get_images
-from vae_model import VAE
+from vae_model_sig import VAE_sig
 import EmoData as ED
 
 FLAGS = flags.FLAGS
 
-class DataGenerator(object):
+
+class DataGenerator_sig(object):
     """
     Data Generator capable of generating batches of sinusoid or Omniglot data.
     A "class" is considered a class of omniglot digits or a particular sinusoid function.

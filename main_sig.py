@@ -27,8 +27,8 @@ import numpy as np
 import tensorflow as tf
 
 from EmoEstimator.utils.evaluate import print_summary
-from data_generator import DataGenerator
-from maml import MAML
+from data_generator_sig import DataGenerator_sig
+from maml_sig import MAML_sig
 from tensorflow.python.platform import flags
 from datetime import datetime
 import os
@@ -251,11 +251,11 @@ def test(model, saver, sess, trained_model_dir, data_generator):
 
 
 def test_test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
-    from vae_model import VAE
+    from vae_model_sig import VAE_sig
     import EmoData as ED
     import cv2
     import pickle
-    vae_model = VAE((160, 240, 1), (1, 2))
+    vae_model = VAE_sig((160, 240, 1), (1, 2))
     vae_model.loadWeight("./model_log300.h5", w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
@@ -317,7 +317,7 @@ def main():
         # always use meta batch size of 1 when testing.
         FLAGS.meta_batch_size = 1
 
-    data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
+    data_generator = DataGenerator_sig(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
 
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
@@ -337,7 +337,7 @@ def main():
     metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
-    model = MAML(dim_input, dim_output)
+    model = MAML_SIG(dim_input, dim_output)
     if FLAGS.train:
         model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     else:
