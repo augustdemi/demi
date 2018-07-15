@@ -337,7 +337,7 @@ def main():
     metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     pred_weights = data_generator.pred_weights
-    model = MAML_SIG(dim_input, dim_output)
+    model = MAML_sig(dim_input, dim_output)
     if FLAGS.train:
         model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     else:
@@ -367,6 +367,7 @@ def main():
         trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+    trained_model_dir += '.sig'
 
     print(">>>>> trained_model_dir: ", trained_model_dir)
 
