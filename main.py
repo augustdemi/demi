@@ -371,7 +371,7 @@ def main():
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
         if FLAGS.local_subj > 0:
-            trained_model_dir += 'local'
+            trained_model_dir += '/local'
 
 
     print(">>>>> trained_model_dir: ", trained_model_dir)
