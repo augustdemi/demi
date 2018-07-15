@@ -6,13 +6,15 @@ import numpy as np
 
 
 class VAE:
-    def __init__(self, img_shape, batch_size):
+    def __init__(self, img_shape):
 
+        batch_size = 10
         latent_dim = 2000
         target_std_vec = np.ones(latent_dim)
         target_mean_vec = np.zeros(latent_dim)
 
-        inp_0 = Input(shape=img_shape)
+
+        inp_0       = Input(shape=img_shape)
         emb, shape  = EE.networks.encoder(inp_0, norm=1)
 
         from numpy import prod
