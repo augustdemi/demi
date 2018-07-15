@@ -9,7 +9,7 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from utils import mse, xent, conv_block, normalize
+from utils import mse, xent_sig, conv_block, normalize
 
 FLAGS = flags.FLAGS
 
@@ -23,9 +23,8 @@ class MAML_sig:
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
         self.classification = False
         if FLAGS.datasource == 'disfa':
-            self.loss_func = xent
+            self.loss_func = xent_sig
             self.classification = True
-            self.loss_func = xent
             self.forward = self.forward_fc
             self.construct_weights = self.getWeightVar
         else:

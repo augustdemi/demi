@@ -61,3 +61,6 @@ def xent(pred, label):
     return tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=label) / FLAGS.update_batch_size
 
 
+def xent_sig(pred, label):
+    # Note - with tf version <=0.12, this loss has incorrect 2nd derivatives
+    return tf.nn.sigmoid_cross_entropy_with_logits(logits=pred, labels=label) / FLAGS.update_batch_size
