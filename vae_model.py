@@ -6,13 +6,11 @@ import numpy as np
 
 
 class VAE:
-
-    def __init__(self, img_shape, label_shape):
+    def __init__(self, img_shape, label_shape, batch_size):
 
         self.img_shape = img_shape,
         self.label_shape =label_shape,
 
-        batch_size=2
         latent_dim = 2000
         target_std_vec = np.ones(latent_dim)
         target_mean_vec = np.zeros(latent_dim)

@@ -85,11 +85,11 @@ class DataGenerator(object):
         #################################################################################
 
 
-        vae_model = VAE((self.img_size[0], self.img_size[1], 1), (1, self.num_classes))
         # inputa_files has (n*k * num_of_task) files.
         # make it to batch of which size is (n*k) : thus, the total number of batch = num_of_task
         batch_size = int(self.num_classes * FLAGS.update_batch_size)
         N_batch = num_of_task = int(len(inputa_files) / batch_size)  # len(inputa_files)/nk = num of task
+        vae_model = VAE((self.img_size[0], self.img_size[1], 1), (1, self.num_classes), batch_size)
 
         def latent_feature(file_names):
             file_names_batch = np.reshape(file_names, [N_batch, batch_size])
