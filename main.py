@@ -278,7 +278,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
         img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
         return vae_model.testWithSavedModel(img_arr)
 
-    def get_y_hat(test_file_names):
+    def get_y_hat(test_file_names, N_batch):
         file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
 
         yhat_arr = []
@@ -301,7 +301,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
         N_batch = int(len(data['test_file_names']) / batch_size)
 
         print(test_subject.split(".")[0], " total len:", len(data['test_file_names']))
-        y_hat = get_y_hat(data['test_file_names'])
+        y_hat = get_y_hat(data['test_file_names'], N_batch)
         print(y_hat.shape)
         save_path = "./logs/result/test_test/" + trained_model_dir
         if FLAGS.test_train:
