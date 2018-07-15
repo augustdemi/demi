@@ -76,7 +76,7 @@ class MAML:
                 if self.classification:
                     task_accuraciesb = []
 
-                task_outputa = self.forward(inputa, weights, reuse=reuse)  # only reuse on the first iter
+                task_outputa = self.forward(inputa, weights, reuse=reuse)  # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
 
                 task_lossa = self.loss_func(task_outputa, labela) # 2,1
 
@@ -85,7 +85,7 @@ class MAML:
                     grads = [tf.stop_gradient(grad) for grad in grads]
                 gradients = dict(zip(weights.keys(), grads))
                 fast_weights = dict(zip(weights.keys(), [weights[key] - self.update_lr*gradients[key] for key in weights.keys()]))
-                output = self.forward(inputb, fast_weights, reuse=True)
+                output = self.forward(inputb, fast_weights, reuse=True) # <<< fast weight * inputb >>>
                 task_outputbs.append(output)
                 task_labelbs.append(labelb)
                 task_lossesb.append(self.loss_func(output, labelb))
@@ -102,33 +102,28 @@ class MAML:
                     task_labelbs.append(labelb)
                     task_lossesb.append(self.loss_func(output, labelb))
 
-                task_output = [task_outputa, task_outputbs, labela, task_labelbs, task_lossa, task_lossesb]
+                task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1),
+                                                             tf.argmax(labela, 1))
+                for j in range(num_updates):
+                    task_accuraciesb.append(tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputbs[j]), 1), tf.argmax(labelb, 1)))
 
-                if self.classification:
-                    task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1), tf.argmax(labela, 1))
-                    for j in range(num_updates):
-                        task_accuraciesb.append(tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputbs[j]), 1), tf.argmax(labelb, 1)))
-                    task_output.extend([task_accuracya, task_accuraciesb])
-
+                task_output = [task_outputa, task_outputbs, labela, task_labelbs, task_lossa, task_lossesb, task_accuracya, task_accuraciesb, [fast_weights['w1'], fast_weights['b1']]]
                 return task_output
 
-            # if FLAGS.norm is not 'None':
-                # to initialize the batch norm vars, might want to combine this, and not run idx 0 twice.
-            unused = task_metalearn((self.inputa[0], self.inputb[0], self.labela[0], self.labelb[0]), False)
 
-
-            out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates]
+            out_dtype = [tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, tf.float32, [tf.float32]*num_updates, [tf.float32, tf.float32]]
 
             result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb), dtype=out_dtype, parallel_iterations=FLAGS.meta_batch_size)
             # In result, outa has shape (1,2,1,2) = (num.of.task, 2*k, num.of.au, one-hot label)
-            outputas, outputbs, res_labela, res_labelbs, lossesa, lossesb, accuraciesa, accuraciesb = result
+            outputas, outputbs, res_labela, res_labelbs, lossesa, lossesb, accuraciesa, accuraciesb, fast_weights = result
 
         ## Performance & Optimization
         if 'train' in prefix:
+            self.lossesa = lossesa
             self.total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
             self.total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
             # after the map_fn
-            self.outputas, self.outputbs = outputas, outputbs
+            self.outputas, self.outputbs, self.fast_weights = outputas, outputbs, fast_weights
             if self.classification:
                 self.total_accuracy1 = total_accuracy1 = tf.reduce_sum(accuraciesa) / tf.to_float(FLAGS.meta_batch_size)
                 self.total_accuracies2 = total_accuracies2 = [tf.reduce_sum(accuraciesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
