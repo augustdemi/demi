@@ -255,7 +255,8 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
     import EmoData as ED
     import cv2
     import pickle
-    vae_model = VAE((160, 240, 1), int(FLAGS.update_batch_size))
+    batch_size = 10
+    vae_model = VAE((160, 240, 1), batch_size)
     vae_model.loadWeight("./model_log300.h5", w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
@@ -297,7 +298,6 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
     for test_subject in test_subjects:
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
 
-        batch_size = 10
         N_batch = int(len(data['test_file_names']) / batch_size)
 
         print(test_subject.split(".")[0], " total len:", len(data['test_file_names']))
