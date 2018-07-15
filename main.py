@@ -255,7 +255,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
     import EmoData as ED
     import cv2
     import pickle
-    vae_model = VAE((160, 240, 1), int(FLAGS.num_classes * FLAGS.update_batch_size))
+    vae_model = VAE((160, 240, 1), int(FLAGS.update_batch_size))
     vae_model.loadWeight("./model_log300.h5", w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
