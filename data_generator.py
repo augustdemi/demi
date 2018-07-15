@@ -27,18 +27,16 @@ class DataGenerator(object):
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         data_folder = FLAGS.datadir
-        val_folder = FLAGS.valdir
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
-        num_val = 0
         num_train = FLAGS.meta_batch_size
         self.metatrain_character_folders = subject_folders[FLAGS.train_start_idx:FLAGS.train_start_idx + num_train]
         if FLAGS.test_set: # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
-            if(FLAGS.train_test and num_train ==13):
-                self.metatest_character_folders = subject_folders[:13]
+            if FLAGS.train_test:  # test task로 다시한번 모델을 retrain할때는 같은 test task중 train에 쓰이지 않은 다른 샘플을 선택하여 validate
+                self.metatest_character_folders = self.metatrain_character_folders
             else:
                 self.metatest_character_folders = [subject_folders[26]]
                 self.metatest_character_folders.extend(subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2*num_train-1])
@@ -46,12 +44,10 @@ class DataGenerator(object):
     def make_data_tensor(self, train=True):
         if train:
             folders = self.metatrain_character_folders
-            # number of tasks, not number of meta-iterations. (divide by metabatch size to measure)
-            num_total_batches = 200000
+            print("train folders: ", folders)
         else:
             folders = self.metatest_character_folders
             print("test folders: ",folders)
-            num_total_batches = 600
 
         # make list of files
         print('Generating filenames')
