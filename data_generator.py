@@ -38,7 +38,7 @@ class DataGenerator(object):
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
             if(FLAGS.train_test and num_train ==13):
-                self.metatrain_character_folders = subject_folders[:13]
+                self.metatest_character_folders = subject_folders[:13]
             else:
                 self.metatest_character_folders = [subject_folders[26]]
                 self.metatest_character_folders.extend(subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2*num_train-1])
