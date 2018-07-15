@@ -90,7 +90,7 @@ flags.DEFINE_string('keep_train_dir', None,
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 5
+    SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 500
 
     if FLAGS.train_test:
@@ -115,14 +115,14 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             input_tensors.extend([model.fast_weights])
 
         # SUMMARY_INTERVAL 마다 accuracy 계산해둠
-        if (itr % SUMMARY_INTERVAL) == 0 and (itr > 1):
+        if (itr % SUMMARY_INTERVAL) == 0:
             input_tensors.extend([model.result1, model.result2])
 
         result = sess.run(input_tensors, feed_dict)
 
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
-        if (itr % SUMMARY_INTERVAL == 0) and itr > 1:
+        if itr % SUMMARY_INTERVAL == 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
 
             # run for the validation
@@ -176,7 +176,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             summary(result_val, "TE")
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
-        if ((itr > 1) and itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
+        if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             if FLAGS.train_test:
                 retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
@@ -251,11 +251,11 @@ def test(model, saver, sess, trained_model_dir, data_generator):
 
 
 def test_test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
-    from vae_model_sig import VAE_sig
+    from vae_model import VAE
     import EmoData as ED
     import cv2
     import pickle
-    vae_model = VAE_sig((160, 240, 1), (1, 2))
+    vae_model = VAE((160, 240, 1), (1, 2))
     vae_model.loadWeight("./model_log300.h5", w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
@@ -367,7 +367,6 @@ def main():
         trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-    trained_model_dir += '.sig'
 
     print(">>>>> trained_model_dir: ", trained_model_dir)
 
