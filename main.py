@@ -304,13 +304,12 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
         print(test_subject.split(".")[0], " original total len:", len(data['test_file_names']))
         print(test_subject.split(".")[0], " rounded down total len:", len(test_file_names))
         y_hat = get_y_hat(test_file_names, N_batch)
-        print(y_hat.shape)
         save_path = "./logs/result/test_test/" + trained_model_dir
         if FLAGS.test_train:
             save_path = "./logs/result/test_train/" + trained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        print_summary(y_hat, data['y_lab'][:N_batch * batch_size],
+        print_summary(y_hat, data['y_lab'].argmax(2)[:N_batch * batch_size],
                       log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
