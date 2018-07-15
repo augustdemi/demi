@@ -139,10 +139,10 @@ class DataGenerator(object):
 
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
-        labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes) ## (num_of_tast, 2NK, N)
-        labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes) ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, self.num_classes*k, 2])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, self.num_classes*k, 2])
+        # labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes) ## (num_of_tast, 2NK, N)
+        # labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes) ## (num_of_tast, 2NK, N)
+        # labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, self.num_classes*k, 2])
+        # labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, self.num_classes*k, 2])
 
         return inputa_latent_feat_tensor,inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
 
