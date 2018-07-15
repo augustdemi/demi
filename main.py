@@ -106,26 +106,23 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
     print('Done initializing, starting training.')
 
-    for itr in range(resume_itr, FLAGS.pretrain_iterations + FLAGS.metatrain_iterations):
+    for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
 
-        if itr < FLAGS.pretrain_iterations:
-            input_tensors = [model.pretrain_op]
-        else:
-            input_tensors = [model.metatrain_op]
+        input_tensors = [model.metatrain_op]
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
-        if FLAGS.train_test and (itr == FLAGS.metatrain_iterations - 1):
+        if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
             input_tensors.extend([model.fast_weights])
 
         # SUMMARY_INTERVAL 마다 accuracy 계산해둠
-        if (itr % SUMMARY_INTERVAL) == 0 and (itr > 0):
+        if (itr % SUMMARY_INTERVAL) == 0 and (itr > 1):
             input_tensors.extend([model.result1, model.result2])
 
         result = sess.run(input_tensors, feed_dict)
 
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
-        if (itr % SUMMARY_INTERVAL == 0) and itr > 0:
+        if (itr % SUMMARY_INTERVAL == 0) and itr > 1:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
 
             # run for the validation
@@ -137,52 +134,49 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
             def summary(maml_result, set):
                 print(set)
-                if itr != 0:
-                    if itr < FLAGS.pretrain_iterations:
-                        print_str = 'Pretrain Iteration ' + str(itr)
-                    else:
-                        print_str = 'Iteration ' + str(itr - FLAGS.pretrain_iterations)
-                    print(print_str)
-                    y_hata = np.vstack(np.array(maml_result[-2][0]))  # length = num_of_task * N * K
-                    y_laba = np.vstack(np.array(maml_result[-2][1]))
-                    save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
-                        FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':' + str(
-                        FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
-                        FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/train"
-                    if not os.path.exists(save_path):
-                        os.makedirs(save_path)
+                print_str = 'Iteration ' + str(itr)
+                print(print_str)
+                y_hata = np.vstack(np.array(maml_result[-2][0]))  # length = num_of_task * N * K
+                y_laba = np.vstack(np.array(maml_result[-2][1]))
+                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
+                    FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':' + str(
+                    FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
+                    FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/train"
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
 
-                    save_path = "./logs/result/train/" + trained_model_dir + "/"
-                    if FLAGS.train_test:
-                        retrained_model_dir = 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
-                            FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
-                            FLAGS.num_updates) + '.updatelr' + str(
-                            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-                        save_path += retrained_model_dir
-                    elif FLAGS.train_test_inc:
-                        retrained_model_dir = 'inc.sbjt' + str(FLAGS.train_start_idx) + ':' + str(
-                            FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
-                            FLAGS.num_updates) + '.updatelr' + str(
-                            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-                        save_path += retrained_model_dir
-                    if not os.path.exists(save_path):
-                        os.makedirs(save_path)
+                save_path = "./logs/result/train/" + trained_model_dir + "/"
+                if FLAGS.train_test:
+                    retrained_model_dir = 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                        FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                        FLAGS.num_updates) + '.updatelr' + str(
+                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                    save_path += retrained_model_dir
+                elif FLAGS.train_test_inc:
+                    retrained_model_dir = 'inc.sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                        FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                        FLAGS.num_updates) + '.updatelr' + str(
+                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                    save_path += retrained_model_dir
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
 
-                    print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + set + "_" + str(itr) + ".txt")
-                    print("------------------------------------------------------------------------------------")
-                    recent_y_hatb = np.array(maml_result[-1][0][
-                                                 FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
-                    y_hatb = np.vstack(recent_y_hatb)
-                    recent_y_labb = np.array(maml_result[-1][1][FLAGS.num_updates - 1])
-                    y_labb = np.vstack(recent_y_labb)
-                    print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
-                    print("====================================================================================")
+                print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + set + "_" + str(itr) + ".txt")
+                print("------------------------------------------------------------------------------------")
+                recent_y_hatb = np.array(maml_result[-1][0][
+                                             FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
+                y_hatb = np.vstack(recent_y_hatb)
+                recent_y_labb = np.array(maml_result[-1][1][FLAGS.num_updates - 1])
+                y_labb = np.vstack(recent_y_labb)
+                print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
+                print("====================================================================================")
+
 
             summary(result, "TR")
             summary(result_val, "TE")
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
-        if (itr == 100) or ((itr != 0) and itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations - 1):
+        if ((itr > 1) and itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             if FLAGS.train_test:
                 retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
@@ -192,10 +186,10 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
-                saver.save(sess, save_path + '/model' + str(itr+1))
+                saver.save(sess, save_path + '/model' + str(itr))
 
                 # save local weight at the last iteration
-                if itr == FLAGS.metatrain_iterations - 1:
+                if itr == FLAGS.metatrain_iterations:
                     print(">>>>>>>>>>>>>> local save !! : ", itr)
                     local_w = result[1][0]
                     local_b = result[1][1]
@@ -214,7 +208,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
             else:
                 # to train the model increasingly whenever new test is coming.
-                saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr+1))
+                saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
 
@@ -366,7 +360,7 @@ def main():
 
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight) + '/inc'
+        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
     if FLAGS.train_test or FLAGS.train_test_inc:
         trained_model_dir = FLAGS.keep_train_dir  # TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
     elif FLAGS.test_test:
