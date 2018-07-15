@@ -5,7 +5,7 @@ import keras as K
 import numpy as np
 
 
-class VAE:
+class VAE_sig:
     def __init__(self, img_shape, batch_size):
 
         latent_dim = 2000
