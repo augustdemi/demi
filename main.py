@@ -367,10 +367,6 @@ def main():
         trained_model_dir = FLAGS.keep_train_dir  # TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
     elif FLAGS.local_subj > 0:
         trained_model_dir = FLAGS.keep_train_dir
-        trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(13) + '.ubs_' + str(
-            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-        trained_model_dir += '/local'
     elif FLAGS.test_test:
         trained_model_dir = FLAGS.keep_train_dir
         trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
