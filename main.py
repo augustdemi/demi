@@ -258,7 +258,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
     import pickle
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size)
-    vae_model.loadWeight("./model_log300.h5", w, b)
+    vae_model.loadWeight("./model150.h5", w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,

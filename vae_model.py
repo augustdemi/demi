@@ -57,7 +57,7 @@ class VAE:
 
 
     def computeLatentVal(self, x):
-        self.model_train.load_weights("./model_log300.h5")
+        self.model_train.load_weights("./model150.h5")
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         return self.model_train.get_weights()[-2:], z
 
