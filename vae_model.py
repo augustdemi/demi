@@ -53,11 +53,8 @@ class VAE:
         self.model_au_int = model_au_int
         self.z = z
 
-
-
-
-    def computeLatentVal(self, x):
-        self.model_train.load_weights("./model150.h5")
+    def computeLatentVal(self, x, vae_model):
+        self.model_train.load_weights(vae_model)
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         return self.model_train.get_weights()[-2:], z
 

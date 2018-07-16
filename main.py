@@ -88,6 +88,7 @@ flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log'
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
+flags.DEFINE_string('vae_model', './model150.h5', 'vae model dir from robert code')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -258,7 +259,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
     import pickle
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size)
-    vae_model.loadWeight("./model150.h5", w, b)
+    vae_model.loadWeight(FLAGS.vae_model, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
