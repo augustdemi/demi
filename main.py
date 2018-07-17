@@ -88,7 +88,7 @@ flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log'
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
-flags.DEFINE_string('vae_model', './model150.h5', 'vae model dir from robert code')
+flags.DEFINE_string('vae_model', './model_log300.h5', 'vae_model')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -321,7 +321,10 @@ def main():
         # always use meta batch size of 1 when testing.
         FLAGS.meta_batch_size = 1
 
-    data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
+    if FLAGS.test_train or FLAGS.test_test:
+        data_generator = DataGenerator(1, FLAGS.meta_batch_size)
+    else:
+        data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
 
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
@@ -364,7 +367,9 @@ def main():
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
-    if FLAGS.local_subj > 0:
+    if FLAGS.train_test or FLAGS.train_test_inc:
+        trained_model_dir = FLAGS.keep_train_dir  # TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
+    elif FLAGS.local_subj > 0:
         trained_model_dir = FLAGS.keep_train_dir
     elif FLAGS.test_test:
         trained_model_dir = FLAGS.keep_train_dir
