@@ -133,6 +133,7 @@ def rec_loss(img, rec):
 
 def pred_loss(y_true, y_pred):
     ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
+    # ce = EE.losses.categorical_crossentropy(y_true, y_pred)
     return (1-w_1)*ce
 
 loss  = [rec_loss, pred_loss, vae_loss]
@@ -163,8 +164,8 @@ model_train.compile(
 rec = K.models.Model(inp_1, out_11)
 if source_data!='init':
     model_train.load_weights('./model.h5', by_name=True)  # ========================== weight ==========================
-    w = model_train.get_weights()
-    print(model_train.get_weights()[0])
+    print(target_std_vec)
+    print(target_mean_vec)
 
 model_train.fit_generator(
         generator = GEN_TR,
