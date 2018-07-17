@@ -15,8 +15,10 @@ parser.add_argument("-i","--input",  type=str, default='init', help="files creat
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
 parser.add_argument("-n","--nb_iter",type=int, default=1, help="number of VAE iterations")
 parser.add_argument("-w","--warming",type=int, default=1, help="factor on kl loss")
-parser.add_argument("-tr","--training_data",type=str, default='/home/mihee/dev/project/robert_data/small.h5', help="path to training data set")
-parser.add_argument("-te","--test_data",type=str, default='/home/mihee/dev/project/robert_data/small.h5', help="path to test data set")
+parser.add_argument("-tr", "--training_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
+                    help="path to training data set")
+parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
+                    help="path to test data set")
 parser.add_argument("-k","--kfold",type=int, default=1, help="for k fold")
 args = parser.parse_args()
 
@@ -60,9 +62,9 @@ def generator(dat_dict, aug, mod=0, s=False):
                 img,
                 preprocessing=True,
                 augmentation=aug)
-        lab = lab.argmax(2) # shape = (num of data, num of au, one hot label). From this, choose the max index of 'one hot label'. Then shape = (num of data, num of au,1)
-        lab = lab[:,6] # For all batch data, choose only au12. Then shape = (10,)
-        lab = np.reshape(lab, (lab.shape[0], 1)) #make shape = (10,1)
+        # lab = lab.argmax(2)
+        lab = lab[:, 6]
+        lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         if mod==1:
             if(s): yield [img], [lab], [sub]
             else: yield [img], [lab]
@@ -77,7 +79,7 @@ GEN_TE = generator(TE, False)
 # X,Y,C dimenstion # ========================== start ==========================
 X, Y = next(GEN_TR) # train data의 X = img batches , y = [img, lab, img]
 inp_0_shape = X[0].shape[1:]
-out_0_shape = Y[1].shape[1:] # out_0_shape = (num of au, len(label))
+out_0_shape = Y[1].shape[1:]
 
 print("inp_0_shape", inp_0_shape)
 print("out_0_shape", out_0_shape)
@@ -105,7 +107,8 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
 z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma]) # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
 aug_z = Reshape((2000,1))(z_mean)
-out_1 = EE.layers.logREG(out_0_shape[0])(z)
+out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(
+    aug_z)  # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
 
 D1 = Dense(latent_dim, activation='relu')
@@ -129,7 +132,7 @@ def rec_loss(img, rec):
     return mse
 
 def pred_loss(y_true, y_pred):
-    ce = tf.nn.sigmoid_cross_entropy_with_logits(labels=y_true, logits=y_pred)
+    ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     return (1-w_1)*ce
 
 loss  = [rec_loss, pred_loss, vae_loss]
@@ -159,7 +162,7 @@ model_train.compile(
 
 rec = K.models.Model(inp_1, out_11)
 if source_data!='init':
-    model_train.load_weights('./model_log.h5', by_name=True) # ========================== weight ==========================
+    model_train.load_weights('./model.h5', by_name=True)  # ========================== weight ==========================
     w = model_train.get_weights()
     print(model_train.get_weights()[0])
 
@@ -176,7 +179,7 @@ model_train.fit_generator(
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
                 batch_size = batch_size,
                 title = ['TR','TE'],
-                # one_hot = True,
+                one_hot=True,
                 log_dir = 'res_disfa_'+str(args.warming).zfill(4)+'.csv/' + str(args.kfold),
             ),
             EE.callbacks.summary_vac_disfa(
@@ -186,7 +189,7 @@ model_train.fit_generator(
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint('./model_log.h5'),
+            K.callbacks.ModelCheckpoint('./model.h5'),
             ]
         )
 
