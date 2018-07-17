@@ -132,8 +132,8 @@ def rec_loss(img, rec):
     return mse
 
 def pred_loss(y_true, y_pred):
-    ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
-    # ce = EE.losses.categorical_crossentropy(y_true, y_pred)
+    # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
+    ce = EE.losses.categorical_crossentropy(y_true, y_pred)
     return (1-w_1)*ce
 
 loss  = [rec_loss, pred_loss, vae_loss]
