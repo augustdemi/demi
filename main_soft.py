@@ -189,22 +189,22 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, save_path + '/model' + str(itr))
 
                 # save local weight at the last iteration
-                if itr == FLAGS.metatrain_iterations:
-                    print(">>>>>>>>>>>>>> local save !! : ", itr)
-                    local_w = result[1][0]
-                    local_b = result[1][1]
-                    print("========================================================================================")
-                    print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
-                    local_model_dir = save_path + '/local'
-                    for i in range(FLAGS.meta_batch_size):
-                        model.weights['w1'].load(local_w[i], sess)
-                        model.weights['b1'].load(local_b[i], sess)
-                        print('>>>>>> Local weights for subject: ', i, sess.run(model.weights['w1']),
-                              sess.run('model/b1:0'))
-                        print("-----------------------------------------------------------------")
-                        if not os.path.exists(save_path):
-                            os.makedirs(save_path)
-                        saver.save(sess, local_model_dir + '/subject' + str(i))
+                # if itr == FLAGS.metatrain_iterations:
+                #     print(">>>>>>>>>>>>>> local save !! : ", itr)
+                #     local_w = result[1][0]
+                #     local_b = result[1][1]
+                #     print("========================================================================================")
+                #     print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+                #     local_model_dir = save_path + '/local'
+                #     for i in range(FLAGS.meta_batch_size):
+                #         model.weights['w1'].load(local_w[i], sess)
+                #         model.weights['b1'].load(local_b[i], sess)
+                #         print('>>>>>> Local weights for subject: ', i, sess.run(model.weights['w1']),
+                #               sess.run('model/b1:0'))
+                #         print("-----------------------------------------------------------------")
+                #         if not os.path.exists(save_path):
+                #             os.makedirs(save_path)
+                #         saver.save(sess, local_model_dir + '/subject' + str(i))
 
             else:
                 # to train the model increasingly whenever new test is coming.
