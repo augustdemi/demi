@@ -93,7 +93,7 @@ flags.DEFINE_string('vae_model', './model150.h5', 'vae model dir from robert cod
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 100
-    SAVE_INTERVAL = 500
+    SAVE_INTERVAL = 5000
 
     if FLAGS.train_test:
         resume_itr = 0
