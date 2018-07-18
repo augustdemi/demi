@@ -181,6 +181,7 @@ class MAML:
         return score
 
     def getWeightVar(self):
+        tf.set_random_seed(1)
         w1 = tf.get_variable("w1", [2000, 1, 2])
         b1 = tf.get_variable("b1", [1, 2])
         weight_tensor = {"w1": w1, "b1": b1}
