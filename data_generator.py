@@ -17,6 +17,7 @@ class DataGenerator(object):
     Data Generator capable of generating batches of sinusoid or Omniglot data.
     A "class" is considered a class of omniglot digits or a particular sinusoid function.
     """
+
     def __init__(self, num_samples_per_class, batch_size, config={}):
         """
         Args:
@@ -32,14 +33,15 @@ class DataGenerator(object):
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
         num_train = FLAGS.meta_batch_size
         self.metatrain_character_folders = subject_folders[FLAGS.train_start_idx:FLAGS.train_start_idx + num_train]
-        if FLAGS.test_set: # In test, runs only one test task for the entered subject
+        if FLAGS.test_set:  # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
             if FLAGS.train_test:  # test task로 다시한번 모델을 retrain할때는 같은 test task중 train에 쓰이지 않은 다른 샘플을 선택하여 validate
                 self.metatest_character_folders = self.metatrain_character_folders
             else:
                 self.metatest_character_folders = [subject_folders[26]]
-                self.metatest_character_folders.extend(subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2*num_train-1])
+                self.metatest_character_folders.extend(
+                    subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2 * num_train - 1])
 
     def make_data_tensor(self, train=True):
         if train:
@@ -47,7 +49,7 @@ class DataGenerator(object):
             print("train folders: ", folders)
         else:
             folders = self.metatest_character_folders
-            print("test folders: ",folders)
+            print("test folders: ", folders)
 
         # make list of files
         print('Generating filenames')
@@ -57,14 +59,15 @@ class DataGenerator(object):
         labelas = []
         labelbs = []
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
-        for sub_folder in folders: # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
+        for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
-            labels_and_images = get_images(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class, shuffle=True)
+            labels_and_images = get_images(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class,
+                                           shuffle=True)
             # make sure the above isn't randomized order
-            labels = [li[0] for li in labels_and_images] # 0 0 1 1 = off off on on
+            labels = [li[0] for li in labels_and_images]  # 0 0 1 1 = off off on on
             filenames = [li[1] for li in labels_and_images]
-            #Split data into a/b
-            k = int(self.num_samples_per_class / 2) # = FLAGS.update_batch_size
+            # Split data into a/b
+            k = int(self.num_samples_per_class / 2)  # = FLAGS.update_batch_size
             filenames = np.array(filenames).reshape(self.num_classes, self.num_samples_per_class)
             for files_per_class in filenames:
                 inputa_files.extend(files_per_class[:k])
@@ -75,7 +78,7 @@ class DataGenerator(object):
                 labelas.extend(labels_per_class[:k])
                 labelbs.extend(labels_per_class[k:])
 
-            all_filenames.extend(filenames) # just for debugging
+            all_filenames.extend(filenames)  # just for debugging
 
         # print("all_filenames: ", all_filenames)
         #################################################################################
@@ -130,16 +133,15 @@ class DataGenerator(object):
         np.random.seed(2)
         np.random.shuffle(labelbs)
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
-        inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor, [num_of_task, self.num_classes*k, 2000])
+        inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
-        inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor, [num_of_task, self.num_classes*k, 2000])
+        inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
 
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
-        # labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes) ## (num_of_tast, 2NK, N)
-        # labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes) ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, self.num_classes * k, 1])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, self.num_classes * k, 1])
+        labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
+        labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
+        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, self.num_classes * k, 2])
+        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, self.num_classes * k, 2])
 
-        return inputa_latent_feat_tensor,inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
-
+        return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor

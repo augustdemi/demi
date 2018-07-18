@@ -88,7 +88,7 @@ flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log'
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
-flags.DEFINE_string('vae_model', './model_log300.h5', 'vae_model')
+flags.DEFINE_string('vae_model', './model150.h5', 'vae model dir from robert code')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -122,16 +122,15 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
         result = sess.run(input_tensors, feed_dict)
 
-
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if itr % SUMMARY_INTERVAL == 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
 
             # run for the validation
             feed_dict_val = {model.inputa: metaval_input_tensors['inputa'].eval(),
-                         model.inputb: metaval_input_tensors['inputb'].eval(),
-                         model.labela: metaval_input_tensors['labela'].eval(),
-                         model.labelb: metaval_input_tensors['labelb'].eval(), model.meta_lr: 0}
+                             model.inputb: metaval_input_tensors['inputb'].eval(),
+                             model.labela: metaval_input_tensors['labela'].eval(),
+                             model.labelb: metaval_input_tensors['labelb'].eval(), model.meta_lr: 0}
             result_val = sess.run(input_tensors, feed_dict_val)
 
             def summary(maml_result, set):
@@ -173,7 +172,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
                 print("====================================================================================")
 
-
             summary(result, "TR")
             summary(result_val, "TE")
 
@@ -201,7 +199,8 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                     for i in range(FLAGS.meta_batch_size):
                         model.weights['w1'].load(local_w[i], sess)
                         model.weights['b1'].load(local_b[i], sess)
-                        print('>>>>>> Local weights for subject: ', i, sess.run(model.weights['w1']), sess.run('model/b1:0'))
+                        print('>>>>>> Local weights for subject: ', i, sess.run(model.weights['w1']),
+                              sess.run('model/b1:0'))
                         print("-----------------------------------------------------------------")
                         if not os.path.exists(save_path):
                             os.makedirs(save_path)
@@ -210,11 +209,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             else:
                 # to train the model increasingly whenever new test is coming.
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
-
-
-
-
-
 
 
 def test(model, saver, sess, trained_model_dir, data_generator):
@@ -253,12 +247,12 @@ def test(model, saver, sess, trained_model_dir, data_generator):
 
 
 def test_test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
-    from vae_model import VAE
+    from vae_model_soft import VAE_soft
     import EmoData as ED
     import cv2
     import pickle
     batch_size = 10
-    vae_model = VAE((160, 240, 1), batch_size)
+    vae_model = VAE_soft((160, 240, 1), batch_size)
     vae_model.loadWeight(FLAGS.vae_model, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
@@ -311,7 +305,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
             save_path = "./logs/result/test_train/" + trained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        print_summary(y_hat, data['y_lab'].argmax(2)[:N_batch * batch_size],
+        print_summary(y_hat, data['y_lab'][:N_batch * batch_size],
                       log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
@@ -357,7 +351,6 @@ def main():
 
     if FLAGS.test_train or FLAGS.test_test:
         FLAGS.update_batch_size = temp_kshot
-
 
     if not FLAGS.train:
         # change to original meta batch size when loading model.
