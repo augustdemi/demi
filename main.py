@@ -88,7 +88,7 @@ flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log'
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
-flags.DEFINE_string('vae_model', './model150.h5', 'vae model dir from robert code')
+flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
