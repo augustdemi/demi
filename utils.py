@@ -12,6 +12,7 @@ FLAGS = flags.FLAGS
 ## Image helper
 def get_images(path, label_int, nb_samples=None, shuffle=False):
     if shuffle:
+        random.seed(1)
         sampler = lambda x: random.sample(x, nb_samples)
     else:
         sampler = lambda x: x[:nb_samples]
@@ -21,8 +22,6 @@ def get_images(path, label_int, nb_samples=None, shuffle=False):
         for i, label in zip(label_int, labels)\
         for image in sampler(os.listdir(os.path.join(path, label)))]
 
-    # if shuffle:
-    #     random.shuffle(images)
     return images
 
 ## Network helpers
