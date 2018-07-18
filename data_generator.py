@@ -70,13 +70,15 @@ class DataGenerator(object):
             k = int(self.num_samples_per_class / 2)  # = FLAGS.update_batch_size
             filenames = np.array(filenames).reshape(self.num_classes, self.num_samples_per_class)
             for files_per_class in filenames:
-                inputa_files.extend(files_per_class[:k])
-                inputb_files.extend(files_per_class[k:])
+                for i in range(k):
+                    inputa_files.append(files_per_class[2*i])
+                    inputb_files.append(files_per_class[2*i+1])
 
             labels = np.array(labels).reshape(self.num_classes, self.num_samples_per_class)
             for labels_per_class in labels:
-                labelas.extend(labels_per_class[:k])
-                labelbs.extend(labels_per_class[k:])
+                for i in range(k):
+                    labelas.append(labels_per_class[2*i])
+                    labelbs.append(labels_per_class[2*i+1])
 
             all_filenames.extend(filenames)  # just for debugging
 
