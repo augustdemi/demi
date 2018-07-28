@@ -21,7 +21,7 @@ parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/pro
                     help="path to test data set")
 parser.add_argument("-k","--kfold",type=int, default=1, help="for k fold")
 parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
-parser.add_argument("-e", "--init_epoch", type=int, default=6, help="Epoch at which to start training")
+parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 args = parser.parse_args()
 
 # lins input
@@ -187,7 +187,7 @@ model_train.fit_generator(
         nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
         nb_epoch = nb_iter,
         max_q_size = 4,
-    initial_epoch=args.init_epoch
+    initial_epoch=args.init_epoch,
         callbacks=[
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
