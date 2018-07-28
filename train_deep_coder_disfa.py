@@ -21,6 +21,7 @@ parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/pro
                     help="path to test data set")
 parser.add_argument("-k","--kfold",type=int, default=1, help="for k fold")
 parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
+parser.add_argument("-e", "--init_epoch", type=int, default=6, help="Epoch at which to start training")
 args = parser.parse_args()
 
 # lins input
@@ -167,9 +168,9 @@ model_train.compile(
         loss = loss
         )
 
-rec = K.models.Model(inp_1, out_11)
 if source_data!='init':
-    model_train.load_weights('./model.h5', by_name=True)  # ========================== weight ==========================
+    model_train.load_weights('./model_au' + str(au_index) + '.h5',
+                             by_name=True)  # ========================== weight ==========================
     print(target_std_vec)
     print(target_mean_vec)
 
@@ -186,6 +187,7 @@ model_train.fit_generator(
         nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
         nb_epoch = nb_iter,
         max_q_size = 4,
+    initial_epoch=args.init_epoch
         callbacks=[
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
