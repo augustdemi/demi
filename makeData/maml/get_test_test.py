@@ -2,8 +2,9 @@ import pickle
 import os
 import numpy as np
 
-path = "/home/ml1323/project/robert_data/DISFA/kshot_rest/rest/"
-subjects = os.listdir(path)
+au = "au25"
+path = "/home/ml1323/project/robert_data/DISFA/kshot_rest/" + au
+subjects = os.listdir(path + "/rest/")
 subjects.sort()
 
 for subject in subjects[14:27]:
@@ -28,7 +29,7 @@ for subject in subjects[14:27]:
     y_lab = y_lab.reshape(y_lab.shape[0], 1, 2)
     np.random.seed(3)
     np.random.shuffle(y_lab)
-    save_path = "/home/ml1323/project/robert_data/DISFA/kshot_rest/testset/" + subject + ".pkl"
+    save_path = path + "/testset/" + subject + ".pkl"
     out = open(save_path, 'wb')
     pickle.dump({'test_file_names': test_file_names, 'y_lab': y_lab}, out, protocol=2)
 
