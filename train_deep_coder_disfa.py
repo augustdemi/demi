@@ -71,7 +71,6 @@ def generator(dat_dict, aug, mod=0, s=False):
         else:
             lab = lab[:, au_index]
             lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
-        print(">>>>> lab shape: ", lab.shape)
         if mod==1:
             if(s): yield [img], [lab], [sub]
             else: yield [img], [lab]
