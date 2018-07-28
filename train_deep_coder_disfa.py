@@ -20,11 +20,13 @@ parser.add_argument("-tr", "--training_data", type=str, default='/home/mihee/dev
 parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
                     help="path to test data set")
 parser.add_argument("-k","--kfold",type=int, default=1, help="for k fold")
+parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
 args = parser.parse_args()
 
 # lins input
 source_data = args.input
 nb_iter = args.nb_iter
+au_index = args.au_index
 
 target_std_vec = np.ones(2000)
 target_mean_vec = np.zeros(2000)
@@ -63,7 +65,7 @@ def generator(dat_dict, aug, mod=0, s=False):
                 preprocessing=True,
                 augmentation=aug)
         # lab = lab.argmax(2)
-        lab = lab[:, 6]
+        lab = lab[:, au_index]
         lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         if mod==1:
             if(s): yield [img], [lab], [sub]
@@ -167,6 +169,12 @@ if source_data!='init':
     print(target_std_vec)
     print(target_mean_vec)
 
+import os
+
+sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold) + "_au" + str(au_index)
+if not os.path.exists(sum_vac_disfa_dir):
+    os.makedirs(sum_vac_disfa_dir)
+
 model_train.fit_generator(
         generator = GEN_TR,
         samples_per_epoch = 1000, #number of samples to process before going to the next epoch.
@@ -186,11 +194,11 @@ model_train.fit_generator(
             EE.callbacks.summary_vac_disfa(
                 gen = generator(TE, False, s=True), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
                 predictor = model_rec_z_y.predict, # reconstructed x와 z mean얻어냄
-                log_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold),
+                log_dir=sum_vac_disfa_dir,
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint('./model.h5'),
+            K.callbacks.ModelCheckpoint('./model_au' + str(au_index) + '.h5'),
             ]
         )
 
