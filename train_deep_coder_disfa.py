@@ -168,8 +168,7 @@ model_train.compile(
         )
 
 if source_data!='init':
-    model_train.load_weights('./model_au' + str(au_index) + '.h5',
-                             by_name=True)  # ========================== weight ==========================
+    model_train.load_model('./model_au' + str(au_index) + '.h5')
     print(target_std_vec)
     print(target_mean_vec)
 
