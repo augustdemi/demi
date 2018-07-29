@@ -3,12 +3,13 @@ import os
 import numpy as np
 
 au = "au25"
-path = "/home/ml1323/project/robert_data/DISFA/kshot_rest/" + au + "/rest"
-subjects = os.listdir(path)
-subjects.sort()
-
+path = "/home/ml1323/project/robert_data/DISFA/kshot_rest/" + au
 save_path = path + "/testset/"
 if not os.path.exists(save_path): os.makedirs(save_path)
+
+path += "/rest"
+subjects = os.listdir(path)
+subjects.sort()
 
 for subject in subjects[14:27]:
     subject_folder = os.path.join(path, subject)
