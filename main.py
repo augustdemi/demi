@@ -31,6 +31,7 @@ from data_generator import DataGenerator
 from maml import MAML
 from tensorflow.python.platform import flags
 from datetime import datetime
+import pickle
 import os
 
 start_time = datetime.now()
@@ -113,7 +114,8 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
         input_tensors = [model.metatrain_op]
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
-        if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
+        # if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
+        if itr % SUMMARY_INTERVAL == 0:
             input_tensors.extend([model.fast_weights])
 
         # SUMMARY_INTERVAL 마다 accuracy 계산해둠
@@ -179,10 +181,13 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             local_w = result[1][0]
             local_b = result[1][1]
             print("========================================================================================")
+            global_w = sess.run(model.weights['model/w1:0'])
+            global_b = sess.run(model.weights['model/b1:0'])
+            print('>>>>>> Global weights: ', global_w, global_b)
             print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
 
-            w_norm_arr = []
-            b_norm_arr = []
+            w_norm_arr = [global_w]
+            b_norm_arr = [global_b]
             for i in range(FLAGS.meta_batch_size):
                 w = local_w[i]
                 b = local_b[i]
@@ -194,13 +199,11 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
             if FLAGS.train_test:
-                f = open(save_path + "/train_" + str(itr) + ".txt", 'w')
+                out = open(save_path + "/test" + str(itr) + ".txt", 'wb')
             else:
-                f = open(save_path + "/test_" + str(itr) + ".txt", 'w')
-            print(w_norm_arr, file=f)
-            print("\n", file=f)
-            print(b_norm_arr, file=f)
-            f.close()
+                out = open(save_path + "/train_" + str(itr) + ".txt", 'wb')
+            pickle.dump({'w': w_norm_arr, 'b': b_norm_arr}, out, protocol=2)
+            out.close()
 
 
 
@@ -283,7 +286,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
     from vae_model_soft import VAE_soft
     import EmoData as ED
     import cv2
-    import pickle
+
     batch_size = 10
     vae_model = VAE_soft((160, 240, 1), batch_size)
     vae_model.loadWeight(FLAGS.vae_model, w, b)
