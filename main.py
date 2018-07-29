@@ -184,10 +184,9 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             w_norm_arr = []
             b_norm_arr = []
             for i in range(FLAGS.meta_batch_size):
-                w = model.weights['w1'].load(local_w[i], sess)
-                b = model.weights['b1'].load(local_b[i], sess)
-                print('>>>>>> Local weights for subject: ', i, sess.run(model.weights['w1']),
-                      sess.run('model/b1:0'))
+                w = local_w[i]
+                b = local_b[i]
+                print('>>>>>> Local weights for subject: ', i, w, b)
                 w_norm_arr.append(np.linalg.norm(w))
                 b_norm_arr.append(np.linalg.norm(b))
                 print("-----------------------------------------------------------------")
