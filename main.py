@@ -93,7 +93,7 @@ flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from rober
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 2
+    SUMMARY_INTERVAL = 500
     SAVE_INTERVAL = 5000
 
     if FLAGS.train_test:
@@ -181,20 +181,15 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             local_w = result[1][0]
             local_b = result[1][1]
             print("========================================================================================")
-            global_w = sess.run(model.weights['model/w1:0'])
-            global_b = sess.run(model.weights['model/b1:0'])
+            global_w = sess.run('model/w1:0')
+            global_b = sess.run('model/b1:0')
             print('>>>>>> Global weights: ', global_w, global_b)
-            print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
 
-            w_norm_arr = [global_w]
-            b_norm_arr = [global_b]
+            w_arr = [global_w]
+            b_arr = [global_b]
             for i in range(FLAGS.meta_batch_size):
-                w = local_w[i]
-                b = local_b[i]
-                print('>>>>>> Local weights for subject: ', i, w, b)
-                w_norm_arr.append(np.linalg.norm(w))
-                b_norm_arr.append(np.linalg.norm(b))
-                print("-----------------------------------------------------------------")
+                w_arr.append(local_w[i])
+                b_arr.append(local_b[i])
             save_path = FLAGS.logdir + '/' + trained_model_dir + '/weight'
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
@@ -202,7 +197,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 out = open(save_path + "/test" + str(itr) + ".pkl", 'wb')
             else:
                 out = open(save_path + "/train_" + str(itr) + ".pkl", 'wb')
-            pickle.dump({'w': w_norm_arr, 'b': b_norm_arr}, out, protocol=2)
+            pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
             out.close()
 
 
