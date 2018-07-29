@@ -92,7 +92,7 @@ flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from rober
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 100
+    SUMMARY_INTERVAL = 2
     SAVE_INTERVAL = 5000
 
     if FLAGS.train_test:
@@ -175,6 +175,40 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             summary(result, "TR")
             summary(result_val, "TE")
 
+            # save weight norm
+            local_w = result[1][0]
+            local_b = result[1][1]
+            print("========================================================================================")
+            print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+
+            w_norm_arr = []
+            b_norm_arr = []
+            for i in range(FLAGS.meta_batch_size):
+                w = model.weights['w1'].load(local_w[i], sess)
+                b = model.weights['b1'].load(local_b[i], sess)
+                print('>>>>>> Local weights for subject: ', i, sess.run(model.weights['w1']),
+                      sess.run('model/b1:0'))
+                w_norm_arr.append(np.linalg.norm(w))
+                b_norm_arr.append(np.linalg.norm(b))
+                print("-----------------------------------------------------------------")
+            save_path = FLAGS.logdir + '/' + trained_model_dir + '/weight'
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            if FLAGS.train_test:
+                f = open(save_path + "/train_" + str(itr) + ".txt", 'w')
+            else:
+                f = open(save_path + "/test_" + str(itr) + ".txt", 'w')
+            print(w_norm_arr, file=f)
+            print("\n", file=f)
+            print(b_norm_arr, file=f)
+            f.close()
+
+
+
+
+
+
+
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             if FLAGS.train_test:
@@ -202,8 +236,8 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                         print('>>>>>> Local weights for subject: ', i, sess.run(model.weights['w1']),
                               sess.run('model/b1:0'))
                         print("-----------------------------------------------------------------")
-                        if not os.path.exists(save_path):
-                            os.makedirs(save_path)
+                        if not os.path.exists(local_model_dir):
+                            os.makedirs(local_model_dir)
                         saver.save(sess, local_model_dir + '/subject' + str(i))
 
             else:
