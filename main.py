@@ -199,9 +199,9 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
             if FLAGS.train_test:
-                out = open(save_path + "/test" + str(itr) + ".txt", 'wb')
+                out = open(save_path + "/test" + str(itr) + ".pkl", 'wb')
             else:
-                out = open(save_path + "/train_" + str(itr) + ".txt", 'wb')
+                out = open(save_path + "/train_" + str(itr) + ".pkl", 'wb')
             pickle.dump({'w': w_norm_arr, 'b': b_norm_arr}, out, protocol=2)
             out.close()
 
