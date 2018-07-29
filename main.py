@@ -125,7 +125,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
         result = sess.run(input_tensors, feed_dict)
 
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
-        if itr % SUMMARY_INTERVAL == 0:
+        if (itr % SUMMARY_INTERVAL == 0) or (itr == 1):
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
 
             # run for the validation
