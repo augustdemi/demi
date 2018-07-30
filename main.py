@@ -405,7 +405,7 @@ def main():
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
 
-    print(">>>>> trained_model_dir: ", trained_model_dir)
+    print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
 
     # if FLAGS.stop_grad:
     #     trained_model_dir += 'stopgrad'
