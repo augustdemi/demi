@@ -32,16 +32,6 @@ model_name = './model_au' + str(au_index) + '.h5'
 
 target_std_vec = np.ones(2000)
 target_mean_vec = np.zeros(2000)
-if source_data != 'init':
-    with h5py.File(model_name) as f:
-        dat = f['mean_reconstr'][::]
-        target_mean_vec = dat.mean(0)
-        target_std_vec = dat.std(0)
-        print("----------------------------------------")
-        print(target_mean_vec.mean())
-        print(target_std_vec.mean())
-        print("----------------------------------------")
-
 
 batch_size = 10 # dont change it!
 log_dir_model = './model'
@@ -116,7 +106,7 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
     z_mean, z_log_sigma = args
     batch_size = 10
     epsilon = []
-    for m, s in zip(target_mean_vec, target_std_vec):
+    for m, s in zip(np.ones(2000), np.ones(2000)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
     epsilon = KB.concatenate(epsilon, 1)
     return z_mean + KB.exp(z_log_sigma) * epsilon
@@ -180,12 +170,9 @@ model_train.compile(
 
 if source_data!='init':
     from keras.models import load_model
-
     model_train = load_model(model_name)
-    print("-----------------------------------")
-    print(target_std_vec)
-    print(target_mean_vec)
-    print("-----------------------------------")
+    print(">>>>>>>>> model loaded")
+
 
 import os
 
