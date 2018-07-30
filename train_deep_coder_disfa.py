@@ -103,6 +103,7 @@ z_mean      = Dense(latent_dim)(emb) # latent_dim는 output space의 dim이 될�
 z_log_sigma = Dense(latent_dim)(emb) #
 
 def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
+    import keras.backend as KB
     z_mean, z_log_sigma = args
     batch_size = 10
     epsilon = []
