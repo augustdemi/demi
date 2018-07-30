@@ -32,6 +32,7 @@ from maml import MAML
 from tensorflow.python.platform import flags
 from datetime import datetime
 import os
+import pickle
 
 start_time = datetime.now()
 FLAGS = flags.FLAGS
@@ -88,11 +89,13 @@ flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log'
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
+flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
+flags.DEFINE_integer('weight_seed', 3, 'seed for initial weight')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 2
+    SUMMARY_INTERVAL = 500
     SAVE_INTERVAL = 5000
 
     if FLAGS.train_test:
@@ -171,36 +174,30 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 y_labb = np.vstack(recent_y_labb)
                 print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
                 print("====================================================================================")
-
             summary(result, "TR")
             summary(result_val, "TE")
 
             # save weight norm
             local_w = result[1][0]
             local_b = result[1][1]
-            print("========================================================================================")
-            print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+            global_w = sess.run('model/w1:0')
+            global_b = sess.run('model/b1:0')
 
-            w_norm_arr = []
-            b_norm_arr = []
+            w_arr = [global_w]
+            b_arr = [global_b]
             for i in range(FLAGS.meta_batch_size):
-                w = local_w[i]
-                b = local_b[i]
-                print('>>>>>> Local weights for subject: ', i, w, b)
-                w_norm_arr.append(np.linalg.norm(w))
-                b_norm_arr.append(np.linalg.norm(b))
-                print("-----------------------------------------------------------------")
+                w_arr.append(local_w[i])
+                b_arr.append(local_b[i])
             save_path = FLAGS.logdir + '/' + trained_model_dir + '/weight'
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
             if FLAGS.train_test:
-                f = open(save_path + "/train_" + str(itr) + ".txt", 'w')
+                out = open(save_path + "/test" + str(itr) + ".pkl", 'wb')
             else:
-                f = open(save_path + "/test_" + str(itr) + ".txt", 'w')
-            print(w_norm_arr, file=f)
-            print("\n", file=f)
-            print(b_norm_arr, file=f)
-            f.close()
+                out = open(save_path + "/train_" + str(itr) + ".pkl", 'wb')
+            pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
+            out.close()
+
 
 
 
