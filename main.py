@@ -91,6 +91,7 @@ flags.DEFINE_string('keep_train_dir', None,
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 3, 'seed for initial weight')
+flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 
 
@@ -277,12 +278,12 @@ def test(model, saver, sess, trained_model_dir, data_generator):
 
 
 def test_test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
-    from vae_model_soft import VAE_soft
+    from vae_model import VAE
     import EmoData as ED
     import cv2
     import pickle
     batch_size = 10
-    vae_model = VAE_soft((160, 240, 1), batch_size)
+    vae_model = VAE((160, 240, 1), batch_size, FLAGS.num_au)
     vae_model.loadWeight(FLAGS.vae_model, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(

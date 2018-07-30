@@ -6,7 +6,7 @@ import numpy as np
 
 
 class VAE:
-    def __init__(self, img_shape, batch_size):
+    def __init__(self, img_shape, batch_size, num_au):
 
         latent_dim = 2000
         target_std_vec = np.ones(latent_dim)
@@ -34,7 +34,7 @@ class VAE:
 
         z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma])  # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
         resized_z = Reshape((2000, 1))(z_mean)
-        out_1 = EE.layers.softmaxPDF(1, 2)(resized_z)
+        out_1 = EE.layers.softmaxPDF(num_au, 2)(resized_z)
 
         D1 = Dense(latent_dim, activation='relu')
         D2 = Dense(n_feat, activation='sigmoid')  # n_feat  = conv 결과 shape들의 곱이 ouputspace의 dim
