@@ -174,6 +174,11 @@ sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold) + "_au" + 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
 
+if source_data != 'init':
+    model_train.load_weights(model_name)
+    print(model_train.get_weights()[-2:])
+    print(">>>>>>>>> model loaded")
+
 model_train.fit_generator(
         generator = GEN_TR,
         samples_per_epoch = 1000, #number of samples to process before going to the next epoch.
@@ -199,14 +204,12 @@ model_train.fit_generator(
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint(model_name),
+            # K.callbacks.ModelCheckpoint(model_name),
             ]
         )
 
-if source_data != 'init':
-    model_train.load_weights(model_name)
-    print(model_train.get_weights()[-2:])
-    print(">>>>>>>>> model loaded")
+model_train.save_weights(model_name)
+
 
 
 end_time = datetime.now()
