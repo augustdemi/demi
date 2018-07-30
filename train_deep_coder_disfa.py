@@ -103,7 +103,6 @@ z_mean      = Dense(latent_dim)(emb) # latent_dim는 output space의 dim이 될�
 z_log_sigma = Dense(latent_dim)(emb) #
 
 def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
-    import keras.backend as KB
     z_mean, z_log_sigma = args
     batch_size = 10
     epsilon = []
@@ -171,12 +170,12 @@ model_train.compile(
 
 if source_data!='init':
     from keras.models import load_model
-    model_train = load_model(model_name)
+
+    model_train.load_weights(model_name)
+    print(model_train.get_weights()[-2:])
     print(">>>>>>>>> model loaded")
 
-
 import os
-
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold) + "_au" + str(au_index)
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
@@ -190,6 +189,7 @@ model_train.fit_generator(
         max_q_size = 4,
     initial_epoch=args.init_epoch,
         callbacks=[
+            print(model_train.get_weights()[-2:]),
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
