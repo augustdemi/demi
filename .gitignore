@@ -10,3 +10,4 @@ res*/
 *.txt
 *.csv
 *.pyc
+*__pycache__*
