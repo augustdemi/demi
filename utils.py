@@ -10,10 +10,10 @@ from tensorflow.python.platform import flags
 FLAGS = flags.FLAGS
 
 ## Image helper
-def get_images(path, label_int, nb_samples=None, shuffle=False):
+def get_images(path, label_int, seed, nb_samples=None, shuffle=True):
     subject = int(path[-1])
     if shuffle:
-        random.seed(subject)  # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
+        random.seed(subject + seed)  # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
         sampler = lambda x: random.sample(x, nb_samples)
     else:
         sampler = lambda x: x[:nb_samples]
