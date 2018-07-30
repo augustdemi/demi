@@ -88,13 +88,11 @@ flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log'
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
-flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
-flags.DEFINE_integer('weight_seed', 3, 'seed for initial weight')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 500
+    SUMMARY_INTERVAL = 2
     SAVE_INTERVAL = 5000
 
     if FLAGS.train_test:
@@ -180,13 +178,18 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             # save weight norm
             local_w = result[1][0]
             local_b = result[1][1]
+            print("========================================================================================")
+            print('>>>>>> Global weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+
             w_norm_arr = []
             b_norm_arr = []
             for i in range(FLAGS.meta_batch_size):
                 w = local_w[i]
                 b = local_b[i]
+                print('>>>>>> Local weights for subject: ', i, w, b)
                 w_norm_arr.append(np.linalg.norm(w))
                 b_norm_arr.append(np.linalg.norm(b))
+                print("-----------------------------------------------------------------")
             save_path = FLAGS.logdir + '/' + trained_model_dir + '/weight'
             if not os.path.exists(save_path):
                 os.makedirs(save_path)

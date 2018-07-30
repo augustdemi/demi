@@ -32,16 +32,6 @@ model_name = './model_au' + str(au_index) + '.h5'
 
 target_std_vec = np.ones(2000)
 target_mean_vec = np.zeros(2000)
-if source_data != 'init':
-    with h5py.File(model_name) as f:
-        dat = f['mean_reconstr'][::]
-        target_mean_vec = dat.mean(0)
-        target_std_vec = dat.std(0)
-        print("----------------------------------------")
-        print(target_mean_vec.mean())
-        print(target_std_vec.mean())
-        print("----------------------------------------")
-
 
 batch_size = 10 # dont change it!
 log_dir_model = './model'
@@ -116,7 +106,7 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
     z_mean, z_log_sigma = args
     batch_size = 10
     epsilon = []
-    for m, s in zip(target_mean_vec, target_std_vec):
+    for m, s in zip(np.ones(2000), np.ones(2000)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
     epsilon = KB.concatenate(epsilon, 1)
     return z_mean + KB.exp(z_log_sigma) * epsilon
@@ -178,20 +168,16 @@ model_train.compile(
         loss = loss
         )
 
-if source_data!='init':
-    from keras.models import load_model
-
-    model_train = load_model(model_name)
-    print("-----------------------------------")
-    print(target_std_vec)
-    print(target_mean_vec)
-    print("-----------------------------------")
 
 import os
-
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold) + "_au" + str(au_index)
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
+
+if source_data != 'init':
+    model_train.load_weights(model_name)
+    print(model_train.get_weights()[-2:])
+    print(">>>>>>>>> model loaded")
 
 model_train.fit_generator(
         generator = GEN_TR,
@@ -202,6 +188,7 @@ model_train.fit_generator(
         max_q_size = 4,
     initial_epoch=args.init_epoch,
         callbacks=[
+            print(model_train.get_weights()[-2:]),
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
@@ -217,9 +204,13 @@ model_train.fit_generator(
                 nb_batches=10,
                 batch_size=batch_size,
                 ),
-            K.callbacks.ModelCheckpoint(model_name),
+            # K.callbacks.ModelCheckpoint(model_name),
             ]
         )
+
+model_train.save_weights(model_name)
+
+
 
 end_time = datetime.now()
 elapse = end_time - start_time
