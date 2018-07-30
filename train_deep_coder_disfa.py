@@ -168,12 +168,6 @@ model_train.compile(
         loss = loss
         )
 
-if source_data!='init':
-    from keras.models import load_model
-
-    model_train.load_weights(model_name)
-    print(model_train.get_weights()[-2:])
-    print(">>>>>>>>> model loaded")
 
 import os
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold) + "_au" + str(au_index)
@@ -208,6 +202,12 @@ model_train.fit_generator(
             K.callbacks.ModelCheckpoint(model_name),
             ]
         )
+
+if source_data != 'init':
+    model_train.load_weights(model_name)
+    print(model_train.get_weights()[-2:])
+    print(">>>>>>>>> model loaded")
+
 
 end_time = datetime.now()
 elapse = end_time - start_time
