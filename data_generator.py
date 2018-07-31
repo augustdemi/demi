@@ -45,6 +45,8 @@ class DataGenerator(object):
 
     def make_data_tensor(self, train=True):
         if train:
+            print("===================================2")
+
             folders = self.metatrain_character_folders
             print("train folders: ", folders)
         else:

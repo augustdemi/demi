@@ -90,7 +90,7 @@ flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
-flags.DEFINE_integer('weight_seed', 3, 'seed for initial weight')
+flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 
@@ -355,6 +355,7 @@ def main():
     dim_input = data_generator.dim_input
 
     if FLAGS.train:  # only construct training model if needed
+        print("===================================1")
 
         # image_tensor, label_tensor = data_generator.make_data_tensor()
         # inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1]) #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
@@ -371,6 +372,7 @@ def main():
     pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
     if FLAGS.train:
+        print("===================================3")
         model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     else:
         model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
