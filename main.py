@@ -117,11 +117,12 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
         input_tensors = [model.metatrain_op]
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
-        if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
+        # if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
+        if (itr % SUMMARY_INTERVAL == 0) or (itr == 1):
             input_tensors.extend([model.fast_weights])
 
         # SUMMARY_INTERVAL 마다 accuracy 계산해둠
-        if (itr % SUMMARY_INTERVAL) == 0:
+        if (itr % SUMMARY_INTERVAL == 0) or (itr == 1):
             input_tensors.extend([model.result1, model.result2])
 
         result = sess.run(input_tensors, feed_dict)
