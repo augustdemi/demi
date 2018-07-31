@@ -82,7 +82,7 @@ class DataGenerator(object):
 
             all_filenames.extend(filenames)  # just for debugging
 
-        print(">>>> all_filenames: ", all_filenames[-1])
+        print(">>>> inputa_files: ", inputa_files)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
         print(">>>>>>>>>>>>>>>>>> random seed for weight: ", FLAGS.weight_seed)
