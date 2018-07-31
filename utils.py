@@ -16,13 +16,12 @@ def get_images(path, label_int, seed, nb_samples=None, shuffle=True):
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     def sampler(x):
         random.seed(subject + seed)
-        random.sample(x, nb_samples)
+        return random.sample(x, nb_samples)
     labels = ['off', 'on'] # off = 0, on =1
     #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     images = [(i, os.path.join(path,label, image)) \
         for i, label in zip(label_int, labels)\
         for image in sampler(os.listdir(os.path.join(path, label)))]
-
     return images
 
 ## Network helpers
