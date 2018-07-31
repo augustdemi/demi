@@ -6,13 +6,13 @@ import cv2
 
 from tensorflow.python.platform import flags
 from utils import get_images
-from vae_model_soft import VAE_soft
+from vae_model import VAE
 import EmoData as ED
 
 FLAGS = flags.FLAGS
 
 
-class DataGenerator_soft(object):
+class DataGenerator(object):
     """
     Data Generator capable of generating batches of sinusoid or Omniglot data.
     A "class" is considered a class of omniglot digits or a particular sinusoid function.
@@ -53,7 +53,6 @@ class DataGenerator_soft(object):
 
         # make list of files
         print('Generating filenames')
-        all_filenames = []
         inputa_files = []
         inputb_files = []
         labelas = []
@@ -61,7 +60,7 @@ class DataGenerator_soft(object):
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
-            labels_and_images = get_images(sub_folder, range(self.num_classes), nb_samples=self.num_samples_per_class,
+            labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed, nb_samples=self.num_samples_per_class,
                                            shuffle=True)
             # make sure the above isn't randomized order
             labels = [li[0] for li in labels_and_images]  # 0 0 1 1 = off off on on
@@ -70,17 +69,24 @@ class DataGenerator_soft(object):
             k = int(self.num_samples_per_class / 2)  # = FLAGS.update_batch_size
             filenames = np.array(filenames).reshape(self.num_classes, self.num_samples_per_class)
             for files_per_class in filenames:
-                inputa_files.extend(files_per_class[:k])
-                inputb_files.extend(files_per_class[k:])
+                for i in range(k):
+                    inputa_files.append(files_per_class[2*i])
+                    inputb_files.append(files_per_class[2*i+1])
 
             labels = np.array(labels).reshape(self.num_classes, self.num_samples_per_class)
             for labels_per_class in labels:
-                labelas.extend(labels_per_class[:k])
-                labelbs.extend(labels_per_class[k:])
+                for i in range(k):
+                    labelas.append(labels_per_class[2*i])
+                    labelbs.append(labels_per_class[2*i+1])
 
-            all_filenames.extend(filenames)  # just for debugging
 
-        # print("all_filenames: ", all_filenames)
+        print(">>>> inputa_files: ", inputa_files)
+        print('----------------------------------------------------------------------------')
+        print(">>>> inputb_files: ", inputb_files)
+        print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
+        print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
+        print(">>>>>>>>>>>>>>>>>> random seed for weight: ", FLAGS.weight_seed)
+
         #################################################################################
 
 
@@ -89,7 +95,7 @@ class DataGenerator_soft(object):
         # make it to batch of which size is (n*k) : thus, the total number of batch = num_of_task
         batch_size = int(self.num_classes * FLAGS.update_batch_size)
         N_batch = num_of_task = int(len(inputa_files) / batch_size)  # len(inputa_files)/nk = num of task
-        vae_model = VAE_soft((self.img_size[0], self.img_size[1], 1), batch_size)
+        vae_model = VAE((self.img_size[0], self.img_size[1], 1), batch_size, FLAGS.num_au)
 
         def latent_feature(file_names):
             file_names_batch = np.reshape(file_names, [N_batch, batch_size])
@@ -122,26 +128,24 @@ class DataGenerator_soft(object):
         inputb_latent_feat, self.pred_weights = latent_feature(inputb_files)
         #################################################################################
 
-        # print("original inputa: ", inputa_latent_feat)
-        # print("original inputb: ", inputb_latent_feat)
-        np.random.seed(1)
-        np.random.shuffle(inputa_latent_feat)
-        np.random.seed(1)
-        np.random.shuffle(labelas)
-        np.random.seed(2)
-        np.random.shuffle(inputb_latent_feat)
-        np.random.seed(2)
-        np.random.shuffle(labelbs)
-        inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
-        inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
-        inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
-        inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
+        def get_distance(z_arr):
+            size = len(z_arr)
+            distance_mat = np.zeros((size,size))
+            for i in range(size):
+                for j in range(size):
+                    distance_mat[i,j]= np.linalg.norm(z_arr[i]-z_arr[j])
+            return distance_mat
 
-        labelas_tensor = tf.convert_to_tensor(labelas)
-        labelbs_tensor = tf.convert_to_tensor(labelbs)
-        labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, self.num_classes * k, 2])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, self.num_classes * k, 2])
 
-        return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
+        btw_tr_tr = get_distance(inputa_latent_feat)
+        btw_te_te = get_distance(inputb_latent_feat)
+
+        alldata=np.array(inputa_latent_feat.tolist().extend(inputa_latent_feat.tolist()))
+        btw_all = get_distance(alldata)
+        import pickle
+
+        save_path = "./logs/" + FLAGS.au + "/kshot/seed" + str(FLAGS.kshot_seed) +"/distance/" + FLAGS.update_batch_size + 'shot.'
+        out = open(save_path + "train" + ".pkl", 'wb')
+        pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_te_te': btw_te_te, 'btw_all': btw_all, 'a':inputa_files, 'b':inputb_files}, out, protocol=2)
+        out.close()
+
