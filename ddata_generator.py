@@ -152,6 +152,7 @@ class DataGenerator(object):
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
                 weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
                 z_arr.append(z)
+            return z_arr
 
         test_subjects = os.listdir(FLAGS.testset_dir)
         test_subjects.sort()
