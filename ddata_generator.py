@@ -128,10 +128,8 @@ class DataGenerator(object):
         inputb_latent_feat, self.pred_weights = latent_feature(inputb_files)
         #################################################################################
 
-        import cv2
-        import pickle
-        vae_model.loadWeight(FLAGS.vae_model, w, b)
 
+        import pickle
         pp = ED.image_pipeline.FACE_pipeline(
             histogram_normalization=True,
             grayscale=True,

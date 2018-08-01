@@ -97,14 +97,7 @@ flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from rober
 
 
 def main():
-    if FLAGS.train == False:
-        orig_meta_batch_size = FLAGS.meta_batch_size
-        # always use meta batch size of 1 when testing.
-        FLAGS.meta_batch_size = 1
 
-    if FLAGS.test_train or FLAGS.test_test:
-        temp_kshot = FLAGS.update_batch_size
-        FLAGS.update_batch_size = 1
     data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
 
     data_generator.make_data_tensor()
