@@ -201,10 +201,10 @@ class DataGenerator(object):
 
         btw_tr_te = get_distance_from_test(inputa_latent_feat, test_z_arr)
 
-        save_path = "./logs/" + FLAGS.au + "/kshot/seed" + str(FLAGS.kshot_seed) +"/distance/" + FLAGS.update_batch_size + 'shot.'
+        save_path = "./logs/" + FLAGS.au + "/kshot/seed" + str(FLAGS.kshot_seed) + "/distance/"
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        out = open(save_path + "train" + ".pkl", 'wb')
+        out = open(save_path + str(FLAGS.update_batch_size) + 'shot.pkl', 'wb')
         # pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_te_te': btw_te_te, 'btw_all': btw_all, 'a':inputa_files, 'b':inputb_files}, out, protocol=2)
         pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_tr_te': btw_tr_te, 'a': inputa_files}, out, protocol=2)
         out.close()
