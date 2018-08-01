@@ -140,7 +140,7 @@ class DataGenerator(object):
             zoom_range=0.03,
             random_flip=True,
         )
-
+        batch_size = 10
         def get_test_latent(test_file_names, N_batch):
             file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
             z_arr = []
@@ -169,6 +169,7 @@ class DataGenerator(object):
             print(test_subject.split(".")[0], " rounded down total len:", len(test_file_names))
             test_z_arr.append(get_test_latent(test_file_names, N_batch))
         print("test_z_arr : ", test_z_arr)
+        print("test_z_arr size: ", np.array(test_z_arr).shape)
 
         #################################################################################
 
