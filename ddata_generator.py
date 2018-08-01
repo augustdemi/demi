@@ -152,7 +152,7 @@ class DataGenerator(object):
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
                 weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
                 z_arr.append(z)
-            return z_arr
+            return np.concatenate(z_arr)
 
         test_subjects = os.listdir(FLAGS.testset_dir)
         test_subjects.sort()
@@ -176,7 +176,7 @@ class DataGenerator(object):
 
 
         def get_distance(z_arr):
-            size = len(z_arr)
+            size = z_arr.shape[0]
             distance_mat = np.zeros((size,size))
             for i in range(size):
                 for j in range(size):
@@ -184,13 +184,13 @@ class DataGenerator(object):
             return distance_mat
 
         def get_distance_from_test(z_arr, z_arr2):
-            distance_mat = np.zeros((len(z_arr), len(test_z_arr)))
-            for i in range(len(z_arr)):
+            distance_mat = np.zeros(z_arr.shape[0], len(z_arr2))
+            for i in range(z_arr.shape[0]):
                 for j in range(len(z_arr2)):
                     distance = 0
-                    for k in range(len(z_arr2[j])):
+                    for k in range(z_arr2[j].shape[0]):
                         distance += np.linalg.norm(z_arr[i] - z_arr2[j][k])
-                    distance_mat[i, j] = distance / len(z_arr2[j])
+                    distance_mat[i, j] = distance / z_arr2[j].shape[0]
             return distance_mat
 
         btw_tr_tr = get_distance(inputa_latent_feat)
