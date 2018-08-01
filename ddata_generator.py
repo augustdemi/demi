@@ -160,7 +160,7 @@ class DataGenerator(object):
         print("test_subjects: ", test_subjects)
 
         test_z_arr = []
-        for test_subject in test_subjects[0:3]:
+        for test_subject in test_subjects[0:1]:
             data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
 
             N_batch = int(len(data['test_file_names']) / batch_size)
@@ -184,7 +184,7 @@ class DataGenerator(object):
             return distance_mat
 
         def get_distance_from_test(z_arr, z_arr2):
-            distance_mat = np.zeros(z_arr.shape[0], len(z_arr2))
+            distance_mat = np.zeros((z_arr.shape[0], len(z_arr2)))
             for i in range(z_arr.shape[0]):
                 for j in range(len(z_arr2)):
                     distance = 0
@@ -196,8 +196,8 @@ class DataGenerator(object):
         btw_tr_tr = get_distance(inputa_latent_feat)
         btw_te_te = get_distance(inputb_latent_feat)
 
-        alldata=np.array(inputa_latent_feat.tolist().extend(inputa_latent_feat.tolist()))
-        btw_all = get_distance(alldata)
+        # alldata=np.array(np.array(inputa_latent_feat.tolist().extend(inputa_latent_feat.tolist())))
+        # btw_all = get_distance(alldata)
 
         btw_tr_te = get_distance_from_test(inputa_latent_feat, test_z_arr)
 
