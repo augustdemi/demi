@@ -93,6 +93,7 @@ flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
+flags.DEFINE_string('au', 'au12', 'vae model dir from robert code')
 
 
 
