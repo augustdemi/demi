@@ -128,6 +128,53 @@ class DataGenerator(object):
         inputb_latent_feat, self.pred_weights = latent_feature(inputb_files)
         #################################################################################
 
+        import cv2
+        import pickle
+        vae_model.loadWeight(FLAGS.vae_model, w, b)
+
+        pp = ED.image_pipeline.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
+
+        def get_test_latent(test_file_names, N_batch):
+            file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
+            z_arr = []
+            for file_path in file_names_batch:
+                imgs = []
+                for filename in file_path:
+                    img = cv2.imread(filename)
+                    imgs.append(img)
+                img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
+                z_arr.append(z)
+
+        test_subjects = os.listdir(FLAGS.testset_dir)
+        test_subjects.sort()
+        test_subjects = test_subjects[FLAGS.test_start_idx - 14:FLAGS.test_start_idx - 14 + FLAGS.test_num]
+        print("test_subjects: ", test_subjects)
+
+        test_z_arr = []
+        for test_subject in test_subjects[0:3]:
+            data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
+
+            N_batch = int(len(data['test_file_names']) / batch_size)
+            test_file_names = data['test_file_names'][:N_batch * batch_size]
+
+            print(test_subject.split(".")[0], " original total len:", len(data['test_file_names']))
+            print(test_subject.split(".")[0], " rounded down total len:", len(test_file_names))
+            test_z_arr.append(get_test_latent(test_file_names, N_batch))
+        print("test_z_arr : ", test_z_arr)
+
+        #################################################################################
+
+
         def get_distance(z_arr):
             size = len(z_arr)
             distance_mat = np.zeros((size,size))
@@ -136,16 +183,29 @@ class DataGenerator(object):
                     distance_mat[i,j]= np.linalg.norm(z_arr[i]-z_arr[j])
             return distance_mat
 
+        def get_distance_from_test(z_arr, z_arr2):
+            distance_mat = np.zeros((len(z_arr), len(test_z_arr)))
+            for i in range(len(z_arr)):
+                for j in range(len(z_arr2)):
+                    distance = 0
+                    for k in range(len(z_arr2[j])):
+                        distance += np.linalg.norm(z_arr[i] - z_arr2[j][k])
+                    distance_mat[i, j] = distance / len(z_arr2[j])
+            return distance_mat
 
         btw_tr_tr = get_distance(inputa_latent_feat)
         btw_te_te = get_distance(inputb_latent_feat)
 
         alldata=np.array(inputa_latent_feat.tolist().extend(inputa_latent_feat.tolist()))
         btw_all = get_distance(alldata)
-        import pickle
+
+        btw_tr_te = get_distance_from_test(inputa_latent_feat, test_z_arr)
 
         save_path = "./logs/" + FLAGS.au + "/kshot/seed" + str(FLAGS.kshot_seed) +"/distance/" + FLAGS.update_batch_size + 'shot.'
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
         out = open(save_path + "train" + ".pkl", 'wb')
-        pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_te_te': btw_te_te, 'btw_all': btw_all, 'a':inputa_files, 'b':inputb_files}, out, protocol=2)
+        # pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_te_te': btw_te_te, 'btw_all': btw_all, 'a':inputa_files, 'b':inputb_files}, out, protocol=2)
+        pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_tr_te': btw_tr_te, 'a': inputa_files}, out, protocol=2)
         out.close()
 
