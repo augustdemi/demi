@@ -32,6 +32,8 @@ from maml import MAML
 from tensorflow.python.platform import flags
 from datetime import datetime
 import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import pickle
 
 start_time = datetime.now()
