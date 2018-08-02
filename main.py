@@ -33,7 +33,7 @@ from tensorflow.python.platform import flags
 from datetime import datetime
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+
 import pickle
 
 start_time = datetime.now()
@@ -95,7 +95,7 @@ flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
-
+flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 500
@@ -344,6 +344,8 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
 
 
 def main():
+    os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
+
     if FLAGS.train == False:
         orig_meta_batch_size = FLAGS.meta_batch_size
         # always use meta batch size of 1 when testing.
