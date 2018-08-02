@@ -33,7 +33,7 @@ from tensorflow.python.platform import flags
 from datetime import datetime
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "4"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
 import pickle
 
 start_time = datetime.now()
