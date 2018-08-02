@@ -160,7 +160,7 @@ class DataGenerator(object):
         print("test_subjects: ", test_subjects)
 
         test_z_arr = []
-        for test_subject in test_subjects[0:1]:
+        for test_subject in test_subjects:
             data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
 
             N_batch = int(len(data['test_file_names']) / batch_size)
@@ -193,19 +193,22 @@ class DataGenerator(object):
                     distance_mat[i, j] = distance / z_arr2[j].shape[0]
             return distance_mat
 
-        btw_tr_tr = get_distance(inputa_latent_feat)
-        btw_te_te = get_distance(inputb_latent_feat)
+        btw_a_a = get_distance(inputa_latent_feat)
+        btw_b_b = get_distance(inputb_latent_feat)
 
         # alldata=np.array(np.array(inputa_latent_feat.tolist().extend(inputa_latent_feat.tolist())))
         # btw_all = get_distance(alldata)
 
-        btw_tr_te = get_distance_from_test(inputa_latent_feat, test_z_arr)
+        btw_a_te = get_distance_from_test(inputa_latent_feat, test_z_arr)
+        btw_b_te = get_distance_from_test(inputb_latent_feat, test_z_arr)
 
         save_path = "./logs/" + FLAGS.au + "/kshot/seed" + str(FLAGS.kshot_seed) + "/distance/"
         if not os.path.exists(save_path):
             os.makedirs(save_path)
         out = open(save_path + str(FLAGS.update_batch_size) + 'shot.pkl', 'wb')
         # pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_te_te': btw_te_te, 'btw_all': btw_all, 'a':inputa_files, 'b':inputb_files}, out, protocol=2)
-        pickle.dump({'btw_tr_tr': btw_tr_tr, 'btw_tr_te': btw_tr_te, 'a': inputa_files}, out, protocol=2)
+        pickle.dump(
+            {'btw_a_a': btw_a_a, 'btw_a_te': btw_a_te, 'a': inputa_files, 'btw_b_b': btw_b_b, 'btw_b_te': btw_b_te,
+             'a': inputb_files, }, out, protocol=2)
         out.close()
 
