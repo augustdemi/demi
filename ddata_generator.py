@@ -185,7 +185,9 @@ class DataGenerator(object):
 
         def get_distance_from_test(z_arr, z_arr2):
             distance_mat = np.zeros((z_arr.shape[0], len(z_arr2)))
+            print("z_arr len in get_distance_from_test: ", z_arr.shape[0])
             for i in range(z_arr.shape[0]):
+                print(i)
                 for j in range(len(z_arr2)):
                     distance = 0
                     for k in range(z_arr2[j].shape[0]):
@@ -194,13 +196,21 @@ class DataGenerator(object):
             return distance_mat
 
         btw_a_a = get_distance(inputa_latent_feat)
+        print("btw_a_a.shape: ", btw_a_a.shape)
         btw_b_b = get_distance(inputb_latent_feat)
+        print("btw_b_b.shape: ", btw_b_b.shape)
 
         # alldata=np.array(np.array(inputa_latent_feat.tolist().extend(inputa_latent_feat.tolist())))
         # btw_all = get_distance(alldata)
 
+        # test_file_names, y_lab
+
         btw_a_te = get_distance_from_test(inputa_latent_feat, test_z_arr)
+        print("btw_a_te.shape: ", btw_a_te.shape)
+
         btw_b_te = get_distance_from_test(inputb_latent_feat, test_z_arr)
+        print("btw_b_te.shape: ", btw_b_te.shape)
+
 
         save_path = "./logs/" + FLAGS.au + "/kshot/seed" + str(FLAGS.kshot_seed) + "/distance/"
         if not os.path.exists(save_path):
