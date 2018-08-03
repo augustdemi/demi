@@ -101,9 +101,6 @@ flags.DEFINE_string('gpu', '0,1,2,3', 'vae model dir from robert code')
 
 def main():
 
-    data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
-    data_generator.make_data_tensor()
-
     if (FLAGS.save_path != ''):
         from vae_model import VAE
         import EmoData as ED
@@ -157,6 +154,9 @@ def main():
         # print("test_z_arr : ", test_z_arr)
         # print("test_z_arr size: ", np.array(test_z_arr).shape)
         out.close()
+    else:
+        data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
+        data_generator.make_data_tensor()
 
 
 if __name__ == "__main__":
