@@ -102,6 +102,7 @@ flags.DEFINE_string('gpu', '0,1,2,3', 'vae model dir from robert code')
 def main():
 
     if (FLAGS.save_path != ''):
+        print(">>>>>>>>>>>>>>>FLAGS.save_path: ", FLAGS.save_path)
         from vae_model import VAE
         import EmoData as ED
         import cv2
