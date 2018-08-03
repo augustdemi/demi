@@ -94,14 +94,70 @@ flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 flags.DEFINE_string('au', 'au12', 'vae model dir from robert code')
+flags.DEFINE_string('save_path', '', 'vae model dir from robert code')
+flags.DEFINE_string('gpu', '0,1,2,3', 'vae model dir from robert code')
 
 
 
 def main():
 
     data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
-
     data_generator.make_data_tensor()
+
+    if (FLAGS.save_path != ''):
+        from vae_model import VAE
+        import EmoData as ED
+        import cv2
+        import pickle
+        batch_size = 10
+        vae_model = VAE((160, 240, 1), batch_size, FLAGS.num_au)
+
+        pp = ED.image_pipeline.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
+        batch_size = 10
+
+        def get_test_latent(test_file_names, N_batch):
+            file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
+            z_arr = []
+            for file_path in file_names_batch:
+                imgs = []
+                for filename in file_path:
+                    img = cv2.imread(filename)
+                    imgs.append(img)
+                img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
+                z_arr.append(z)
+            return np.concatenate(z_arr)
+
+        test_subjects = os.listdir(FLAGS.testset_dir)
+        test_subjects.sort()
+        test_subjects = test_subjects[FLAGS.test_start_idx - 14:FLAGS.test_start_idx - 14 + FLAGS.test_num]
+        print("test_subjects: ", test_subjects)
+
+        test_z_arr = []
+        out = open(FLAGS.save_path + "testset_z_arr.pkl", 'wb')
+        for test_subject in test_subjects:
+            data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
+
+            N_batch = int(len(data['test_file_names']) / batch_size)
+            test_file_names = data['test_file_names'][:N_batch * batch_size]
+
+            print(test_subject.split(".")[0], " original total len:", len(data['test_file_names']))
+            print(test_subject.split(".")[0], " rounded down total len:", len(test_file_names))
+            pickle.dump({test_subject: get_test_latent(test_file_names, N_batch)}, out, protocol=2)
+            # test_z_arr.append()
+        # print("test_z_arr : ", test_z_arr)
+        # print("test_z_arr size: ", np.array(test_z_arr).shape)
+        out.close()
+
 
 if __name__ == "__main__":
     main()
