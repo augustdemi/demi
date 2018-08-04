@@ -94,6 +94,7 @@ flags.DEFINE_integer('local_subj', 0, 'local weight subject')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
+flags.DEFINE_integer('au_idx', 0, 'au index to deal with in the given vae model')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 
@@ -407,7 +408,8 @@ def main():
     elif FLAGS.local_subj > 0:
         trained_model_dir = FLAGS.keep_train_dir
     elif FLAGS.test_test:
-        trained_model_dir = FLAGS.keep_train_dir
+        # trained_model_dir = FLAGS.keep_train_dir
+        trained_model_dir = 'cls_2.mbs_14.ubs_3.numstep5.updatelr0.005.metalr0.005.initweightFalse'
         trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)

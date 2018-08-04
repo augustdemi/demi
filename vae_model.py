@@ -54,18 +54,31 @@ class VAE:
         self.model_au_int = model_au_int
         self.z = z
 
-    def computeLatentVal(self, x, vae_model):
+    def computeLatentVal(self, x, vae_model, au_idx):
         self.model_train.load_weights(vae_model)
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
-        return self.model_train.get_weights()[-2:], z
+        loaded_weight = self.model_train.get_weights()[-2:]
+        if 'all' in vae_model:
+            print(">>>>>>>>>>>>>> au_idx in ", vae_model + ": ", au_idx)
+            w = loaded_weight[0][:, au_idx]
+            b = loaded_weight[1][au_idx]
+            loaded_weight= [w.reshape(2000,1,2), b.reshape(1,2)]
+        return loaded_weight, z
 
     # only for test_test.(test_test는 사실 test_train 케이스도 포함임. 그래서 test_train인 경우 = w,b모두 None인 경우, 그냥 로버트 모델을 로드해서 씀)
-    def loadWeight(self, weight_dir, w=None, b=None):
-        self.model_train.load_weights(weight_dir)
+    def loadWeight(self, vae_model, w=None, b=None):
+        self.model_train.load_weights(vae_model)
         print("loaded weight from robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
         if (w != None and b != None):
-            self.model_train.layers[-1].weights[0].load(np.array(w))
-            self.model_train.layers[-1].weights[1].load(np.array(b))
+            if 'all' in vae_model:
+                # w and b are from 'train_test' model. Thus, they are just for one au. ==> Need to magnify.
+                w = np.array([[e[0],e[0],e[0]] for e in w]) #(2000, 3, 2)
+                b = np.array([b, b, b]).reshape((3,2)) # (3,2)
+            else:
+                w = np.array(w)
+                b = np.array(b)
+            self.model_train.layers[-1].weights[0].load(w)
+            self.model_train.layers[-1].weights[1].load(b)
             print("loaded weight from maml : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
 
     # only for test_test. 로드한 weight으로 pred값 도출. 배치로 한방에 predict하기 위해 로버트 모델을 쓴것.
