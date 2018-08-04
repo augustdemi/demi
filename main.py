@@ -340,7 +340,16 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
             save_path = "./logs/result/test_train/" + trained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        print_summary(y_hat, data['y_lab'][:N_batch * batch_size],
+        print("========================>>>>>>>>>>>>>>>>>")
+        print(y_hat.shape)
+        shape = y_hat[:,FLAGS.au_idx].shape
+        print(shape)
+        print(data['y_lab'][:N_batch * batch_size].shape)
+        reshaped = y_hat[:,FLAGS.au_idx].reshape((shape[0], 1, shape[1]))
+        print(reshaped)
+        print("-----------")
+        print(y_hat[:,FLAGS.au_idx])
+        print_summary(y_hat[:,FLAGS.au_idx].reshape((shape[0], 1, shape[1])), data['y_lab'][:N_batch * batch_size],
                       log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
@@ -408,8 +417,7 @@ def main():
     elif FLAGS.local_subj > 0:
         trained_model_dir = FLAGS.keep_train_dir
     elif FLAGS.test_test:
-        # trained_model_dir = FLAGS.keep_train_dir
-        trained_model_dir = 'cls_2.mbs_14.ubs_3.numstep5.updatelr0.005.metalr0.005.initweightFalse'
+        trained_model_dir = FLAGS.keep_train_dir
         trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
