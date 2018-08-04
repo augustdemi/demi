@@ -92,9 +92,10 @@ flags.DEFINE_integer('local_subj', 0, 'local weight subject')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
+flags.DEFINE_integer('au_idx', 0, 'au index to deal with in the given vae model')
 flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
 flags.DEFINE_string('au', 'au12', 'vae model dir from robert code')
-flags.DEFINE_string('save_path', '', 'vae model dir from robert code')
+flags.DEFINE_string('save_path', '', 'path to save the latent feature z_arr')
 flags.DEFINE_string('gpu', '0,1,2,3', 'vae model dir from robert code')
 
 
@@ -131,7 +132,7 @@ def main():
                     img = cv2.imread(filename)
                     imgs.append(img)
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
+                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
                 z_arr.append(z)
             return np.concatenate(z_arr)
 
