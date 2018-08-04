@@ -120,7 +120,7 @@ class DataGenerator(object):
 
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
 
-                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
+                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
                 z_arr.append(z)
             return np.concatenate(z_arr), weights
 
