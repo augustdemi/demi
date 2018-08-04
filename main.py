@@ -340,15 +340,7 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
             save_path = "./logs/result/test_train/" + trained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        print("========================>>>>>>>>>>>>>>>>>")
-        print(y_hat.shape)
         shape = y_hat[:,FLAGS.au_idx].shape
-        print(shape)
-        print(data['y_lab'][:N_batch * batch_size].shape)
-        reshaped = y_hat[:,FLAGS.au_idx].reshape((shape[0], 1, shape[1]))
-        print(reshaped)
-        print("-----------")
-        print(y_hat[:,FLAGS.au_idx])
         print_summary(y_hat[:,FLAGS.au_idx].reshape((shape[0], 1, shape[1])), data['y_lab'][:N_batch * batch_size],
                       log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
