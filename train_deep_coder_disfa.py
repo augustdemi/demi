@@ -132,16 +132,16 @@ out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 lay
 from keras import objectives
 def vae_loss(img, rec):
     kl_loss = - 0.5 * KB.mean(1 + z_log_sigma - KB.square(z_mean) - KB.exp(z_log_sigma), axis=-1)
-    return w_1*kl_loss
+    return 1 * kl_loss
 
 def rec_loss(img, rec):
     mse = EE.losses.mse(img, rec)
-    return mse
+    return 0.5 * mse
 
 def pred_loss(y_true, y_pred):
     # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     ce = EE.losses.categorical_crossentropy(y_true, y_pred)
-    return (1-w_1)*ce
+    return ce
 
 loss  = [rec_loss, pred_loss, vae_loss]
 
@@ -184,9 +184,9 @@ model_train.fit_generator(
         samples_per_epoch = 1000, #number of samples to process before going to the next epoch.
         validation_data=GEN_TE, # integer, total number of iterations on the data.
         nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
+    initial_epoch=args.init_epoch,
         nb_epoch = nb_iter,
         max_q_size = 4,
-    initial_epoch=args.init_epoch,
         callbacks=[
             print(model_train.get_weights()[-2:]),
             EE.callbacks.summary_multi_output(
