@@ -9,7 +9,9 @@ import argparse
 from datetime import datetime
 import tensorflow as tf
 start_time = datetime.now()
+import os
 
+os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'
 parser = argparse.ArgumentParser(description='extract feace images from raw datasets')
 parser.add_argument("-i","--input",  type=str, default='init', help="files created from GP")
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
@@ -168,8 +170,6 @@ model_train.compile(
         loss = loss
         )
 
-
-import os
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold) + "_au" + str(au_index)
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
