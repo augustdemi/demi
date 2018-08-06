@@ -188,7 +188,6 @@ model_train.fit_generator(
         nb_epoch = nb_iter,
         max_q_size = 4,
         callbacks=[
-            print(model_train.get_weights()[-2:]),
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
