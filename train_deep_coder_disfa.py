@@ -21,7 +21,7 @@ parser.add_argument("-tr", "--training_data", type=str, default='/home/mihee/dev
                     help="path to training data set")
 parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
                     help="path to test data set")
-parser.add_argument("-k","--kfold",type=int, default=1, help="for k fold")
+parser.add_argument("-b", "--beta", type=float, default=1, help="beta")
 parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 args = parser.parse_args()
@@ -134,18 +134,19 @@ out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 lay
 from keras import objectives
 def vae_loss(img, rec):
     kl_loss = - 0.5 * KB.mean(1 + z_log_sigma - KB.square(z_mean) - KB.exp(z_log_sigma), axis=-1)
-    return 1 * kl_loss
+    return kl_loss
 
 def rec_loss(img, rec):
     mse = EE.losses.mse(img, rec)
-    return 0.5 * mse
+    return mse
 
 def pred_loss(y_true, y_pred):
     # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     ce = EE.losses.categorical_crossentropy(y_true, y_pred)
     return ce
 
-loss  = [rec_loss, pred_loss, vae_loss]
+
+loss = [rec_loss, pred_loss, args.beta * vae_loss]
 
 model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
 
@@ -170,7 +171,7 @@ model_train.compile(
         loss = loss
         )
 
-sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.kfold) + "_au" + str(au_index)
+sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.beta) + "_au" + str(au_index)
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
 
@@ -194,7 +195,7 @@ model_train.fit_generator(
                 batch_size = batch_size,
                 title = ['TR','TE'],
                 one_hot=True,
-                log_dir = 'res_disfa_'+str(args.warming).zfill(4)+'.csv/' + str(args.kfold),
+                log_dir='res_disfa_' + str(args.warming).zfill(4) + '.csv/' + str(args.kfold) + "_au" + str(au_index),
             ),
             EE.callbacks.summary_vac_disfa(
                 gen = generator(TE, False, s=True), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
