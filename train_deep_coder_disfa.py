@@ -11,7 +11,7 @@ import tensorflow as tf
 start_time = datetime.now()
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '0,1,2,3'
+
 parser = argparse.ArgumentParser(description='extract feace images from raw datasets')
 parser.add_argument("-i","--input",  type=str, default='init', help="files created from GP")
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
@@ -24,8 +24,11 @@ parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/pro
 parser.add_argument("-b", "--beta", type=float, default=1, help="beta")
 parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
+parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
+
 args = parser.parse_args()
 
+os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 # lins input
 source_data = args.input
 nb_iter = args.nb_iter
