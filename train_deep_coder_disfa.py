@@ -195,7 +195,7 @@ model_train.fit_generator(
                 batch_size = batch_size,
                 title = ['TR','TE'],
                 one_hot=True,
-                log_dir='res_disfa_' + str(args.warming).zfill(4) + '.csv/' + str(args.kfold) + "_au" + str(au_index),
+                log_dir='res_disfa_' + str(args.warming).zfill(4) + '.csv/' + str(args.beta) + "_au" + str(au_index),
             ),
             EE.callbacks.summary_vac_disfa(
                 gen = generator(TE, False, s=True), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
