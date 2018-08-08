@@ -134,7 +134,7 @@ out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 lay
 from keras import objectives
 def vae_loss(img, rec):
     kl_loss = - 0.5 * KB.mean(1 + z_log_sigma - KB.square(z_mean) - KB.exp(z_log_sigma), axis=-1)
-    return kl_loss
+    return args.beta * kl_loss
 
 def rec_loss(img, rec):
     mse = EE.losses.mse(img, rec)
@@ -146,7 +146,7 @@ def pred_loss(y_true, y_pred):
     return ce
 
 
-loss = [rec_loss, pred_loss, args.beta * vae_loss]
+loss = [rec_loss, pred_loss, vae_loss]
 
 model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
 
