@@ -134,10 +134,9 @@ print(x_decoded_mean)
 out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 layer로 디코더 실행. 근데 사실상 이 디코더에 오기까지 오리지날 트레인 x를 인코드하는거부터 시작됨. vae.
 
 
-from keras import objectives
 def vae_loss(img, rec):
     kl_loss = - 0.5 * KB.mean(1 + z_log_sigma - KB.square(z_mean) - KB.exp(z_log_sigma), axis=-1)
-    return args.beta * kl_loss
+    return w_1 * kl_loss
 
 def rec_loss(img, rec):
     mse = EE.losses.mse(img, rec)
@@ -146,7 +145,7 @@ def rec_loss(img, rec):
 def pred_loss(y_true, y_pred):
     # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     ce = EE.losses.categorical_crossentropy(y_true, y_pred)
-    return ce
+    return (1 - w_1) * ce
 
 
 loss = [rec_loss, pred_loss, vae_loss]
