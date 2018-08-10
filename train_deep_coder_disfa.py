@@ -148,6 +148,8 @@ def pred_loss(y_true, y_pred):
     return (1 - w_1) * ce
 
 
+loss = [rec_loss, pred_loss, vae_loss]
+
 model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
 
 model_rec_z = K.models.Model([inp_0], [out_0, z_mean])
