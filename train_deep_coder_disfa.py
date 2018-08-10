@@ -72,7 +72,7 @@ def generator(dat_dict, aug, mod=0, s=False):
                 augmentation=aug)
         # lab = lab.argmax(2)
         if au_index == 12:
-            lab = lab[:, [6, 10, 11]]
+            lab = lab
         else:
             lab = lab[:, au_index]
             lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
