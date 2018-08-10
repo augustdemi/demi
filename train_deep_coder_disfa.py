@@ -136,7 +136,7 @@ out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 lay
 
 def vae_loss(img, rec):
     kl_loss = - 0.5 * KB.mean(1 + z_log_sigma - KB.square(z_mean) - KB.exp(z_log_sigma), axis=-1)
-    return w_1 * kl_loss
+    return args.beta * kl_loss
 
 def rec_loss(img, rec):
     mse = EE.losses.mse(img, rec)
@@ -145,8 +145,7 @@ def rec_loss(img, rec):
 def pred_loss(y_true, y_pred):
     # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     ce = EE.losses.categorical_crossentropy(y_true, y_pred)
-    return (1 - w_1) * ce
-
+    return ce
 
 loss = [rec_loss, pred_loss, vae_loss]
 
