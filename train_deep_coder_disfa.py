@@ -33,7 +33,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 source_data = args.input
 nb_iter = args.nb_iter
 au_index = args.au_index
-model_name = './model_au' + str(au_index) + '.h5'
+model_name = './model_au' + str(au_index) + '_' + str(args.beta) + '.h5'
 
 target_std_vec = np.ones(2000)
 target_mean_vec = np.zeros(2000)
