@@ -55,13 +55,13 @@ for au in all_au:
 
         save_path = "/home/ml1323/project/robert_data/DISFA/new_dataset/" + au
         if not os.path.exists(save_path + "/test_a/" + subject + "/on"): os.makedirs(
-            save_path + "/test_a" + subject + "/on")
+            save_path + "/test_a/" + subject + "/on")
         if not os.path.exists(save_path + "/test_a/" + subject + "/off"): os.makedirs(
-            save_path + "/test_a" + subject + "/off")
+            save_path + "/test_a/" + subject + "/off")
         if not os.path.exists(save_path + "/test_b/" + subject + "/on"): os.makedirs(
-            save_path + "/test_b" + subject + "/on")
+            save_path + "/test_b/" + subject + "/on")
         if not os.path.exists(save_path + "/test_b/" + subject + "/off"): os.makedirs(
-            save_path + "/test_b" + subject + "/off")
+            save_path + "/test_b/" + subject + "/off")
 
         # copy on intensity frames for test_a
         for i in test_a_on_idx:
