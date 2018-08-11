@@ -16,6 +16,7 @@ for au in all_au:
         detected_img_files = os.listdir(original_frame_path + subject)
         detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in detected_img_files]
         detected_frame_idx = list(set(detected_frame_idx))
+        if type(detected_frame_idx / 2) is not int: detected_frame_idx = detected_frame_idx[:-1]
         min_len = len(detected_frame_idx)
         print('min_len: ', min_len)
         test_a_idx = random.sample(detected_frame_idx, min_len / 2)
