@@ -40,7 +40,11 @@ for subject in test_subjects:
         test_a_on_idx = []
         test_a_off_idx = []
         for idx in test_a_idx:
-            intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
+            try:
+                intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
+            except:
+                print("test_a_on_idx - out of index: ", idx, " for au, subject: ", au, subject)
+                continue
             if intensity > 0:
                 test_a_on_idx.append(idx)
             else:
@@ -49,7 +53,11 @@ for subject in test_subjects:
         test_b_on_idx = []
         test_b_off_idx = []
         for idx in test_b_idx:
-            intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
+            try:
+                intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
+            except:
+                print("test_b_on_idx - out of index: ", idx, " for au, subject: ", au, subject)
+                continue
             if intensity > 0:
                 test_b_on_idx.append(idx)
             else:
@@ -62,32 +70,32 @@ for subject in test_subjects:
         print('test_b_off_idx len: ', len(test_b_off_idx))
 
         save_path = "/home/ml1323/project/robert_data/DISFA/new_dataset/"
-        if not os.path.exists(save_path + "/test_a/" + au + " / " + subject + "/on"): os.makedirs(
-            save_path + "/test_a/" + au + " / " + subject + "/on")
-        if not os.path.exists(save_path + "/test_a/" + au + " / " + subject + "/off"): os.makedirs(
-            save_path + "/test_a/" + au + " / " + subject + "/off")
-        if not os.path.exists(save_path + "/test_b/" + au + " / " + subject + "/on"): os.makedirs(
-            save_path + "/test_b/" + au + " / " + subject + "/on")
-        if not os.path.exists(save_path + "/test_b/" + au + " / " + subject + "/off"): os.makedirs(
-            save_path + "/test_b/" + au + " / " + subject + "/off")
+        if not os.path.exists(save_path + "/test_a/" + au + "/" + subject + "/on"): os.makedirs(
+            save_path + "/test_a/" + au + "/" + subject + "/on")
+        if not os.path.exists(save_path + "/test_a/" + au + "/" + subject + "/off"): os.makedirs(
+            save_path + "/test_a/" + au + "/" + subject + "/off")
+        if not os.path.exists(save_path + "/test_b/" + au + "/" + subject + "/on"): os.makedirs(
+            save_path + "/test_b/" + au + "/" + subject + "/on")
+        if not os.path.exists(save_path + "/test_b/" + au + "/" + subject + "/off"): os.makedirs(
+            save_path + "/test_b/" + au + "/" + subject + "/off")
 
         # copy on intensity frames for test_a
         for i in test_a_on_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_a/" + au + " / " + subject + "/on/frame" + str(i) + ".jpg")
+                     save_path + "/test_a/" + au + "/" + subject + "/on/frame" + str(i) + ".jpg")
 
         # copy off intensity frames for test_a
         for i in test_a_off_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_a/" + au + " / " + subject + "/off/frame" + str(i) + ".jpg")
+                     save_path + "/test_a/" + au + "/" + subject + "/off/frame" + str(i) + ".jpg")
 
         # copy on intensity frames for test_b
         for i in test_b_on_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_b/" + au + " / " + subject + "/on/frame" + str(i) + ".jpg")
+                     save_path + "/test_b/" + au + "/" + subject + "/on/frame" + str(i) + ".jpg")
 
         # copy off intensity frames for test_b
         for i in test_b_off_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_b/" + au + " / " + subject + "/off/frame" + str(i) + ".jpg")
+                     save_path + "/test_b/" + au + "/" + subject + "/off/frame" + str(i) + ".jpg")
         print(">>>>> done: ", au)

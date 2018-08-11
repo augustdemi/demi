@@ -25,7 +25,11 @@ for au in all_au:
         train_on_idx = []
         train_off_idx = []
         for idx in detected_frame_idx:
-            intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
+            try:
+                intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
+            except:
+                print("out of index: ", idx, " for au, subject: ", au, subject)
+                continue
             if intensity > 0:
                 train_on_idx.append(idx)
             else:
