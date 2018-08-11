@@ -14,14 +14,22 @@ def get_images(path, label_int, seed, nb_samples=None, shuffle=True):
     subject = int(path[-1])
 
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
-    def sampler(x):
+    def sampler(path, label):
+        img_path_list = os.listdir(os.path.join(path, label))
         random.seed(subject + seed)
-        return random.sample(x, nb_samples)
+        if len(img_path_list) < nb_samples:
+            random_imgs = img_path_list  # 일단 가진 on img다 때려넣고
+            img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
+            random_imgs = random_imgs.extend(
+                random.sample(img_path_list, nb_samples - len(img_path_list)))  # 나머지는 off로 채워넣음
+        else:
+            random_imgs = random.sample(img_path_list, nb_samples)
+        return random_imgs
     labels = ['off', 'on'] # off = 0, on =1
     #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     images = [(i, os.path.join(path,label, image)) \
-        for i, label in zip(label_int, labels)\
-        for image in sampler(os.listdir(os.path.join(path, label)))]
+        for i, label in zip(label_int, labels) \
+              for image in sampler(path, label)]
     return images
 
 ## Network helpers
