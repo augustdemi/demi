@@ -61,8 +61,7 @@ flags.DEFINE_bool('stop_grad', False, 'if True, do not use second derivatives in
 
 ## Logging, saving, and testing options
 flags.DEFINE_bool('log', True, 'if false, do not log summaries, for debugging code.')
-flags.DEFINE_string('datadir', '/home/ml1323/project/robert_data/DISFA/kshot/0', 'directory for data.')
-flags.DEFINE_string('valdir', '/home/ml1323/project/robert_data/DISFA/kshot/1', 'directory for val.')
+flags.DEFINE_string('datadir', '/home/ml1323/project/robert_data/DISFA/new_dataset/train/au0/', 'directory for data.')
 flags.DEFINE_string('logdir', '/tmp/data', 'directory for summaries and checkpoints.')
 flags.DEFINE_bool('resume', True, 'resume training if there is a model available')
 flags.DEFINE_bool('train', True, 'True to train, False to test.')
@@ -93,9 +92,9 @@ flags.DEFINE_string('keep_train_dir', None,
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
-flags.DEFINE_integer('num_au', 1, 'number of AUs used to make AE')
+flags.DEFINE_integer('num_au', 12, 'number of AUs used to make AE')
 flags.DEFINE_integer('au_idx', 0, 'au index to deal with in the given vae model')
-flags.DEFINE_string('vae_model', './model_soft_80.h5', 'vae model dir from robert code')
+flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -202,12 +201,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 out = open(save_path + "/train_" + str(itr) + ".pkl", 'wb')
             pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
             out.close()
-
-
-
-
-
-
 
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
