@@ -19,7 +19,7 @@ for au in all_au:
         if type(len(detected_frame_idx) / 2) is not int: detected_frame_idx = detected_frame_idx[:-1]
         min_len = len(detected_frame_idx)
         print('min_len: ', min_len)
-        test_a_idx = random.sample(detected_frame_idx, min_len / 2)
+        test_a_idx = random.sample(detected_frame_idx, int(min_len / 2))
         test_b_idx = [i for i in detected_frame_idx if i not in test_a_idx]
         print('test_a len: ', len(test_a_idx))
         print('test_b len: ', len(test_b_idx))
