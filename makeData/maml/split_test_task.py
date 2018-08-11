@@ -61,33 +61,33 @@ for subject in test_subjects:
         print('test_b_on_idx len: ', len(test_b_on_idx))
         print('test_b_off_idx len: ', len(test_b_off_idx))
 
-        save_path = "/home/ml1323/project/robert_data/DISFA/new_dataset/" + au
-        if not os.path.exists(save_path + "/test_a/" + subject + "/on"): os.makedirs(
-            save_path + "/test_a/" + subject + "/on")
-        if not os.path.exists(save_path + "/test_a/" + subject + "/off"): os.makedirs(
-            save_path + "/test_a/" + subject + "/off")
-        if not os.path.exists(save_path + "/test_b/" + subject + "/on"): os.makedirs(
-            save_path + "/test_b/" + subject + "/on")
-        if not os.path.exists(save_path + "/test_b/" + subject + "/off"): os.makedirs(
-            save_path + "/test_b/" + subject + "/off")
+        save_path = "/home/ml1323/project/robert_data/DISFA/new_dataset/"
+        if not os.path.exists(save_path + "/test_a/" + au + " / " + subject + "/on"): os.makedirs(
+            save_path + "/test_a/" + au + " / " + subject + "/on")
+        if not os.path.exists(save_path + "/test_a/" + au + " / " + subject + "/off"): os.makedirs(
+            save_path + "/test_a/" + au + " / " + subject + "/off")
+        if not os.path.exists(save_path + "/test_b/" + au + " / " + subject + "/on"): os.makedirs(
+            save_path + "/test_b/" + au + " / " + subject + "/on")
+        if not os.path.exists(save_path + "/test_b/" + au + " / " + subject + "/off"): os.makedirs(
+            save_path + "/test_b/" + au + " / " + subject + "/off")
 
         # copy on intensity frames for test_a
         for i in test_a_on_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_a/" + subject + "/on/frame" + str(i) + ".jpg")
+                     save_path + "/test_a/" + au + " / " + subject + "/on/frame" + str(i) + ".jpg")
 
         # copy off intensity frames for test_a
         for i in test_a_off_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_a/" + subject + "/off/frame" + str(i) + ".jpg")
+                     save_path + "/test_a/" + au + " / " + subject + "/off/frame" + str(i) + ".jpg")
 
         # copy on intensity frames for test_b
         for i in test_b_on_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_b/" + subject + "/on/frame" + str(i) + ".jpg")
+                     save_path + "/test_b/" + au + " / " + subject + "/on/frame" + str(i) + ".jpg")
 
         # copy off intensity frames for test_b
         for i in test_b_off_idx:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_b/" + subject + "/off/frame" + str(i) + ".jpg")
+                     save_path + "/test_b/" + au + " / " + subject + "/off/frame" + str(i) + ".jpg")
         print(">>>>> done: ", au)
