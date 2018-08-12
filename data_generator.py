@@ -68,8 +68,8 @@ class DataGenerator(object):
             for i in range(half_on_img):
                 inputa_files.append(on_imgs[2 * i])
                 inputb_files.append(on_imgs[2 * i + 1])
-            label_for_this_subj = list(np.zeros(half_off_img))
-            label_for_this_subj.extend(list(np.ones(half_on_img)))
+            label_for_this_subj = [0] * half_off_img
+            label_for_this_subj.extend([1] * half_on_img)
             labelas.extend(label_for_this_subj)
 
         labelbs = labelas
