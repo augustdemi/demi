@@ -85,12 +85,21 @@ class DataGenerator(object):
 
         #################################################################################
 
-
-
         # inputa_files has (n*k * num_of_task) files.
         # make it to batch of which size is (n*k) : thus, the total number of batch = num_of_task
         batch_size = 10
         vae_model = VAE((self.img_size[0], self.img_size[1], 1), batch_size, FLAGS.num_au)
+        pp = ED.image_pipeline2.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
+
         def latent_feature(file_names):
             nb_samples = len(file_names)
             t0, t1 = 0, batch_size
@@ -98,25 +107,10 @@ class DataGenerator(object):
             while True:
                 t1 = min(nb_samples, t1)
                 file_names_batch = file_names[t0:t1]
-                for file_bath in file_names_batch:
-                    imgs = []
-                    for filename in file_bath:
-                        img = cv2.imread(filename)
-                        imgs.append(img)
-
-                    pp = ED.image_pipeline2.FACE_pipeline(
-                        histogram_normalization=True,
-                        grayscale=True,
-                        resize=True,
-                        rotation_range=3,
-                        width_shift_range=0.03,
-                        height_shift_range=0.03,
-                        zoom_range=0.03,
-                        random_flip=True,
-                    )
-                    img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-                    weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
-                    z_arr.append(z)
+                imgs = [cv2.imread(filename) for filename in file_names_batch]
+                img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
+                z_arr.append(z)
                 if t1 == nb_samples: break
                 t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
                 t1 += batch_size
