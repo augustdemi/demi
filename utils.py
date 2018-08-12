@@ -16,7 +16,6 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     def sampler(path, label):
         img_path_list = os.listdir(os.path.join(path, label))
-        random.seed(subject + seed)
         if validate:
             random.seed(subject + seed + 10)
         else:
@@ -26,11 +25,14 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
             print('len img_path_list: ', len(img_path_list))
             print('img_path_list: ', img_path_list)
             random_imgs = img_path_list  # 일단 가진 on img다 때려넣고
+            print('>>>> random_imgs: ', random_imgs)
             img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
             print('after off, len img_path_list: ', len(img_path_list))
             print('nb_samples - already chosed on imgs: ', nb_samples - len(random_imgs))
             random_imgs = random_imgs.extend(
                 random.sample(img_path_list, nb_samples - len(random_imgs)))  # 나머지는 off로 채워넣음
+            print('>>>> random_imgs: ', random_imgs)
+
         else:
             random_imgs = random.sample(img_path_list, nb_samples)
         return random_imgs
