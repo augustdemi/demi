@@ -55,6 +55,7 @@ class DataGenerator(object):
         inputa_files = []
         inputb_files = []
         labelas = []
+        labelbs = []
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
@@ -76,8 +77,8 @@ class DataGenerator(object):
             label_for_this_subj = [0] * half_off_img
             label_for_this_subj.extend([1] * half_on_img)
             labelas.extend(label_for_this_subj)
+            labelbs.extend(label_for_this_subj)
 
-        labelbs = labelas
 
         print(">>>> inputa_files: ", inputa_files)
         print("--------------------------------------------")
