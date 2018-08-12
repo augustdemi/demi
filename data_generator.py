@@ -61,14 +61,16 @@ class DataGenerator(object):
                 off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
                                                nb_samples=FLAGS.update_batch_size * 2, validate=True)
             # Split data into a/b
-            for i in range(len(off_imgs) / 2):
+            half_off_img = int(len(off_imgs) / 2)
+            half_on_img = int(len(on_imgs) / 2)
+            for i in range(half_off_img):
                 inputa_files.append(off_imgs[2 * i])
                 inputb_files.append(off_imgs[2 * i + 1])
-            for i in range(len(on_imgs) / 2):
+            for i in range(half_on_img):
                 inputa_files.append(on_imgs[2 * i])
                 inputb_files.append(on_imgs[2 * i + 1])
-            labelas = list(np.zeros(len(off_imgs) / 2))
-            labelas.extend(list(np.zeros(len(on_imgs) / 2)))
+            labelas = list(np.zeros(half_off_img))
+            labelas.extend(list(np.zeros(half_on_img)))
             labelbs = labelas
 
         print("=====================================================================")
