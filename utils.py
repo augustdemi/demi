@@ -24,23 +24,24 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
             print('nb_samples: ', nb_samples)
             print('len img_path_list: ', len(img_path_list))
             print('img_path_list: ', img_path_list)
-            random_imgs = img_path_list  # 일단 가진 on img다 때려넣고
-            print('>>>> random_imgs: ', random_imgs)
+            random_imgs = img_path_list
+            random_img_path = os.path.join(path, label, random_imgs)  # 일단 가진 on img다 때려넣고
+            print('>>>> random_img_path: ', random_img_path)
             img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
             print('after off, len img_path_list: ', len(img_path_list))
             print('nb_samples - already chosed on imgs: ', nb_samples - len(random_imgs))
             alternative_rand_imgs = random.sample(img_path_list, nb_samples - len(random_imgs))
-            random_imgs.extend(alternative_rand_imgs)  # 나머지는 off로 채워넣음
-            print('>>>> random_imgs: ', random_imgs)
-
+            random_img_path.extend(os.path.join(path, label, alternative_rand_imgs))  # 나머지는 off로 채워넣음
+            print('>>>> random_img_path: ', random_img_path)
         else:
             random_imgs = random.sample(img_path_list, nb_samples)
-        return random_imgs
+            random_img_path = os.path.join(path, label, random_imgs)
+        return random_img_path
     labels = ['off', 'on'] # off = 0, on =1
     #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
-    images = [(i, os.path.join(path,label, image)) \
-        for i, label in zip(label_int, labels) \
-              for image in sampler(path, label)]
+    images = [(i, random_img_path) \
+              for i, label in zip(label_int, labels) \
+              for random_img_path in sampler(path, label)]
     return images
 
 ## Network helpers
