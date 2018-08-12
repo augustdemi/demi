@@ -15,6 +15,11 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
 
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     def sampler(path, label):
+        print("============================================")
+        print("validate: ", validate)
+        print("label: ", label)
+        print("============================================")
+
         img_path_list = os.listdir(os.path.join(path, label))
         if validate:
             random.seed(subject + seed + 10)
