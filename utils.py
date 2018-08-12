@@ -10,13 +10,17 @@ from tensorflow.python.platform import flags
 FLAGS = flags.FLAGS
 
 ## Image helper
-def get_images(path, label_int, seed, nb_samples=None, shuffle=True):
+def get_images(path, label_int, seed, nb_samples=None, validate=False):
     subject = int(path[-1])
 
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     def sampler(path, label):
         img_path_list = os.listdir(os.path.join(path, label))
         random.seed(subject + seed)
+        if validate:
+            random.seed(subject + seed + 10)
+        else:
+            random.seed(subject + seed)
         if len(img_path_list) < nb_samples:
             random_imgs = img_path_list  # 일단 가진 on img다 때려넣고
             img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
