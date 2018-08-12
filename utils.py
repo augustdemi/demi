@@ -10,7 +10,7 @@ from tensorflow.python.platform import flags
 FLAGS = flags.FLAGS
 
 ## Image helper
-def get_images(path, label_int, seed, nb_samples=None, shuffle=True):
+def get_images(path, label_int, seed, nb_samples=None, validate=True):
     subject = int(path[-1])
 
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
