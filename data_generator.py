@@ -97,41 +97,39 @@ class DataGenerator(object):
 
 
 
-        # inputa_files has (n*k * num_of_task) files.
-        # make it to batch of which size is (n*k) : thus, the total number of batch = num_of_task
-        batch_size = int(self.num_classes * FLAGS.update_batch_size)
-        N_batch = num_of_task = int(len(inputa_files) / batch_size)  # len(inputa_files)/nk = num of task
+        batch_size = 10
         vae_model = VAE((self.img_size[0], self.img_size[1], 1), batch_size, FLAGS.num_au)
+        pp = ED.image_pipeline2.FACE_pipeline(
+            histogram_normalization=True,
+            grayscale=True,
+            resize=True,
+            rotation_range=3,
+            width_shift_range=0.03,
+            height_shift_range=0.03,
+            zoom_range=0.03,
+            random_flip=True,
+        )
 
         def latent_feature(file_names):
-            file_names_batch = np.reshape(file_names, [N_batch, batch_size])
-
+            nb_samples = len(file_names)
+            t0, t1 = 0, batch_size
             z_arr = []
-            for file_bath in file_names_batch:
-                imgs = []
-                for filename in file_bath:
-                    img = cv2.imread(filename)
-                    imgs.append(img)
-
-                pp = ED.image_pipeline2.FACE_pipeline(
-                    histogram_normalization=True,
-                    grayscale=True,
-                    resize=True,
-                    rotation_range=3,
-                    width_shift_range=0.03,
-                    height_shift_range=0.03,
-                    zoom_range=0.03,
-                    random_flip=True,
-                )
-
+            while True:
+                t1 = min(nb_samples, t1)
+                file_names_batch = file_names[t0:t1]
+                imgs = [cv2.imread(filename) for filename in file_names_batch]
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-
                 weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
                 z_arr.append(z)
+                if t1 == nb_samples: break
+                t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
+                t1 += batch_size
+
             return np.concatenate(z_arr), weights
 
         inputa_latent_feat, self.pred_weights = latent_feature(inputa_files)
         inputb_latent_feat, self.pred_weights = latent_feature(inputb_files)
+        print(">>> z_arr len:", len(inputa_latent_feat))
         #################################################################################
 
         # print("original inputa: ", inputa_latent_feat)
@@ -145,15 +143,17 @@ class DataGenerator(object):
         np.random.seed(2)
         np.random.shuffle(labelbs)
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
-        inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
+        inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
+                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2000])
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
-        inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
+        inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor,
+                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2000])
 
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
         labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
         labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, self.num_classes * k, 2])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, self.num_classes * k, 2])
+        labelas_tensor = tf.reshape(labelas_tensor, [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
+        labelbs_tensor = tf.reshape(labelbs_tensor, [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
