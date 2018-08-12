@@ -39,19 +39,16 @@ class DataGenerator(object):
             if FLAGS.train_test:  # test task로 다시한번 모델을 retrain할때는 같은 test task중 train에 쓰이지 않은 다른 샘플을 선택하여 validate
                 self.metatest_character_folders = self.metatrain_character_folders
             else:
-                self.metatest_character_folders = [subject_folders[26]]
-                self.metatest_character_folders.extend(
-                    subject_folders[FLAGS.train_start_idx + num_train:FLAGS.train_start_idx + 2 * num_train - 1])
+                self.metatest_character_folders = self.metatrain_character_folders
 
     def make_data_tensor(self, train=True):
         if train:
             print("===================================2")
-
             folders = self.metatrain_character_folders
-            print("train folders: ", folders)
+            print(">>>>>>> train folders: ", folders)
         else:
             folders = self.metatest_character_folders
-            print("test folders: ", folders)
+            print(">>>>>>> test folders: ", folders)
 
         # make list of files
         print('Generating filenames')
@@ -63,8 +60,12 @@ class DataGenerator(object):
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
-            labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed, nb_samples=self.num_samples_per_class,
-                                           shuffle=True)
+            if train:
+                labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
+                                               nb_samples=self.num_samples_per_class, validate=False)
+            else:
+                labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
+                                               nb_samples=self.num_samples_per_class, validate=True)
             # make sure the above isn't randomized order
             labels = [li[0] for li in labels_and_images]  # 0 0 1 1 = off off on on
             filenames = [li[1] for li in labels_and_images]
