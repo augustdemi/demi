@@ -349,7 +349,7 @@ def main():
     if FLAGS.test_train or FLAGS.test_test:
         temp_kshot = FLAGS.update_batch_size
         FLAGS.update_batch_size = 1
-    data_generator = DataGenerator(FLAGS.update_batch_size * 2, FLAGS.meta_batch_size)
+    data_generator = DataGenerator()
 
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
