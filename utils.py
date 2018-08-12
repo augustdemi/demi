@@ -1,5 +1,5 @@
 """ Utility functions. """
-import numpy as np
+import math
 import os
 import random
 import tensorflow as tf
@@ -12,17 +12,35 @@ FLAGS = flags.FLAGS
 ## Image helper
 def get_images(path, label_int, seed, nb_samples=None, validate=True):
     subject = int(path[-1])
-
+    print("============================================")
+    print(">>>>>>>>>>>>>subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
-    def sampler(x):
-        random.seed(subject + seed)
-        return random.sample(x, nb_samples)
+    def sampler(path, label, n_samples):
+        print("-------------------------------")
+        print("validate: ", validate)
+        print("label: ", label)
+
+        img_path_list = os.listdir(os.path.join(path, label))
+        if validate:
+            random.seed(subject + seed + 10)
+        else:
+            random.seed(subject + seed)
+        if len(img_path_list) < n_samples:
+            n_samples = 2 * math.floor(len(img_path_list) / 2)
+            random_imgs = random.sample(img_path_list, n_samples)
+            random_img_path = [os.path.join(path, label, img) for img in random_imgs]
+        else:
+            random_imgs = random.sample(img_path_list, n_samples)
+            random_img_path = [os.path.join(path, label, img) for img in random_imgs]
+        return random_img_path
     labels = ['off', 'on'] # off = 0, on =1
     #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
-    images = [(i, os.path.join(path, label, image)) \
-              for i, label in zip(label_int, labels) \
-              for image in sampler(os.listdir(os.path.join(path, label)))]
-    return images
+    on_images = sampler(path, labels[1], nb_samples)
+    print('num of on_images: ', len(on_images))
+    off_images = sampler(path, labels[0], 2 * nb_samples - len(on_images))
+    print('num of off_images: ', len(off_images))
+    return off_images, on_images
+
 
 ## Network helpers
 def conv_block(inp, cweight, bweight, reuse, scope, activation=tf.nn.relu, max_pool_pad='VALID', residual=False):

@@ -52,38 +52,32 @@ class DataGenerator(object):
 
         # make list of files
         print('Generating filenames')
-        all_filenames = []
         inputa_files = []
         inputb_files = []
         labelas = []
-        labelbs = []
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
             if train:
-                labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
-                                               nb_samples=self.num_samples_per_class, validate=False)
+                off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
+                                               nb_samples=FLAGS.update_batch_size * 2, validate=False)
             else:
-                labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
-                                               nb_samples=self.num_samples_per_class, validate=True)
-            # make sure the above isn't randomized order
-            labels = [li[0] for li in labels_and_images]  # 0 0 1 1 = off off on on
-            filenames = [li[1] for li in labels_and_images]
+                off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
+                                               nb_samples=FLAGS.update_batch_size * 2, validate=True)
             # Split data into a/b
-            k = int(self.num_samples_per_class / 2)  # = FLAGS.update_batch_size
-            filenames = np.array(filenames).reshape(self.num_classes, self.num_samples_per_class)
-            for files_per_class in filenames:
-                for i in range(k):
-                    inputa_files.append(files_per_class[2 * i])
-                    inputb_files.append(files_per_class[2 * i + 1])
+            half_off_img = int(len(off_imgs) / 2)
+            half_on_img = int(len(on_imgs) / 2)
+            for i in range(half_off_img):
+                inputa_files.append(off_imgs[2 * i])
+                inputb_files.append(off_imgs[2 * i + 1])
+            for i in range(half_on_img):
+                inputa_files.append(on_imgs[2 * i])
+                inputb_files.append(on_imgs[2 * i + 1])
+            label_for_this_subj = [0] * half_off_img
+            label_for_this_subj.extend([1] * half_on_img)
+            labelas.extend(label_for_this_subj)
 
-            labels = np.array(labels).reshape(self.num_classes, self.num_samples_per_class)
-            for labels_per_class in labels:
-                for i in range(k):
-                    labelas.append(labels_per_class[2 * i])
-                    labelbs.append(labels_per_class[2 * i + 1])
-
-            all_filenames.extend(filenames)  # just for debugging
+        labelbs = labelas
 
         print(">>>> inputa_files: ", inputa_files)
         print("--------------------------------------------")
