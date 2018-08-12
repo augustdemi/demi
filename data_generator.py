@@ -70,7 +70,7 @@ class DataGenerator(object):
                 inputa_files.append(on_imgs[2 * i])
                 inputb_files.append(on_imgs[2 * i + 1])
             labelas = list(np.zeros(half_off_img))
-            labelas.extend(list(np.zeros(half_on_img)))
+            labelas.extend(list(np.ones(half_on_img)))
             labelbs = labelas
 
         print("=====================================================================")
