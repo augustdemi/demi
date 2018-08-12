@@ -1,5 +1,5 @@
 """ Utility functions. """
-import numpy as np
+import math
 import os
 import random
 import tensorflow as tf
@@ -26,15 +26,9 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
         else:
             random.seed(subject + seed)
         if len(img_path_list) < n_samples:
-            random_imgs = img_path_list
-            random_img_path = [os.path.join(path, label, img) for img in random_imgs]  # 일단 가진 on img다 때려넣고
-            if type(len(random_img_path) / 2) is not int: random_img_path = random_img_path[
-                                                                            :-1]  # 홀수개면 하나 버림(inputa/inputb로 나누기위해)
-            print('>>>> random_img_path: ', random_img_path)
-            img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
-            alternative_rand_imgs = random.sample(img_path_list, n_samples - len(random_imgs))
-            random_img_path.extend([os.path.join(path, 'off', img) for img in alternative_rand_imgs])  # 나머지는 off로 채워넣음
-            print('>>>>after off random_img_path: ', random_img_path)
+            n_samples = 2 * math.floor(len(img_path_list) / 2)
+            random_imgs = random.sample(img_path_list, n_samples)
+            random_img_path = [os.path.join(path, label, img) for img in random_imgs]
         else:
             random_imgs = random.sample(img_path_list, n_samples)
             random_img_path = [os.path.join(path, label, img) for img in random_imgs]
@@ -42,9 +36,9 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
     labels = ['off', 'on'] # off = 0, on =1
     #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     on_images = sampler(path, labels[1], nb_samples)
-    print('num of on_images: ', on_images)
+    print('num of on_images: ', len(on_images))
     off_images = sampler(path, labels[0], 2 * nb_samples - len(on_images))
-    print('num of off_images: ', off_images)
+    print('num of off_images: ', len(off_images))
 
     return off_images, on_images
 
