@@ -23,14 +23,14 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
             random.seed(subject + seed)
         if len(img_path_list) < nb_samples:
             print('nb_samples: ', nb_samples)
-            print('img_path_list: ', img_path_list)
+            print('len img_path_list: ', len(img_path_list))
             print('img_path_list: ', img_path_list)
             print('---------after off')
             random_imgs = img_path_list  # 일단 가진 on img다 때려넣고
             img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
             print('img_path_list: ', img_path_list)
             print('len img_path_list: ', len(img_path_list))
-            print('nb_samples - len(img_path_list): ', nb_samples - len(img_path_list))
+            print('nb_samples - len(img_path_list): ', nb_samples - len(random_imgs))
             random_imgs = random_imgs.extend(
                 random.sample(img_path_list, nb_samples - len(img_path_list)))  # 나머지는 off로 채워넣음
         else:
