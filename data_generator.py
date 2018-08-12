@@ -52,7 +52,6 @@ class DataGenerator(object):
 
         # make list of files
         print('Generating filenames')
-        all_filenames = []
         inputa_files = []
         inputb_files = []
         labelas = []
@@ -61,33 +60,28 @@ class DataGenerator(object):
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
             if train:
-                labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
+                off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
                                                nb_samples=self.num_samples_per_class, validate=False)
             else:
-                labels_and_images = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
+                off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
                                                nb_samples=self.num_samples_per_class, validate=True)
-            # make sure the above isn't randomized order
-            labels = [li[0] for li in labels_and_images]  # 0 0 1 1 = off off on on
-            filenames = [li[1] for li in labels_and_images]
             # Split data into a/b
-            k = int(self.num_samples_per_class / 2)  # = FLAGS.update_batch_size
-            filenames = np.array(filenames).reshape(self.num_classes, self.num_samples_per_class)
-            for files_per_class in filenames:
-                for i in range(k):
-                    inputa_files.append(files_per_class[2*i])
-                    inputb_files.append(files_per_class[2*i+1])
+            for i in range(len(off_imgs) / 2):
+                inputa_files.append(off_imgs[2 * i])
+                inputb_files.append(off_imgs[2 * i + 1])
+            for i in range(len(on_imgs) / 2):
+                inputa_files.append(on_imgs[2 * i])
+                inputb_files.append(on_imgs[2 * i + 1])
+            labelas = list(np.zeros(len(off_imgs) / 2))
+            labelas.extend(list(np.zeros(len(on_imgs) / 2)))
+            labelbs = labelas
 
-            labels = np.array(labels).reshape(self.num_classes, self.num_samples_per_class)
-            for labels_per_class in labels:
-                for i in range(k):
-                    labelas.append(labels_per_class[2*i])
-                    labelbs.append(labels_per_class[2*i+1])
-
-            all_filenames.extend(filenames)  # just for debugging
-
+        print("=====================================================================")
         print(">>>> inputa_files: ", inputa_files)
         print("--------------------------------------------")
         print(">>>> inputb_files: ", inputb_files)
+        print("=====================================================================")
+        print(">>>> labelas: ", labelas)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
         print(">>>>>>>>>>>>>>>>>> random seed for weight: ", FLAGS.weight_seed)
@@ -152,7 +146,7 @@ class DataGenerator(object):
         labelbs_tensor = tf.convert_to_tensor(labelbs)
         labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
         labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, self.num_classes * k, 2])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, self.num_classes * k, 2])
+        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, len(off_imgs) + len(on_imgs), 2])
+        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, len(off_imgs) + len(on_imgs), 2])
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
