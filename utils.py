@@ -29,8 +29,8 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
             img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
             print('after off, len img_path_list: ', len(img_path_list))
             print('nb_samples - already chosed on imgs: ', nb_samples - len(random_imgs))
-            random_imgs = random_imgs.extend(
-                random.sample(img_path_list, nb_samples - len(random_imgs)))  # 나머지는 off로 채워넣음
+            alternative_rand_imgs = random.sample(img_path_list, nb_samples - len(random_imgs))
+            random_imgs.extend(alternative_rand_imgs)  # 나머지는 off로 채워넣음
             print('>>>> random_imgs: ', random_imgs)
 
         else:
