@@ -18,12 +18,7 @@ class DataGenerator(object):
     A "class" is considered a class of omniglot digits or a particular sinusoid function.
     """
 
-    def __init__(self, num_samples_per_class, batch_size, config={}):
-        """
-        Args:
-            num_samples_per_class: num samples to generate per class in one batch
-        """
-        self.num_samples_per_class = num_samples_per_class
+    def __init__(self, config={}):
         self.num_classes = FLAGS.num_classes
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
@@ -61,10 +56,10 @@ class DataGenerator(object):
             # random.shuffle(sampled_character_folders)
             if train:
                 off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
-                                               nb_samples=self.num_samples_per_class, validate=False)
+                                               nb_samples=FLAGS.update_batch_size * 2, validate=False)
             else:
                 off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
-                                               nb_samples=self.num_samples_per_class, validate=True)
+                                               nb_samples=FLAGS.update_batch_size * 2, validate=True)
             # Split data into a/b
             for i in range(len(off_imgs) / 2):
                 inputa_files.append(off_imgs[2 * i])
@@ -138,15 +133,17 @@ class DataGenerator(object):
         np.random.seed(2)
         np.random.shuffle(labelbs)
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
-        inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
+        inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
+                                               [num_of_task, FLAGS.update_batch_size * 2, 2000])
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
-        inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor, [num_of_task, self.num_classes * k, 2000])
+        inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor,
+                                               [num_of_task, FLAGS.update_batch_size * 2, 2000])
 
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
         labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
         labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, len(off_imgs) + len(on_imgs), 2])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, len(off_imgs) + len(on_imgs), 2])
+        labelas_tensor = tf.reshape(labelas_tensor, [num_of_task, FLAGS.update_batch_size * 2, 2])
+        labelbs_tensor = tf.reshape(labelbs_tensor, [num_of_task, FLAGS.update_batch_size * 2, 2])
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor

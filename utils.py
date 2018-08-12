@@ -12,9 +12,9 @@ FLAGS = flags.FLAGS
 ## Image helper
 def get_images(path, label_int, seed, nb_samples=None, validate=False):
     subject = int(path[-1])
-
+    print(">>>>>>>>>>>>>subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
-    def sampler(path, label):
+    def sampler(path, label, n_samples):
         print("============================================")
         print("validate: ", validate)
         print("label: ", label)
@@ -25,24 +25,28 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
             random.seed(subject + seed + 10)
         else:
             random.seed(subject + seed)
-        if len(img_path_list) < nb_samples:
+        if len(img_path_list) < n_samples:
             random_imgs = img_path_list
             random_img_path = [os.path.join(path, label, img) for img in random_imgs]  # 일단 가진 on img다 때려넣고
+            if type(len(random_img_path) / 2) is not int: random_img_path = random_img_path[
+                                                                            :-1]  # 홀수개면 하나 버림(inputa/inputb로 나누기위해)
             print('>>>> random_img_path: ', random_img_path)
             img_path_list = os.listdir(os.path.join(path, 'off'))  # off img dir에 가서
-            alternative_rand_imgs = random.sample(img_path_list, nb_samples - len(random_imgs))
+            alternative_rand_imgs = random.sample(img_path_list, n_samples - len(random_imgs))
             random_img_path.extend([os.path.join(path, 'off', img) for img in alternative_rand_imgs])  # 나머지는 off로 채워넣음
-            print('>>>> random_img_path: ', random_img_path)
+            print('>>>>after off random_img_path: ', random_img_path)
         else:
-            random_imgs = random.sample(img_path_list, nb_samples)
+            random_imgs = random.sample(img_path_list, n_samples)
             random_img_path = [os.path.join(path, label, img) for img in random_imgs]
         return random_img_path
     labels = ['off', 'on'] # off = 0, on =1
     #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
-    images = [(i, random_img_path) \
-              for i, label in zip(label_int, labels) \
-              for random_img_path in sampler(path, label)]
-    return images
+    on_images = sampler(path, labels[1], nb_samples)
+    print('num of on_images: ', on_images)
+    off_images = sampler(path, labels[0], 2 * nb_samples - len(on_images))
+    print('num of off_images: ', off_images)
+
+    return off_images, on_images
 
 ## Network helpers
 def conv_block(inp, cweight, bweight, reuse, scope, activation=tf.nn.relu, max_pool_pad='VALID', residual=False):
