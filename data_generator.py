@@ -88,6 +88,7 @@ class DataGenerator(object):
         print(">>>> inputa_files: ", inputa_files)
         print("--------------------------------------------")
         print(">>>> inputb_files: ", inputb_files)
+        print(">>> labelas: ", labelas)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
         print(">>>>>>>>>>>>>>>>>> random seed for weight: ", FLAGS.weight_seed)
