@@ -10,11 +10,20 @@ subjects = os.listdir(path)
 subjects.sort()
 all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
 
+# file_len = []
+# for subject in subjects:
+#     subject_folder = os.path.join(path, subject)
+#     files = os.listdir(subject_folder)
+#     file_len.append(len(files))
+#
+# print('original files len : ', file_len)
+# min_file_len = min(file_len)
+
 for subject in subjects:
     subject_folder = os.path.join(path, subject)
     files = os.listdir(subject_folder)
     test_file_names = [os.path.join(subject_folder, file) for file in files]
-    print('files in ', subject, ' : ', len(test_file_names))
+    print('original files len in ', subject, ' : ', len(files))
     frame_idx = [int(file.split('frame')[1].split('.')[0]) for file in files]
 
     label_per_subject = []
@@ -32,9 +41,9 @@ for subject in subjects:
                 print("on_idx - out of index: ", idx, " for au, subject: ", au, subject)
                 continue
             if intensity > 0:
-                label_per_au.append(1)
+                label_per_au.append([0, 1])
             else:
-                label_per_au.append(0)
+                label_per_au.append([1, 0])
         # label_per_au = (4800,2)
         label_per_subject.append(label_per_au)  # (12, 4800,2)
     label_per_subject = np.array(label_per_subject)
