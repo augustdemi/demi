@@ -388,8 +388,8 @@ def main():
 
     if FLAGS.test_train or FLAGS.test_test:
         all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-        w_arr = []
-        b_arr = []
+        w_arr = None
+        b_arr = None
         for au in all_au:
             model_file = None
             model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
@@ -401,9 +401,9 @@ def main():
                 b = sess.run('model/b1:0')
                 print("===========> w ", w.shape)
                 print("===========> b ", b.shape)
-                if (len(w_arr) == 0):
-                    w_arr = np.array(w_arr.append(w))
-                    b_arr = np.array(b_arr.append(b))
+                if w_arr is None:
+                    w_arr = w
+                    b_arr = b
                 else:
                     w_arr = np.hstack((w_arr, w))
                     b_arr = np.hstack((b_arr, b))
