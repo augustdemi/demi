@@ -388,8 +388,8 @@ def main():
 
     if FLAGS.test_train or FLAGS.test_test:
         all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-        w_list = []
-        b_list = []
+        w_arr = np.array([])
+        b_arr = np.array([])
         for au in all_au:
             model_file = None
             model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
@@ -399,12 +399,13 @@ def main():
                 saver.restore(sess, model_file)
                 w = sess.run('model/w1:0')
                 b = sess.run('model/b1:0')
-                w_list.append(w)
-                b_list.append(b)
+                w_arr = np.hstack((w_arr, w))
+                b_arr = np.hstack((b_arr, b))
                 print("updated weights from ckpt: ", w, b)
-            print('len of w_list: ', len(w_list))
+            print('w_shape: ', w_arr.shape)
+            print('b_shape: ', b_arr.shape)
             print('----------------------------------------------------------')
-        test(w_list, b_list, trained_model_dir)
+        test(w_arr, b_arr, trained_model_dir)
     elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
