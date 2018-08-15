@@ -406,7 +406,7 @@ def main():
                     b_arr = b
                 else:
                     w_arr = np.hstack((w_arr, w))
-                    b_arr = np.hstack((b_arr, b))
+                    b_arr = np.vstack((b_arr, b))
                 print("updated weights from ckpt: ", w, b)
             print('w_shape: ', w_arr.shape)
             print('b_shape: ', b_arr.shape)
