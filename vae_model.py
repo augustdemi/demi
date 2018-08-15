@@ -71,8 +71,13 @@ class VAE:
         print("loaded weight from robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
         if (len(w) == len(b) == 12):
             # w and b are from 'train_test' model. Thus, they are just for one au. ==> Need to magnify.
-            w = np.array(w).transpose((1, 0, 2))  # (12,2000,2) -> (2000,12,2)
-            b = np.array(b).transpose((1, 0, 2))
+            w = np.array(w)
+            b = np.array(b)
+            print('>>>>>>>>>>>>>>> w shape: ', w.shape)
+            print('>>>>>>>>>>>>>>> b shape: ', b.shape)
+            print('-----------------------------')
+            w = np.transpose(w, (1, 0, 2))  # (12,2000,2) -> (2000,12,2)
+            b = np.transpose(b, (1, 0, 2))
             print('>>>>>>>>>>>>>>> w shape: ', w.shape)
             print('>>>>>>>>>>>>>>> b shape: ', b.shape)
             self.model_train.layers[-1].weights[0].load(w)
