@@ -239,42 +239,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test(model, saver, sess, trained_model_dir, data_generator):
-    result_arr = []
-    NUM_TEST_POINTS = FLAGS.num_test_pts
-    print("===========================================================================")
-
-    for _ in range(NUM_TEST_POINTS):
-        feed_dict = {model.meta_lr: 0.0}  # do not optimize in test because it needs to be iterated.
-        input_tensor = [model.metaval_result1, model.metaval_result2]
-        result = sess.run(input_tensor, feed_dict)
-        result_arr.append(result)
-
-    save_path = "./logs/result/" + str(FLAGS.train_update_batch_size) + "shot/" + 'weight' + str(
-        FLAGS.init_weight) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
-        FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/test/" + str(FLAGS.test_iter)
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-
-    i = 0
-    for result in result_arr:
-        y_hata = np.array(result[0][0])[
-            0]  # result[0][0]=y_hata: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label); test task는 항상 1개니까 0인덱스만 불러와도 상관없음
-        y_laba = np.array(result[0][1])[0]
-
-        y_hatb = result[1][0][FLAGS.num_updates - 1][
-            0]  # result[1][0]=y_hat: has (num_updates) elts. We see only the recent elt.==>result[1][0][FLAGS.num_updates-1]: has shape (1,2,1,2)=(num.of.task, 2*k, num.of.au, one-hot label)
-        y_labb = result[1][1][FLAGS.num_updates - 1][0]
-
-        print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
-        print("------------------------------------------------------------------------------------")
-
-        print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + str(FLAGS.subject_idx) + ".iter" + str(i) + ".txt")
-        print("====================================================================================")
-        i += 1
-
-
-def test_test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
+def test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -294,25 +259,21 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
         random_flip=True,
     )
 
-    def predict_label(file_path):
-        imgs = []
-        for filename in file_path:
-            img = cv2.imread(filename)
-            imgs.append(img)
-        img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-        return vae_model.testWithSavedModel(img_arr)
-
-    def get_y_hat(test_file_names, N_batch):
-        file_names_batch = np.reshape(test_file_names[:N_batch * batch_size], [N_batch, batch_size])
-
-        yhat_arr = []
-        for file_path in file_names_batch:
-            pred = predict_label(file_path)
-            yhat_arr.extend(pred)
-        # if N_batch * batch_size != len(data['test_file_names']):
-        #     rest_pred = predict_label(test_file_names[N_batch * batch_size:])
-        #     yhat_arr.extend(rest_pred)
-        return np.array(yhat_arr)
+    def get_y_hat(file_names):
+        nb_samples = len(file_names)
+        t0, t1 = 0, batch_size
+        yhat = []
+        while True:
+            t1 = min(nb_samples, t1)
+            file_names_batch = file_names[t0:t1]
+            imgs = [cv2.imread(filename) for filename in file_names_batch]
+            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+            pred = vae_model.testWithSavedModel(img_arr)
+            yhat.extend(pred)
+            if t1 == nb_samples: break
+            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
+            t1 += batch_size
+        return np.array(yhat)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
@@ -321,20 +282,14 @@ def test_test(w, b, trained_model_dir):  # In case when test the model with the 
 
     for test_subject in test_subjects:
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-
-        N_batch = int(len(data['test_file_names']) / batch_size)
-        test_file_names = data['test_file_names'][:N_batch * batch_size]
-
-        print(test_subject.split(".")[0], " original total len:", len(data['test_file_names']))
-        print(test_subject.split(".")[0], " rounded down total len:", len(test_file_names))
-        y_hat = get_y_hat(test_file_names, N_batch)
+        test_file_names = data['test_file_names']
+        y_hat = get_y_hat(test_file_names)
         save_path = "./logs/result/test_test/" + trained_model_dir
         if FLAGS.test_train:
             save_path = "./logs/result/test_train/" + trained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        shape = y_hat[:,FLAGS.au_idx].shape
-        print_summary(y_hat[:,FLAGS.au_idx].reshape((shape[0], 1, shape[1])), data['y_lab'][:N_batch * batch_size],
+        print_summary(y_hat, data['y_lab'],
                       log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
@@ -431,7 +386,26 @@ def main():
     print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
-    if FLAGS.resume or not FLAGS.train:
+    if FLAGS.test_train or FLAGS.test_test:
+        all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
+        w_list = []
+        b_list = []
+        for au in all_au:
+            model_file = None
+            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
+            print(">>>> model_file from ", au, ": ", model_file)
+            if model_file:
+                print("Restoring model weights from " + model_file)
+                saver.restore(sess, model_file)
+                w = sess.run('model/w1:0')
+                b = sess.run('model/b1:0')
+                w_list.append(w)
+                b_list.append(b)
+                print("updated weights from ckpt: ", w, b)
+            print('len of w_list: ', len(w_list))
+            print('----------------------------------------------------------')
+        test(w_list, b_list, trained_model_dir)
+    elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
         w = None
@@ -453,15 +427,10 @@ def main():
                 ind1 = model_file.index('model')
                 resume_itr = int(model_file[ind1 + 5:])
                 print('resume_itr: ', resume_itr)
-            print("=====================================================================================")
+    print("=====================================================================================")
 
-    if FLAGS.test_test or FLAGS.test_train:
-        test_test(w, b, trained_model_dir)
-    else:
-        if FLAGS.train:
+    if FLAGS.train:
             train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
-        else:
-            test(model, saver, sess, trained_model_dir, data_generator)
     end_time = datetime.now()
     elapse = end_time - start_time
     print("=======================================================")

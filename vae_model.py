@@ -69,14 +69,12 @@ class VAE:
     def loadWeight(self, vae_model, w=None, b=None):
         self.model_train.load_weights(vae_model)
         print("loaded weight from robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
-        if (w != None and b != None):
-            if 'all' in vae_model:
-                # w and b are from 'train_test' model. Thus, they are just for one au. ==> Need to magnify.
-                w = np.array([[e[0],e[0],e[0]] for e in w]) #(2000, 3, 2)
-                b = np.array([b, b, b]).reshape((3,2)) # (3,2)
-            else:
-                w = np.array(w)
-                b = np.array(b)
+        if (len(w) == len(b) == 12):
+            # w and b are from 'train_test' model. Thus, they are just for one au. ==> Need to magnify.
+            w = np.array(w).transpose((1, 0, 2))  # (12,2000,2) -> (2000,12,2)
+            b = np.array(b).transpose((1, 0, 2))
+            print('>>>>>>>>>>>>>>> w shape: ', w.shape)
+            print('>>>>>>>>>>>>>>> b shape: ', b.shape)
             self.model_train.layers[-1].weights[0].load(w)
             self.model_train.layers[-1].weights[1].load(b)
             print("loaded weight from maml : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
