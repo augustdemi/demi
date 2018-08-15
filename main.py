@@ -289,7 +289,7 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
             save_path = "./logs/result/test_train/" + trained_model_dir
         if not os.path.exists(save_path):
             os.makedirs(save_path)
-        print_summary(y_hat, data['y_lab'],
+        print_summary(y_hat, data['lab'],
                       log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
