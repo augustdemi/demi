@@ -277,7 +277,7 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
-    test_subjects = test_subjects[FLAGS.test_start_idx - 14:FLAGS.test_start_idx - 14 + FLAGS.test_num]
+    test_subjects = test_subjects[FLAGS.test_start_idx:FLAGS.test_start_idx + FLAGS.test_num]
     print("test_subjects: ", test_subjects)
 
     for test_subject in test_subjects:
