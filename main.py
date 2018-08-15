@@ -399,6 +399,8 @@ def main():
                 saver.restore(sess, model_file)
                 w = sess.run('model/w1:0')
                 b = sess.run('model/b1:0')
+                print("===========> w ", w.shape)
+                print("===========> b ", b.shape)
                 w_arr = np.hstack((w_arr, w))
                 b_arr = np.hstack((b_arr, b))
                 print("updated weights from ckpt: ", w, b)
