@@ -281,6 +281,7 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
     print("test_subjects: ", test_subjects)
 
     for test_subject in test_subjects:
+        print("============> subject: ", test_subject)
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
         test_file_names = data['test_file_names']
         y_hat = get_y_hat(test_file_names)
@@ -399,8 +400,6 @@ def main():
                 saver.restore(sess, model_file)
                 w = sess.run('model/w1:0')
                 b = sess.run('model/b1:0')
-                print("===========> w ", w.shape)
-                print("===========> b ", b.shape)
                 if w_arr is None:
                     w_arr = w
                     b_arr = b
@@ -408,8 +407,6 @@ def main():
                     w_arr = np.hstack((w_arr, w))
                     b_arr = np.vstack((b_arr, b))
                 print("updated weights from ckpt: ", w, b)
-            print('w_shape: ', w_arr.shape)
-            print('b_shape: ', b_arr.shape)
             print('----------------------------------------------------------')
         test(w_arr, b_arr, trained_model_dir)
     elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.

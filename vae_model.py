@@ -69,12 +69,7 @@ class VAE:
     def loadWeight(self, vae_model, w=None, b=None):
         self.model_train.load_weights(vae_model)
         print("loaded weight from robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
-        print("@@@", self.model_train.get_weights()[58].shape)
-        print("@@@", self.model_train.get_weights()[59].shape)
         if (w.shape[1] == b.shape[0] == 12):
-            # w and b are from 'train_test' model. Thus, they are just for one au. ==> Need to magnify.
-            print('>>>>>>>>>>>>>>> w shape: ', w.shape)
-            print('>>>>>>>>>>>>>>> b shape: ', b.shape)
             self.model_train.layers[-1].weights[0].load(w)
             self.model_train.layers[-1].weights[1].load(b)
             print("loaded weight from maml : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
