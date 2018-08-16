@@ -389,6 +389,7 @@ def main():
 
     if FLAGS.test_train or FLAGS.test_test:
         all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
+        all_au = ['au12'] * 12
         w_arr = None
         b_arr = None
         for au in all_au:
