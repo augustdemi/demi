@@ -15,6 +15,26 @@ def get_images(path, label_int, seed, nb_samples=None, validate=True):
     print("============================================")
     print(">>>>>>>>>>>>>subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
+    labels = ['off', 'on']  # off = 0, on =1
+
+    # check count of existing samples
+    num_existing_samples = []
+    for label in labels:
+        img_path_list = os.listdir(os.path.join(path, label))
+        num_existing_samples.append(len(img_path_list))
+
+    # make the balance
+    num_samples_to_select = [nb_samples, nb_samples]
+    if num_existing_samples[0] < nb_samples:
+        n_off_samples = 2 * math.floor(num_existing_samples[0] / 2)
+        n_on_samples = nb_samples - n_off_samples
+        num_samples_to_select = [n_off_samples, n_on_samples]
+    elif num_existing_samples[1] < nb_samples:
+        n_on_samples = 2 * math.floor(num_existing_samples[1] / 2)
+        n_off_samples = nb_samples - n_on_samples
+        num_samples_to_select = [n_off_samples, n_on_samples]
+    print('num_samples_to_select: ', num_samples_to_select)
+
     def sampler(path, label, n_samples):
         print("-------------------------------")
         print("validate: ", validate)
@@ -25,20 +45,15 @@ def get_images(path, label_int, seed, nb_samples=None, validate=True):
             random.seed(subject + seed + 10)
         else:
             random.seed(subject + seed)
-        if len(img_path_list) < n_samples:
-            n_samples = 2 * math.floor(len(img_path_list) / 2)
-            random_imgs = random.sample(img_path_list, n_samples)
-            random_img_path = [os.path.join(path, label, img) for img in random_imgs]
-        else:
-            random_imgs = random.sample(img_path_list, n_samples)
-            random_img_path = [os.path.join(path, label, img) for img in random_imgs]
+        random_imgs = random.sample(img_path_list, n_samples)
+        random_img_path = [os.path.join(path, label, img) for img in random_imgs]
         return random_img_path
-    labels = ['off', 'on'] # off = 0, on =1
+
     #각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
-    on_images = sampler(path, labels[1], nb_samples)
-    print('num of on_images: ', len(on_images))
-    off_images = sampler(path, labels[0], 2 * nb_samples - len(on_images))
+    off_images = sampler(path, labels[0], num_samples_to_select[0])
     print('num of off_images: ', len(off_images))
+    on_images = sampler(path, labels[1], num_samples_to_select[1])
+    print('num of on_images: ', len(on_images))
     return off_images, on_images
 
 
