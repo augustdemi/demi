@@ -27,11 +27,11 @@ def get_images(path, label_int, seed, nb_samples=None, validate=True):
     num_samples_to_select = [nb_samples, nb_samples]
     if num_existing_samples[0] < nb_samples:
         n_off_samples = 2 * math.floor(num_existing_samples[0] / 2)
-        n_on_samples = nb_samples - n_off_samples
+        n_on_samples = 2 * nb_samples - n_off_samples
         num_samples_to_select = [n_off_samples, n_on_samples]
     elif num_existing_samples[1] < nb_samples:
         n_on_samples = 2 * math.floor(num_existing_samples[1] / 2)
-        n_off_samples = nb_samples - n_on_samples
+        n_off_samples = 2 * nb_samples - n_on_samples
         num_samples_to_select = [n_off_samples, n_on_samples]
     print('num_samples_to_select: ', num_samples_to_select)
 
