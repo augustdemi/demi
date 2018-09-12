@@ -403,9 +403,10 @@ def main():
             elif FLAGS.test_iter > 0:
                 files = os.listdir(model_file[:model_file.index('model')])
                 if 'model' + str(FLAGS.test_iter) + '.index' in files:
-                    print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                     model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
                     print(">>>> model_file2: ", model_file)
+                else:
+                    print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
             else:
                 print("Restoring model weights from " + model_file)
                 saver.restore(sess, model_file)
