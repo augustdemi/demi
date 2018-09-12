@@ -396,11 +396,17 @@ def main():
             model_file = None
             model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
             print(">>>> model_file from ", au, ": ", model_file)
-            if (model_file == None):
-                print("####################################################################### None for ", au)
-            elif FLAGS.test_iter > 0:
-                model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                print(">>>> model_file2: ", model_file)
+            if FLAGS.test_iter > 0:
+                try:
+                    model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                    print(">>>> model_file2: ", model_file)
+                except:
+                    print(
+                        "############################################################################################")
+                    print("####################################################################### None for ", au)
+                    print(
+                        "############################################################################################")
+
             if model_file:
                 print("Restoring model weights from " + model_file)
                 saver.restore(sess, model_file)
