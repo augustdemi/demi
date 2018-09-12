@@ -402,8 +402,7 @@ def main():
                 print("############################################################################################")
             elif FLAGS.test_iter > 0:
                 files = os.listdir(model_file[:model_file.index('model')])
-                print(files)
-                if 'model' + str(FLAGS.test_iter) in files:
+                if 'model' + str(FLAGS.test_iter) + '.index' in files:
                     print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                     model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
                     print(">>>> model_file2: ", model_file)
