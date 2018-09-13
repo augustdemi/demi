@@ -98,8 +98,8 @@ flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert 
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 500
-    SAVE_INTERVAL = 5000
+    SUMMARY_INTERVAL = 100
+    SAVE_INTERVAL = 100
 
     if FLAGS.train_test:
         resume_itr = 0
@@ -443,6 +443,9 @@ def main():
                 ind1 = model_file.index('model')
                 resume_itr = int(model_file[ind1 + 5:])
                 print('resume_itr: ', resume_itr)
+    else:
+        model_file = None
+        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
     print("=====================================================================================")
 
     if FLAGS.train:
