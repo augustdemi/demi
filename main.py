@@ -115,7 +115,9 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
     print('Done initializing, starting training.')
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-
+        if itr == 1000:
+            SUMMARY_INTERVAL = 500
+            SAVE_INTERVAL = 5000
         input_tensors = [model.metatrain_op]
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
