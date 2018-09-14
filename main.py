@@ -402,26 +402,27 @@ def main():
                 print("############################################################################################")
                 print("####################################################################### None for ", au)
                 print("############################################################################################")
-            elif FLAGS.test_iter > 0:
-                files = os.listdir(model_file[:model_file.index('model')])
-                if 'model' + str(FLAGS.test_iter) + '.index' in files:
-                    model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                    print(">>>> model_file2: ", model_file)
-                else:
-                    print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
-            print("Restoring model weights from " + model_file)
-            saver.restore(sess, model_file)
-            w = sess.run('model/w1:0')
-            b = sess.run('model/b1:0')
-            if w_arr is None:
-                w_arr = w
-                b_arr = b
             else:
-                w_arr = np.hstack((w_arr, w))
-                b_arr = np.vstack((b_arr, b))
-            print("updated weights from ckpt: ", w, b)
-            print('----------------------------------------------------------')
-        test(w_arr, b_arr, trained_model_dir)
+                if FLAGS.test_iter > 0:
+                    files = os.listdir(model_file[:model_file.index('model')])
+                    if 'model' + str(FLAGS.test_iter) + '.index' in files:
+                        model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                        print(">>>> model_file2: ", model_file)
+                    else:
+                        print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
+                print("Restoring model weights from " + model_file)
+                saver.restore(sess, model_file)
+                w = sess.run('model/w1:0')
+                b = sess.run('model/b1:0')
+                if w_arr is None:
+                    w_arr = w
+                    b_arr = b
+                else:
+                    w_arr = np.hstack((w_arr, w))
+                    b_arr = np.vstack((b_arr, b))
+                print("updated weights from ckpt: ", w, b)
+                print('----------------------------------------------------------')
+            test(w_arr, b_arr, trained_model_dir)
     elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
