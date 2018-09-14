@@ -11,7 +11,7 @@ facial_points = {   'inner' : np.arange(17,68),
         'Stable': np.array([19, 22, 25, 28, 10, 11, 12, 13, 14, 15, 16, 17, 18])+17,
         'all'   : np.arange(68)}
 print(os.path.dirname(__file__)+'/data/mean_shape.h5')
-with h5py.File(os.path.dirname(__file__)+'/data/mean_shape.h5') as tmp:
+with h5py.File(os.path.dirname(__file__) + '/data/mean_shape.h5', 'r') as tmp:
     ss = list(tmp.keys())
     mean_shape = tmp['data'][::]
     connections = tmp['connections'][::]
