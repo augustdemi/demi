@@ -426,24 +426,30 @@ def main():
             trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+        else:
+            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+
         print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
 
         w = None
         b = None
         print(">>>> model_file1: ", model_file)
 
+
+
         #TODO delete this if
         if FLAGS.local_subj > 0:
             model_file = model_file[:model_file.index('subject')] + 'subject' + str(FLAGS.local_subj - 14)
             print(">>>> model_file2: ", model_file)
         if model_file:
-            if FLAGS.test_iter > 0:
-                files = os.listdir(model_file[:model_file.index('model')])
-                if 'model' + str(FLAGS.test_iter) + '.index' in files:
-                    model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                    print(">>>> model_file2: ", model_file)
-            print("Restoring model weights from " + model_file)
+            if FLAGS.train_test:
+                if FLAGS.test_iter > 0:
+                    files = os.listdir(model_file[:model_file.index('model')])
+                    if 'model' + str(FLAGS.test_iter) + '.index' in files:
+                        model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                        print(">>>> model_file2: ", model_file)
+            print("1. Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
             w = sess.run('model/w1:0').tolist()
             b = sess.run('model/b1:0').tolist()
@@ -451,6 +457,18 @@ def main():
             if not FLAGS.test_test:
                 ind1 = model_file.index('model')
                 resume_itr = int(model_file[ind1 + 5:])
+                print('resume_itr: ', resume_itr)
+        else:
+            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+            print("2. Restoring model weights from " + model_file)
+            saver.restore(sess, model_file)
+            w = sess.run('model/w1:0').tolist()
+            b = sess.run('model/b1:0').tolist()
+            print("updated weights from ckpt: ", np.array(w), np.array(b))
+            if not FLAGS.test_test:
+                ind1 = model_file.index('model')
+                if FLAGS.train_test: resume_itr = 0
+                else: resume_itr = int(model_file[ind1 + 5:])
                 print('resume_itr: ', resume_itr)
     else:
         model_file = None
