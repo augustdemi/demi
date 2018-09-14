@@ -98,8 +98,8 @@ flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert 
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    SUMMARY_INTERVAL = 100
-    SAVE_INTERVAL = 100
+    SUMMARY_INTERVAL = 500
+    SAVE_INTERVAL = 5000
 
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
@@ -112,9 +112,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
     print('Done initializing, starting training.')
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-        if itr == 1000:
-            SUMMARY_INTERVAL = 500
-            SAVE_INTERVAL = 5000
+
         input_tensors = [model.metatrain_op]
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
