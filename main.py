@@ -82,7 +82,7 @@ flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
 # for train, train_test
 flags.DEFINE_integer('train_start_idx', 0, 'start index of task for training')
 # for test_test, test_train
-flags.DEFINE_integer('test_start_idx', 14, 'start index of task for test')
+flags.DEFINE_integer('test_start_idx', 0, 'start index of task for test')
 flags.DEFINE_integer('test_num', 1, 'num of task for test')
 flags.DEFINE_string('testset_dir', './data/1/', 'directory for test set')
 flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log')
