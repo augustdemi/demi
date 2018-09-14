@@ -432,6 +432,8 @@ def main():
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+        print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
+
         w = None
         b = None
         print(">>>> model_file1: ", model_file)
