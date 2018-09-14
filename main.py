@@ -422,7 +422,7 @@ def main():
                     b_arr = np.vstack((b_arr, b))
                 print("updated weights from ckpt: ", w, b)
                 print('----------------------------------------------------------')
-            test(w_arr, b_arr, trained_model_dir)
+        test(w_arr, b_arr, trained_model_dir)
     elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
