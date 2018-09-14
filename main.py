@@ -432,15 +432,17 @@ def main():
         w = None
         b = None
         print(">>>> model_file1: ", model_file)
-        if FLAGS.test_iter > 0:
-            files = os.listdir(model_file[:model_file.index('model')])
-            if 'model' + str(FLAGS.test_iter) + '.index' in files:
-                model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                print(">>>> model_file2: ", model_file)
+
+        #TODO delete this if
         if FLAGS.local_subj > 0:
             model_file = model_file[:model_file.index('subject')] + 'subject' + str(FLAGS.local_subj - 14)
             print(">>>> model_file2: ", model_file)
         if model_file:
+            if FLAGS.test_iter > 0:
+                files = os.listdir(model_file[:model_file.index('model')])
+                if 'model' + str(FLAGS.test_iter) + '.index' in files:
+                    model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                    print(">>>> model_file2: ", model_file)
             print("Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
             w = sess.run('model/w1:0').tolist()
