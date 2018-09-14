@@ -101,9 +101,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
     SUMMARY_INTERVAL = 100
     SAVE_INTERVAL = 100
 
-    if FLAGS.train_test:
-        resume_itr = 0
-
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
