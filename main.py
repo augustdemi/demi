@@ -423,15 +423,23 @@ def main():
                 print("updated weights from ckpt: ", w, b)
                 print('----------------------------------------------------------')
         test(w_arr, b_arr, trained_model_dir)
+    # train_train or train_test
     elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
+
+        if FLAGS.train_test:
+            trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
+                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
         w = None
         b = None
         print(">>>> model_file1: ", model_file)
         if FLAGS.test_iter > 0:
-            model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-            print(">>>> model_file2: ", model_file)
+            files = os.listdir(model_file[:model_file.index('model')])
+            if 'model' + str(FLAGS.test_iter) + '.index' in files:
+                model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                print(">>>> model_file2: ", model_file)
         if FLAGS.local_subj > 0:
             model_file = model_file[:model_file.index('subject')] + 'subject' + str(FLAGS.local_subj - 14)
             print(">>>> model_file2: ", model_file)
