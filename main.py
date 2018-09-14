@@ -423,10 +423,10 @@ def main():
         model_file = None
 
         if FLAGS.train_test:
-            trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
+            tmp_trained_model_dir = trained_model_dir + '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + tmp_trained_model_dir)
         else:
             model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
 
