@@ -237,7 +237,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test(w, b):  # In case when test the model with the whole rest frames
+def test(w, b, test_start_idx, test_num):  # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -276,7 +276,7 @@ def test(w, b):  # In case when test the model with the whole rest frames
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
 
-    test_subjects = test_subjects[FLAGS.test_start_idx:FLAGS.test_start_idx + FLAGS.test_num]
+    test_subjects = test_subjects[test_start_idx:test_start_idx + test_num]
 
     print("test_subjects: ", test_subjects)
 
@@ -421,7 +421,7 @@ def main():
                         b_arr = np.vstack((b_arr, b))
                     print("updated weights from ckpt: ", w, b)
                     print('----------------------------------------------------------')
-            return test(w_arr, b_arr)
+            return test(w_arr, b_arr, test_start_idx, test_num)
 
         save_path = "./logs/result/test_test/" + trained_model_dir
         if FLAGS.test_train:
