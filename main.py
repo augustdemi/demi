@@ -437,7 +437,7 @@ def main():
                 y_hat.append(result[0])
                 y_lab.append(result[1])
                 print("y_hat shape:", result[0].shape)
-                print(">> y_hat_all shape:", y_hat.shape)
+                print(">> y_hat_all shape:", np.vstack(y_hat).shape)
             print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
         else:
             # TODO edit this part
