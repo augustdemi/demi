@@ -80,10 +80,9 @@ flags.DEFINE_bool('train_test_inc', False, 're-train model increasingly')
 flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
 flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
 # for train, train_test
-flags.DEFINE_integer('train_start_idx', 0, 'start index of task for training')
+flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 # for test_test, test_train
-flags.DEFINE_integer('test_start_idx', 0, 'start index of task for test')
-flags.DEFINE_integer('test_num', 1, 'num of task for test')
+flags.DEFINE_integer('num_test_tasks', 1, 'num of task for test')
 flags.DEFINE_string('testset_dir', './data/1/', 'directory for test set')
 flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log')
 # for train_test, test_test
@@ -145,7 +144,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 y_hata = np.vstack(np.array(maml_result[-2][0]))  # length = num_of_task * N * K
                 y_laba = np.vstack(np.array(maml_result[-2][1]))
                 save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
-                    FLAGS.init_weight) + '.sbjt_' + str(FLAGS.train_start_idx) + ':' + str(
+                    FLAGS.init_weight) + '.sbjt_' + str(FLAGS.sbjt_start_idx) + ':' + str(
                     FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
                     FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/train"
                 if not os.path.exists(save_path):
@@ -153,13 +152,13 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
                 save_path = "./logs/result/train/" + trained_model_dir + "/"
                 if FLAGS.train_test:
-                    retrained_model_dir = 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                    retrained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
                         FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
                         FLAGS.num_updates) + '.updatelr' + str(
                         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
                     save_path += retrained_model_dir
                 elif FLAGS.train_test_inc:
-                    retrained_model_dir = 'inc.sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                    retrained_model_dir = 'inc.sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
                         FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
                         FLAGS.num_updates) + '.updatelr' + str(
                         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
@@ -204,7 +203,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             if FLAGS.train_test:
-                retrained_model_dir = '/' + 'sbjt' + str(FLAGS.train_start_idx) + ':' + str(
+                retrained_model_dir = '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
                     FLAGS.num_updates) + '.updatelr' + str(
                     FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
@@ -237,7 +236,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test(w, b, test_start_idx, test_num):  # In case when test the model with the whole rest frames
+def test(w, b, sbjt_start_idx, num_test_tasks):  # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -276,7 +275,7 @@ def test(w, b, test_start_idx, test_num):  # In case when test the model with th
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
 
-    test_subjects = test_subjects[test_start_idx:test_start_idx + test_num]
+    test_subjects = test_subjects[sbjt_start_idx:sbjt_start_idx + num_test_tasks]
 
     print("test_subjects: ", test_subjects)
 
@@ -381,10 +380,10 @@ def main():
     print("========================================================================================")
 
     if FLAGS.test_train or FLAGS.test_test:
-        def process(test_start_idx, test_num):
+        def process(sbjt_start_idx, num_test_tasks):
             if FLAGS.test_test:
-                trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(test_start_idx) + ':' + str(
-                    test_num) + '.ubs_' + str(
+                trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':' + str(
+                    FLAGS.meta_batch_size) + '.ubs_' + str(
                     FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                     FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
             all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
@@ -421,7 +420,7 @@ def main():
                         b_arr = np.vstack((b_arr, b))
                     print("updated weights from ckpt: ", w, b)
                     print('----------------------------------------------------------')
-            return test(w_arr, b_arr, test_start_idx, test_num)
+            return test(w_arr, b_arr, sbjt_start_idx, num_test_tasks)
 
         save_path = "./logs/result/test_test/" + trained_model_dir
         if FLAGS.test_train:
@@ -432,7 +431,7 @@ def main():
         if FLAGS.global_test:
             y_hat = []
             y_lab = []
-            for i in range(FLAGS.test_start_idx, FLAGS.test_num):
+            for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
                 result = process(i, 1)
                 y_hat.append(result[0])
                 y_lab.append(result[1])
@@ -441,7 +440,7 @@ def main():
             print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
         else:
             # TODO edit this part
-            result = process(FLAGS.test_start_idx, FLAGS.test_num)
+            result = process(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks)
             print_summary(np.array(result[0]), np.array(result[1]), log_dir=save_path + "/" + "test.txt")
 
 
@@ -452,7 +451,8 @@ def main():
         model_file = None
 
         if FLAGS.train_test:
-            tmp_trained_model_dir = trained_model_dir + '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
+            tmp_trained_model_dir = trained_model_dir + '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
+                FLAGS.meta_batch_size) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
             model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + tmp_trained_model_dir)
