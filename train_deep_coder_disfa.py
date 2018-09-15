@@ -25,6 +25,7 @@ parser.add_argument("-b", "--beta", type=float, default=1, help="beta")
 parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
+parser.add_argument("-r", "--restored_model", type=str, default=0, help="already trianed model to restore")
 parser.add_argument("-f", "--fine_tune", type=int, default=0, help="if want to fine tune, gives 1")
 
 args = parser.parse_args()
@@ -162,18 +163,27 @@ h1 = D1(inp_1)
 x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 임의의 inp_1으로 생성
 out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
 
+sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.beta) + "_au" + str(au_index)
+sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + str(args.beta) + "_au" + str(au_index)
+
 
 if source_data != 'init':
-    model_train.load_weights(model_name)
+    model_train.load_weights(args.restored_model + '.h5')
     print(model_train.get_weights()[-2:])
     print(">>>>>>>>> model loaded")
 
+############ fine tune #############
 if args.fine_tune > 0:
     for layer in model_train.layers[:-1]:
         layer.trainable = False
-
     for layer in model_train.layers:
         print(layer, layer.trainable)
+    model_name = './' + args.restored_model + '_fined.h5'
+    sum_mult_out_dir += '/fine_tune'
+    sum_vac_disfa_dir += '/fine_tune'
+
+if not os.path.exists(sum_vac_disfa_dir):
+    os.makedirs(sum_vac_disfa_dir)
 
 
 
@@ -186,12 +196,6 @@ model_train.compile(
             ),
         loss = loss
         )
-
-sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.beta) + "_au" + str(au_index)
-if not os.path.exists(sum_vac_disfa_dir):
-    os.makedirs(sum_vac_disfa_dir)
-
-
 
 model_train.fit_generator(
         generator = GEN_TR,
@@ -208,7 +212,7 @@ model_train.fit_generator(
                 batch_size = batch_size,
                 title = ['TR','TE'],
                 one_hot=True,
-                log_dir='res_disfa_' + str(args.warming).zfill(4) + '.csv/' + str(args.beta) + "_au" + str(au_index),
+                log_dir=sum_mult_out_dir,
             ),
             EE.callbacks.summary_vac_disfa(
                 gen = generator(TE, False, s=True), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
