@@ -25,7 +25,8 @@ parser.add_argument("-b", "--beta", type=float, default=1, help="beta")
 parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
-parser.add_argument("-r", "--restored_model", type=str, default=0, help="already trianed model to restore")
+parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
+parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
 parser.add_argument("-f", "--fine_tune", type=int, default=0, help="if want to fine tune, gives 1")
 parser.add_argument("-lr", "--lr", type=float, default=0.1, help="learning rate")
 
@@ -36,7 +37,11 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 source_data = args.input
 nb_iter = args.nb_iter
 au_index = args.au_index
-model_name = './model_au' + str(au_index) + '_' + str(args.beta) + '.h5'
+
+if args.saving_model == '':
+    model_name = './' + args.restored_model + '.h5'
+else:
+    model_name = './' + args.saving_model + '.h5'
 
 target_std_vec = np.ones(2000)
 target_mean_vec = np.zeros(2000)
@@ -179,7 +184,6 @@ if args.fine_tune > 0:
         layer.trainable = False
     for layer in model_train.layers:
         print(layer, layer.trainable)
-    model_name = './' + args.restored_model + '_fined.h5'
     sum_mult_out_dir += '/fine_tune'
     sum_vac_disfa_dir += '/fine_tune'
 
