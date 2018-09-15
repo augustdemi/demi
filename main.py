@@ -237,7 +237,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
+def test(w, b):  # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -276,8 +276,8 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
 
-    if not FLAGS.global_test:
-        test_subjects = test_subjects[FLAGS.test_start_idx:FLAGS.test_start_idx + FLAGS.test_num]
+    test_subjects = test_subjects[FLAGS.test_start_idx:FLAGS.test_start_idx + FLAGS.test_num]
+
     print("test_subjects: ", test_subjects)
 
     y_hat_all = []
@@ -287,29 +287,9 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
         test_file_names = data['test_file_names']
         y_hat = get_y_hat(test_file_names)
-        if FLAGS.global_test:
-            print("y_hat shape:", y_hat.shape)
-            y_hat_all.append(y_hat)
-            y_lab_all.append(data['lab'])
-            print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
-            print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
-        else:
-            save_path = "./logs/result/test_test/" + trained_model_dir
-            if FLAGS.test_train:
-                save_path = "./logs/result/test_train/" + trained_model_dir
-            if not os.path.exists(save_path):
-                os.makedirs(save_path)
-            print_summary(y_hat, data['lab'],
-                          log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
-    if FLAGS.global_test:
-        # TODO delete this
-        save_path = "./logs/result/test_test/" + trained_model_dir
-        if FLAGS.test_train:
-            save_path = "./logs/result/test_train/" + trained_model_dir
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        # print_summary(y_hat, data['lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
-        print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir=save_path + "/" + "test.txt")
+    return y_hat, data['lab']
+
+
 
 
 def main():
@@ -375,11 +355,6 @@ def main():
         trained_model_dir = FLAGS.keep_train_dir  # TODO: model0이 없는 경우 keep_train_dir에서 model을 subject경로로 옮기고 그 모델의 인덱스를 0으로 만드는 작업해주기.
     elif FLAGS.local_subj > 0:
         trained_model_dir = FLAGS.keep_train_dir
-    elif FLAGS.test_test:
-        trained_model_dir = FLAGS.keep_train_dir
-        trained_model_dir += '/' + 'sbjt' + str(FLAGS.test_start_idx) + ':' + str(FLAGS.test_num) + '.ubs_' + str(
-            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
 
     print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
 
@@ -406,39 +381,69 @@ def main():
     print("========================================================================================")
 
     if FLAGS.test_train or FLAGS.test_test:
-        all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-        # all_au = ['au12'] * 12
-        w_arr = None
-        b_arr = None
-        for au in all_au:
-            model_file = None
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
-            print(">>>> model_file from ", au, ": ", model_file)
-            if (model_file == None):
-                print("############################################################################################")
-                print("####################################################################### None for ", au)
-                print("############################################################################################")
-            else:
-                if FLAGS.test_iter > 0:
-                    files = os.listdir(model_file[:model_file.index('model')])
-                    if 'model' + str(FLAGS.test_iter) + '.index' in files:
-                        model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                        print(">>>> model_file2: ", model_file)
-                    else:
-                        print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
-                print("Restoring model weights from " + model_file)
-                saver.restore(sess, model_file)
-                w = sess.run('model/w1:0')
-                b = sess.run('model/b1:0')
-                if w_arr is None:
-                    w_arr = w
-                    b_arr = b
+        def process(test_start_idx, test_num):
+            if FLAGS.test_test:
+                trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(test_start_idx) + ':' + str(
+                    test_num) + '.ubs_' + str(
+                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+            all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
+            # all_au = ['au12'] * 12
+            w_arr = None
+            b_arr = None
+            for au in all_au:
+                model_file = None
+                model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
+                print(">>>> model_file from ", au, ": ", model_file)
+                if (model_file == None):
+                    print(
+                        "############################################################################################")
+                    print("####################################################################### None for ", au)
+                    print(
+                        "############################################################################################")
                 else:
-                    w_arr = np.hstack((w_arr, w))
-                    b_arr = np.vstack((b_arr, b))
-                print("updated weights from ckpt: ", w, b)
-                print('----------------------------------------------------------')
-        test(w_arr, b_arr, trained_model_dir)
+                    if FLAGS.test_iter > 0:
+                        files = os.listdir(model_file[:model_file.index('model')])
+                        if 'model' + str(FLAGS.test_iter) + '.index' in files:
+                            model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                            print(">>>> model_file2: ", model_file)
+                        else:
+                            print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
+                    print("Restoring model weights from " + model_file)
+                    saver.restore(sess, model_file)
+                    w = sess.run('model/w1:0')
+                    b = sess.run('model/b1:0')
+                    if w_arr is None:
+                        w_arr = w
+                        b_arr = b
+                    else:
+                        w_arr = np.hstack((w_arr, w))
+                        b_arr = np.vstack((b_arr, b))
+                    print("updated weights from ckpt: ", w, b)
+                    print('----------------------------------------------------------')
+            return test(w_arr, b_arr, trained_model_dir)
+
+        save_path = "./logs/result/test_test/" + trained_model_dir
+        if FLAGS.test_train:
+            save_path = "./logs/result/test_train/" + trained_model_dir
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        if FLAGS.global_test:
+            y_hat, y_lab = []
+            for i in range(FLAGS.test_start_idx, FLAGS.test_num):
+                result = process(i, 1)
+                y_hat.append(result[0])
+                y_lab.append(result[1])
+            print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
+        else:
+            # TODO edit this part
+            result = process(FLAGS.test_start_idx, FLAGS.test_num)
+            print_summary(np.array(result[0]), np.array(result[1]), log_dir=save_path + "/" + "test.txt")
+
+
+
+
     # train_train or train_test
     elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
