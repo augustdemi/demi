@@ -280,8 +280,8 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
         test_subjects = test_subjects[FLAGS.test_start_idx:FLAGS.test_start_idx + FLAGS.test_num]
     print("test_subjects: ", test_subjects)
 
-    y_hat_all = np.array([])
-    y_lab_all = np.array([])
+    y_hat_all = []
+    y_lab_all = []
     for test_subject in test_subjects:
         print("============> subject: ", test_subject)
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
@@ -289,9 +289,10 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
         y_hat = get_y_hat(test_file_names)
         if FLAGS.global_test:
             print("y_hat shape:", y_hat.shape)
-            y_hat_all = np.append(y_hat_all, y_hat)
-            y_lab_all = np.append(y_lab_all, data['lab'])
-            print(">> y_hat_all shape:", y_hat_all.shape)
+            y_hat_all.append(y_hat)
+            y_lab_all.append(data['lab'])
+            print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
+            print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
         else:
             save_path = "./logs/result/test_test/" + trained_model_dir
             if FLAGS.test_train:
@@ -300,15 +301,15 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
                 os.makedirs(save_path)
             print_summary(y_hat, data['lab'],
                           log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
-
-    # TODO delete this
-    save_path = "./logs/result/test_test/" + trained_model_dir
-    if FLAGS.test_train:
-        save_path = "./logs/result/test_train/" + trained_model_dir
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    # print_summary(y_hat, data['lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
-    print_summary(y_hat_all, y_lab_all, log_dir=save_path + "/" + "test.txt")
+    if FLAGS.global_test:
+        # TODO delete this
+        save_path = "./logs/result/test_test/" + trained_model_dir
+        if FLAGS.test_train:
+            save_path = "./logs/result/test_train/" + trained_model_dir
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        # print_summary(y_hat, data['lab'], log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
+        print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir=save_path + "/" + "test.txt")
 
 
 def main():
