@@ -96,6 +96,7 @@ flags.DEFINE_integer('num_au', 12, 'number of AUs used to make AE')
 flags.DEFINE_integer('au_idx', 0, 'au index to deal with in the given vae model')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
+flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 500
@@ -274,7 +275,9 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
-    test_subjects = test_subjects[FLAGS.test_start_idx:FLAGS.test_start_idx + FLAGS.test_num]
+
+    if not FLAGS.global_test:
+        test_subjects = test_subjects[FLAGS.test_start_idx:FLAGS.test_start_idx + FLAGS.test_num]
     print("test_subjects: ", test_subjects)
 
     y_hat_all = np.array([])
@@ -284,10 +287,20 @@ def test(w, b, trained_model_dir):  # In case when test the model with the whole
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
         test_file_names = data['test_file_names']
         y_hat = get_y_hat(test_file_names)
-        print("y_hat shape:", y_hat.shape)
-        y_hat_all = np.append(y_hat_all, y_hat)
-        y_lab_all = np.append(y_lab_all, data['lab'])
-        print(">> y_hat_all shape:", y_hat_all.shape)
+        if FLAGS.global_test:
+            print("y_hat shape:", y_hat.shape)
+            y_hat_all = np.append(y_hat_all, y_hat)
+            y_lab_all = np.append(y_lab_all, data['lab'])
+            print(">> y_hat_all shape:", y_hat_all.shape)
+        else:
+            save_path = "./logs/result/test_test/" + trained_model_dir
+            if FLAGS.test_train:
+                save_path = "./logs/result/test_train/" + trained_model_dir
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            print_summary(y_hat, data['lab'],
+                          log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
+
     # TODO delete this
     save_path = "./logs/result/test_test/" + trained_model_dir
     if FLAGS.test_train:
