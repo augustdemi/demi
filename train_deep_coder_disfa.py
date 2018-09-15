@@ -27,6 +27,7 @@ parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at wh
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
 parser.add_argument("-r", "--restored_model", type=str, default=0, help="already trianed model to restore")
 parser.add_argument("-f", "--fine_tune", type=int, default=0, help="if want to fine tune, gives 1")
+parser.add_argument("-lr", "--lr", type=float, default=0.1, help="learning rate")
 
 args = parser.parse_args()
 
@@ -189,7 +190,7 @@ if not os.path.exists(sum_vac_disfa_dir):
 
 model_train.compile(
         optimizer = K.optimizers.Adadelta(
-            lr = .1,
+            lr=args.lr,
             rho = 0.95,
             epsilon = 1e-08,
             decay = 0.0
