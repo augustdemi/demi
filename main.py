@@ -421,7 +421,7 @@ def main():
                         b_arr = np.vstack((b_arr, b))
                     print("updated weights from ckpt: ", w, b)
                     print('----------------------------------------------------------')
-            return test(w_arr, b_arr, trained_model_dir)
+            return test(w_arr, b_arr)
 
         save_path = "./logs/result/test_test/" + trained_model_dir
         if FLAGS.test_train:
