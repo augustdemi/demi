@@ -449,12 +449,18 @@ def main():
                         FLAGS.meta_batch_size) + '.ubs_' + str(
                         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+            else:
+                trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
+                    FLAGS.meta_batch_size) + '.ubs_' + str(
+                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
             all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
             # all_au = ['au12'] * 12
             w_arr = None
             b_arr = None
             for au in all_au:
                 model_file = None
+                print('--------- model file dir: ', FLAGS.logdir + '/' + au + '/' + trained_model_dir)
                 model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
                 print(">>>> model_file from ", au, ": ", model_file)
                 if (model_file == None):
