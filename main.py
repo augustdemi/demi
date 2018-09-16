@@ -96,7 +96,7 @@ flags.DEFINE_integer('au_idx', 0, 'au index to deal with in the given vae model'
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
-flags.DEFINE_bool('test_mode_each', True, 'if True, test mode is each, otherwise, test mode is all')
+flags.DEFINE_bool('global_model', True, 'model is trained with all train/test tasks')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 500
@@ -237,7 +237,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test(w, b, sbjt_start_idx, num_test_tasks):  # In case when test the model with the whole rest frames
+def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -276,7 +276,7 @@ def test(w, b, sbjt_start_idx, num_test_tasks):  # In case when test the model w
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
 
-    test_subjects = test_subjects[sbjt_start_idx:sbjt_start_idx + num_test_tasks]
+    test_subjects = test_subjects[sbjt_start_idx:sbjt_start_idx + 1]
 
     print("test_subjects: ", test_subjects)
 
@@ -437,12 +437,18 @@ def main():
 
     ################## Test ##################
     if FLAGS.test_train or FLAGS.test_test:
-        def process(sbjt_start_idx, num_test_tasks):
+        def process(sbjt_start_idx):
             if FLAGS.test_test:
-                trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':' + str(
-                    FLAGS.meta_batch_size) + '.ubs_' + str(
-                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                if FLAGS.global_model:  # 모델이 모든 train or test tasks로 학습된거기때문에 항상 0부터 meta_batch_size까지 이용해서 구해진거가됨
+                    trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(0) + ':' + str(
+                        FLAGS.meta_batch_size) + '.ubs_' + str(
+                        FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                else:
+                    trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':' + str(
+                        FLAGS.meta_batch_size) + '.ubs_' + str(
+                        FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
             all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
             # all_au = ['au12'] * 12
             w_arr = None
@@ -477,31 +483,34 @@ def main():
                         b_arr = np.vstack((b_arr, b))
                     print("updated weights from ckpt: ", w, b)
                     print('----------------------------------------------------------')
-            return test(w_arr, b_arr, sbjt_start_idx, num_test_tasks)
+            return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
-        if FLAGS.test_mode_each:
+        if FLAGS.global_test:
+            print(
+                "<<<<<<<<<<<< want to see the evaluation by concatenating all subject's predictions >>>>>>>>>>>>>>>>>")
             save_path = "./logs/result/test_test/" + trained_model_dir
             if FLAGS.test_train:
                 save_path = "./logs/result/test_train/" + trained_model_dir
             if not os.path.exists(save_path):
                 os.makedirs(save_path)
-            if FLAGS.global_test:
-                y_hat = []
-                y_lab = []
-                for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-                    result = process(i, 1)
-                    y_hat.append(result[0])
-                    y_lab.append(result[1])
-                    print("y_hat shape:", result[0].shape)
-                    print(">> y_hat_all shape:", np.vstack(y_hat).shape)
-                print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
-            else:
-                # TODO edit this part
-                result = process(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks)
-                print_summary(np.array(result[0]), np.array(result[1]), log_dir=save_path + "/" + "test.txt")
+            y_hat = []
+            y_lab = []
+            for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+                result = process(i)
+                y_hat.append(result[0])
+                y_lab.append(result[1])
+                print("y_hat shape:", result[0].shape)
+                print(">> y_hat_all shape:", np.vstack(y_hat).shape)
+            print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
+
         else:
+            print("<<<<<<<<<<<< model was trained using all test/train tasks >>>>>>>>>>>>>>>>>")
             all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-            # all_au = ['au12'] * 12
+            if FLAGS.test_test:
+                trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
+                    FLAGS.meta_batch_size) + '.ubs_' + str(
+                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
             w_arr = None
             b_arr = None
             for au in all_au:
