@@ -96,6 +96,7 @@ flags.DEFINE_integer('au_idx', 0, 'au index to deal with in the given vae model'
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
+flags.DEFINE_bool('test_mode_each', True, 'if True, test mode is each, otherwise, test mode is all')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 500
@@ -289,6 +290,61 @@ def test(w, b, sbjt_start_idx, num_test_tasks):  # In case when test the model w
     return y_hat, data['lab']
 
 
+def test_all(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
+    from vae_model import VAE
+    import EmoData as ED
+    import cv2
+    import pickle
+    batch_size = 10
+    vae_model = VAE((160, 240, 1), batch_size, FLAGS.num_au)
+    vae_model.loadWeight(FLAGS.vae_model, w, b)
+
+    pp = ED.image_pipeline.FACE_pipeline(
+        histogram_normalization=True,
+        grayscale=True,
+        resize=True,
+        rotation_range=3,
+        width_shift_range=0.03,
+        height_shift_range=0.03,
+        zoom_range=0.03,
+        random_flip=True,
+    )
+
+    def get_y_hat(file_names):
+        nb_samples = len(file_names)
+        t0, t1 = 0, batch_size
+        yhat = []
+        while True:
+            t1 = min(nb_samples, t1)
+            file_names_batch = file_names[t0:t1]
+            imgs = [cv2.imread(filename) for filename in file_names_batch]
+            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+            pred = vae_model.testWithSavedModel(img_arr)
+            yhat.extend(pred)
+            if t1 == nb_samples: break
+            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
+            t1 += batch_size
+        return np.array(yhat)
+
+    test_subjects = os.listdir(FLAGS.testset_dir)
+    test_subjects.sort()
+    test_subjects = test_subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.num_test_tasks]
+    print("test_subjects: ", test_subjects)
+
+    for test_subject in test_subjects:
+        print("============> subject: ", test_subject)
+        data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
+        test_file_names = data['test_file_names']
+        y_hat = get_y_hat(test_file_names)
+        save_path = "./logs/result/test_test/" + trained_model_dir
+        if FLAGS.test_train:
+            save_path = "./logs/result/test_train/" + trained_model_dir
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        print_summary(y_hat, data['lab'],
+                      log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
+
+
 
 
 def main():
@@ -379,6 +435,7 @@ def main():
     print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
+    ################## Test ##################
     if FLAGS.test_train or FLAGS.test_test:
         def process(sbjt_start_idx, num_test_tasks):
             if FLAGS.test_test:
@@ -422,29 +479,67 @@ def main():
                     print('----------------------------------------------------------')
             return test(w_arr, b_arr, sbjt_start_idx, num_test_tasks)
 
-        save_path = "./logs/result/test_test/" + trained_model_dir
-        if FLAGS.test_train:
-            save_path = "./logs/result/test_train/" + trained_model_dir
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-
-        if FLAGS.global_test:
-            y_hat = []
-            y_lab = []
-            for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-                result = process(i, 1)
-                y_hat.append(result[0])
-                y_lab.append(result[1])
-                print("y_hat shape:", result[0].shape)
-                print(">> y_hat_all shape:", np.vstack(y_hat).shape)
-            print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
+        if FLAGS.test_mode_each:
+            save_path = "./logs/result/test_test/" + trained_model_dir
+            if FLAGS.test_train:
+                save_path = "./logs/result/test_train/" + trained_model_dir
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+            if FLAGS.global_test:
+                y_hat = []
+                y_lab = []
+                for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+                    result = process(i, 1)
+                    y_hat.append(result[0])
+                    y_lab.append(result[1])
+                    print("y_hat shape:", result[0].shape)
+                    print(">> y_hat_all shape:", np.vstack(y_hat).shape)
+                print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
+            else:
+                # TODO edit this part
+                result = process(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks)
+                print_summary(np.array(result[0]), np.array(result[1]), log_dir=save_path + "/" + "test.txt")
         else:
-            # TODO edit this part
-            result = process(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks)
-            print_summary(np.array(result[0]), np.array(result[1]), log_dir=save_path + "/" + "test.txt")
+            all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
+            # all_au = ['au12'] * 12
+            w_arr = None
+            b_arr = None
+            for au in all_au:
+                model_file = None
+                model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
+                print(">>>> model_file from ", au, ": ", model_file)
+                if (model_file == None):
+                    print(
+                        "############################################################################################")
+                    print("####################################################################### None for ", au)
+                    print(
+                        "############################################################################################")
+                else:
+                    if FLAGS.test_iter > 0:
+                        files = os.listdir(model_file[:model_file.index('model')])
+                        if 'model' + str(FLAGS.test_iter) + '.index' in files:
+                            model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                            print(">>>> model_file2: ", model_file)
+                        else:
+                            print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
+                    print("Restoring model weights from " + model_file)
+                    saver.restore(sess, model_file)
+                    w = sess.run('model/w1:0')
+                    b = sess.run('model/b1:0')
+                    if w_arr is None:
+                        w_arr = w
+                        b_arr = b
+                    else:
+                        w_arr = np.hstack((w_arr, w))
+                        b_arr = np.vstack((b_arr, b))
+                    print("updated weights from ckpt: ", w, b)
+                    print('----------------------------------------------------------')
+            test_all(w_arr, b_arr, trained_model_dir)
 
 
 
+
+    ################## Train ##################
 
     # train_train or train_test
     elif FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
@@ -464,8 +559,6 @@ def main():
         w = None
         b = None
         print(">>>> model_file1: ", model_file)
-
-
 
         #TODO delete this if
         if FLAGS.local_subj > 0:
