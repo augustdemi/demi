@@ -69,6 +69,7 @@ class VAE:
     def loadWeight(self, vae_model, w=None, b=None):
         self.model_train.load_weights(vae_model)
         print("loaded weight from robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
+        print("And shape of w: ", self.model_train.get_weights()[58].shape)
         if w is not None and b is not None:
             if w.shape[1] == b.shape[0] == 12:
                 self.model_train.layers[-1].weights[0].load(w)
