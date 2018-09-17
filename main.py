@@ -429,7 +429,7 @@ def main():
     print("========================================================================================")
     print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print('weights from vae : ', pred_weights)
-    if FLAGS.init_weight:
+    if FLAGS.init_weight and FLAGS.train:
         model.weights['w1'].load(pred_weights[0], sess)
         model.weights['b1'].load(pred_weights[1], sess)
     print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
@@ -549,6 +549,11 @@ def main():
                         b_arr = np.vstack((b_arr, b))
                     print("updated weights from ckpt: ", w, b)
                     print('----------------------------------------------------------')
+
+            if FLAGS.init_weight:
+                w_arr = None
+                b_arr = None
+                print(">>>>>>>>>> test robert's model ")
             test_all(w_arr, b_arr, trained_model_dir)
 
 
