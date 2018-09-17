@@ -204,7 +204,7 @@ model_train.compile(
 
 from keras.callbacks import EarlyStopping
 
-early_stopping = EarlyStopping(monitor='val_loss', patient=10, verbose=1)
+early_stopping = EarlyStopping()
 
 model_train.fit_generator(
         generator = GEN_TR,
