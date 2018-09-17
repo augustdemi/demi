@@ -37,7 +37,7 @@ class softmaxPDF(Layer):
         var_b = self.b[ None, ::]
 
         # add dimension for output and class
-        var_x = x[ :, :, None, None]
+        var_x = x[:, :, None, None]
 
         # matrix multiplication with dropout
         z = tf.reduce_sum( var_w*var_x , 1) + var_b 
