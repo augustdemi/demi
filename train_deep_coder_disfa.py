@@ -21,7 +21,8 @@ parser.add_argument("-tr", "--training_data", type=str, default='/home/mihee/dev
                     help="path to training data set")
 parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
                     help="path to test data set")
-parser.add_argument("-b", "--beta", type=float, default=1, help="beta")
+parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
+parser.add_argument("-dec", "--decoder", type=int, default=1, help="train decoder layer or not")
 parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
@@ -170,8 +171,8 @@ h1 = D1(inp_1)
 x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 임의의 inp_1으로 생성
 out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
 
-sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + str(args.beta) + "_au" + str(au_index)
-sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + str(args.beta) + "_au" + str(au_index)
+sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
+sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
 
 if source_data != 'init':
@@ -179,11 +180,11 @@ if source_data != 'init':
     print(model_train.get_weights()[-2:])
     print(">>>>>>>>> model loaded")
 
-
-for layer in model_train.layers[20:35]:
-    layer.trainable = False
-for layer in model_train.layers:
-    print(layer, layer.trainable)
+if args.decoder == 0:
+    for layer in model_train.layers[20:35]:
+        layer.trainable = False
+    for layer in model_train.layers:
+        print(layer, layer.trainable)
 
 
 
@@ -218,14 +219,14 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 
 model_train.fit_generator(
         generator = GEN_TR,
-        samples_per_epoch = 1000, #number of samples to process before going to the next epoch.
+    samples_per_epoch=32,  # number of samples to process before going to the next epoch.
         validation_data=GEN_TE, # integer, total number of iterations on the data.
         nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
     initial_epoch=args.init_epoch,
         nb_epoch = nb_iter,
         max_q_size = 4,
         callbacks=[
-            early_stopping,
+            #early_stopping,
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
