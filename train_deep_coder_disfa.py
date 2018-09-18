@@ -49,7 +49,8 @@ target_mean_vec = np.zeros(2000)
 batch_size = 10 # dont change it!
 log_dir_model = './model'
 latent_dim = 2000
-w_1 = args.warming / 50
+# w_1 = args.warming / 50
+w_1 = 0
 
 
 TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
@@ -178,9 +179,18 @@ if source_data != 'init':
     print(model_train.get_weights()[-2:])
     print(">>>>>>>>> model loaded")
 
+
+for layer in model_train.layers[20:34]:
+    layer.trainable = False
+for layer in model_train.layers:
+    print(layer, layer.trainable)
+
+
+
+
 ############ fine tune #############
 if args.fine_tune > 0:
-    for layer in model_train.layers[:-1]:
+    for layer in model_train.layers[20:34]:
         layer.trainable = False
     for layer in model_train.layers:
         print(layer, layer.trainable)
