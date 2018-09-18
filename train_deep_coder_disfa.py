@@ -47,7 +47,7 @@ else:
 target_std_vec = np.ones(2000)
 target_mean_vec = np.zeros(2000)
 
-batch_size = 10 # dont change it!
+batch_size = 32  # dont change it!
 log_dir_model = './model'
 latent_dim = 2000
 # w_1 = args.warming / 50
@@ -219,7 +219,7 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
 
 model_train.fit_generator(
         generator = GEN_TR,
-    samples_per_epoch=32,  # number of samples to process before going to the next epoch.
+    samples_per_epoch=3200,  # number of samples to process before going to the next epoch.
         validation_data=GEN_TE, # integer, total number of iterations on the data.
         nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
     initial_epoch=args.init_epoch,
