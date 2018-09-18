@@ -180,7 +180,7 @@ if source_data != 'init':
     print(">>>>>>>>> model loaded")
 
 
-for layer in model_train.layers[20:34]:
+for layer in model_train.layers[20:35]:
     layer.trainable = False
 for layer in model_train.layers:
     print(layer, layer.trainable)
@@ -190,7 +190,7 @@ for layer in model_train.layers:
 
 ############ fine tune #############
 if args.fine_tune > 0:
-    for layer in model_train.layers[20:35]:
+    for layer in model_train.layers[-1]:
         layer.trainable = False
     for layer in model_train.layers:
         print(layer, layer.trainable)
