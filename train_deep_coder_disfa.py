@@ -178,8 +178,16 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 
 
 if source_data != 'init':
-    model_train.load_weights(args.restored_model + '.h5')
-    print(model_train.get_weights()[-2:])
+    from vae_model import VAE
+
+    batch_size = 10
+    vae_model = VAE((160, 240, 1), batch_size, 12)
+    vae_model.loadWeight(args.restored_model + '.h5', None, None)
+    print("loaded weight from robert : ", vae_model.model_train.get_weights()[58],
+          vae_model.model_train.get_weights()[59])
+    print("And shape of w: ", vae_model.model_train.get_weights()[58].shape)
+    print(model_train.get_weights()[58][6])
+    print("And shape of w6: ", vae_model.model_train.get_weights()[58][6].shape)
     print(">>>>>>>>> model loaded")
 
 if args.decoder == 0:
