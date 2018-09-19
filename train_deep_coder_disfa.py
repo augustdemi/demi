@@ -181,7 +181,7 @@ if source_data != 'init':
     from vae_model import VAE
 
 
-    batch_size = 10
+    batch_size = 32
     vae_model = VAE((160, 240, 1), batch_size, 12)
     vae_model.loadWeight(args.restored_model + '.h5', None, None)
     w = vae_model.model_train.get_weights()[58][:, 6]
