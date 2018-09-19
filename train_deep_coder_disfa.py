@@ -185,6 +185,8 @@ if source_data != 'init':
     vae_model.loadWeight(args.restored_model + '.h5', None, None)
     w = vae_model.model_train.get_weights()[58][:, 6]
     b = vae_model.model_train.get_weights()[58][:, 6]
+    w = w.reshape(2000, 1, 2)
+    b = b.reshape(1, 2)
     print(w, b)
     print("And shape of w: ", w.shape)
     print("And shape of b: ", b.shape)
