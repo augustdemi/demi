@@ -10,7 +10,7 @@ def flow_from_hdf5(
         path_to_file, 
         batch_size=64,
         padding=None,
-        au_idx=None
+        au_idx=12
         ):
     '''
     '''
@@ -52,7 +52,7 @@ def flow_from_hdf5(
     res_gen['nb_samples']=nb_samples
     res_gen['nb_batches']=nb_batches
 
-    if au_idx:
+    if au_idx < 12:
         lab = f['lab'][:, au_idx]
         N_total_label = lab.shape[0]
 
