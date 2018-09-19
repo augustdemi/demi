@@ -52,9 +52,12 @@ log_dir_model = './model'
 latent_dim = 2000
 w_1 = args.warming / 50
 
-
-TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
-TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
+if au_index < 12:
+    TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_index=au_index)
+    TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same', au_index=au_index)
+else:
+    TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
+    TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
 
 
 pp = ED.image_pipeline.FACE_pipeline(
