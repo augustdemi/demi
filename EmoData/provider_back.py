@@ -75,7 +75,7 @@ def flow_from_hdf5(
                 per_subject_on_idx[sub[i]].append(i)
                 per_subject_on_cnt[sub[i]] += 1
 
-        avg_num_on_intensity = np.average(list(per_subject_on_cnt.values()))
+        avg_num_on_intensity = int(np.average(list(per_subject_on_cnt.values())))
         print('>>>>>>>>>>>>>> avg_num_on_intensity', avg_num_on_intensity)
 
         all_indices = []
