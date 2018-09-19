@@ -183,11 +183,17 @@ if source_data != 'init':
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size, 12)
     vae_model.loadWeight(args.restored_model + '.h5', None, None)
-    print("loaded weight from robert : ", vae_model.model_train.get_weights()[58],
-          vae_model.model_train.get_weights()[59])
-    print("And shape of w: ", vae_model.model_train.get_weights()[58].shape)
-    print(model_train.get_weights()[58][6])
-    print("And shape of w6: ", vae_model.model_train.get_weights()[58][6].shape)
+    w = model_train.get_weights()[58][:, 6]
+    b = model_train.get_weights()[58][:, 6]
+    print(w, b)
+    print("And shape of w: ", w.shape)
+    print("And shape of b: ", b.shape)
+    model_train.layers[-1].weights[0].load(w)
+    model_train.layers[-1].weights[1].load(b)
+    print("before: ", model_train.get_weights())
+    for i in range(len(model_train.layers) - 1):
+        model_train.layers[i].weights = vae_model.layers[i].weights
+    print("after: ", model_train.get_weights())
     print(">>>>>>>>> model loaded")
 
 if args.decoder == 0:
