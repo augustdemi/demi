@@ -197,12 +197,11 @@ if source_data != 'init':
     print("And shape of b: ", b.shape)
 
 
-    print("before: ", model_train.get_weights())
     for i in range(len(model_train.layers) - 1):
         loaded = vae_model.model_train.layers[i].get_weights()
         model_train.layers[i].set_weights(loaded)
     model_train.layers[-1].set_weights([w,b])
-    print("after: ", model_train.get_weights())
+    print("after: ", model_train.layers[-1].get_weights())
 
     print(">>>>>>>>> model loaded")
 
