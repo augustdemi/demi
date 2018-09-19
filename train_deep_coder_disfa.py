@@ -183,9 +183,9 @@ if source_data != 'init':
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size, 12)
     vae_model.loadWeight(args.restored_model + '.h5', None, None)
+    print("@@@@ b: ", vae_model.model_train.get_weights()[59].shape)
     w = vae_model.model_train.get_weights()[58][:, 6]
-    b = vae_model.model_train.get_weights()[59][:, 6]
-
+    b = vae_model.model_train.get_weights()[59][6]
 
     print(w, b)
     print("And shape of w: ", w.shape)
