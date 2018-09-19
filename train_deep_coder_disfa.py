@@ -119,7 +119,7 @@ z_log_sigma = Dense(latent_dim)(emb) #
 
 def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
     z_mean, z_log_sigma = args
-    batch_size = 10
+    batch_size = 32
     epsilon = []
     for m, s in zip(np.ones(2000), np.ones(2000)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
