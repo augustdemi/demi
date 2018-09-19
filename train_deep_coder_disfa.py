@@ -194,7 +194,7 @@ if args.decoder == 0:
 
 ############ fine tune #############
 if args.fine_tune > 0:
-    for layer in model_train.layers[-1]:
+    for layer in model_train.layers[:-1]:
         layer.trainable = False
     for layer in model_train.layers:
         print(layer, layer.trainable)
