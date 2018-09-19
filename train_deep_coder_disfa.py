@@ -200,6 +200,7 @@ if source_data != 'init':
     for i in range(len(model_train.layers) - 1):
         loaded = vae_model.model_train.layers[i].get_weights()
         model_train.layers[i].set_weights(loaded)
+        if args.fine_tune > 0: model_train.layers[i].trainable = False
     model_train.layers[-1].set_weights([w,b])
     print("after: ", model_train.layers[-1].get_weights())
 
@@ -216,8 +217,6 @@ if args.decoder == 0:
 
 ############ fine tune #############
 if args.fine_tune > 0:
-    for layer in model_train.layers[:-1]:
-        layer.trainable = False
     for layer in model_train.layers:
         print(layer, layer.trainable)
     sum_mult_out_dir += '/fine_tune'
