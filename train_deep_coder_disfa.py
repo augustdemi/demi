@@ -196,8 +196,6 @@ if source_data != 'init':
     print("And shape of w: ", w.shape)
     print("And shape of b: ", b.shape)
 
-    model_train.layers[-1].weights[0].load(w)
-    model_train.layers[-1].weights[1].load(b)
 
     print("before: ", model_train.get_weights())
     for i in range(len(model_train.layers) - 1):
