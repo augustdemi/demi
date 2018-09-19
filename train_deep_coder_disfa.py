@@ -193,17 +193,14 @@ if source_data != 'init':
     w = w.reshape(2000, 1, 2)
     b = b.reshape(1, 2)
     print("------ after reshape")
-    print("And shape of w: ",
-          w.shape) ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** ** +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    print("And shape of w: ", w.shape)
     print("And shape of b: ", b.shape)
-
+    model_train.layers[-1].weights[0].load(w)
+    model_train.layers[-1].weights[1].load(b)
     print("before: ", model_train.get_weights())
     for i in range(len(model_train.layers) - 1):
         model_train.layers[i].weights = vae_model.model_train.layers[i].weights
-        if args.fine_tune > 0: model_train.layers[i].trainable = False
     print("after: ", model_train.get_weights())
-    model_train.layers[-1].weights[0].load(w)
-    model_train.layers[-1].weights[1].load(b)
     print(">>>>>>>>> model loaded")
 
 if args.decoder == 0:
@@ -212,8 +209,10 @@ if args.decoder == 0:
     for layer in model_train.layers:
         print(layer, layer.trainable)
 
-############ fine tune print #############
+############ fine tune #############
 if args.fine_tune > 0:
+    for layer in model_train.layers[:-1]:
+        layer.trainable = False
     for layer in model_train.layers:
         print(layer, layer.trainable)
     sum_mult_out_dir += '/fine_tune'
