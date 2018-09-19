@@ -180,29 +180,32 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 if source_data != 'init':
     from vae_model import VAE
 
-
-    batch_size = 32
-    vae_model = VAE((160, 240, 1), batch_size, 12)
-    vae_model.loadWeight(args.restored_model + '.h5', None, None)
-    w = vae_model.model_train.get_weights()[58][:, 6]
-    b = vae_model.model_train.get_weights()[59][6]
-
-    print(w, b)
-    print("And shape of w: ", w.shape)
-    print("And shape of b: ", b.shape)
-    w = w.reshape(2000, 1, 2)
-    b = b.reshape(1, 2)
-    print("------ after reshape")
-    print("And shape of w: ", w.shape)
-    print("And shape of b: ", b.shape)
-
-
-    for i in range(len(model_train.layers) - 1):
-        loaded = vae_model.model_train.layers[i].get_weights()
-        model_train.layers[i].set_weights(loaded)
-        if args.fine_tune > 0: model_train.layers[i].trainable = False
-    model_train.layers[-1].set_weights([w,b])
-    print("after: ", model_train.layers[-1].get_weights())
+    if au_index < 12:
+        batch_size = 32
+        vae_model = VAE((160, 240, 1), batch_size, 12)
+        vae_model.loadWeight(args.restored_model + '.h5', None, None)
+        for i in range(len(model_train.layers) - 1):
+            loaded = vae_model.model_train.layers[i].get_weights()
+            model_train.layers[i].set_weights(loaded)
+            if args.fine_tune > 0:
+                model_train.layers[i].trainable = False
+                print(model_train.layers[i], model_train.layers[i].trainable)
+                sum_mult_out_dir += '/fine_tune'
+                sum_vac_disfa_dir += '/fine_tune'
+        w = vae_model.model_train.get_weights()[58][:, 6]
+        b = vae_model.model_train.get_weights()[59][6]
+        w = w.reshape(2000, 1, 2)
+        b = b.reshape(1, 2)
+        model_train.layers[-1].set_weights([w, b])
+        print("after: ", model_train.layers[-1].get_weights())
+    else:
+        model_train.load_weights(args.restored_model + '.h5')
+        if args.fine_tune > 0:
+            for i in range(len(model_train.layers) - 1):
+                model_train.layers[i].trainable = False
+                print(model_train.layers[i], model_train.layers[i].trainable)
+                sum_mult_out_dir += '/fine_tune'
+                sum_vac_disfa_dir += '/fine_tune'
 
     print(">>>>>>>>> model loaded")
 
@@ -212,15 +215,6 @@ if args.decoder == 0:
     for layer in model_train.layers:
         print(layer, layer.trainable)
 
-
-
-
-############ fine tune #############
-if args.fine_tune > 0:
-    for layer in model_train.layers:
-        print(layer, layer.trainable)
-    sum_mult_out_dir += '/fine_tune'
-    sum_vac_disfa_dir += '/fine_tune'
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
