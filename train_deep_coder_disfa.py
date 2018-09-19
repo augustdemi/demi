@@ -38,7 +38,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 source_data = args.input
 nb_iter = args.nb_iter
 au_index = args.au_index
-
+print("======================================= au_index: ", au_index)
 if args.saving_model == '':
     model_name = './' + args.restored_model + '.h5'
 else:
@@ -50,8 +50,7 @@ target_mean_vec = np.zeros(2000)
 batch_size = 32  # dont change it!
 log_dir_model = './model'
 latent_dim = 2000
-# w_1 = args.warming / 50
-w_1 = 0
+w_1 = args.warming / 50
 
 
 TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
@@ -81,11 +80,12 @@ def generator(dat_dict, aug, mod=0, s=False):
                 preprocessing=True,
                 augmentation=aug)
         # lab = lab.argmax(2)
-        if au_index == 12:
-            lab = lab
-        else:
-            lab = lab[:, au_index]
-            lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
+        lab = lab
+        # if au_index == 12:
+        #     lab = lab
+        # else:
+        #     lab = lab[:, au_index]
+        #     lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         if mod==1:
             if(s): yield [img], [lab], [sub]
             else: yield [img], [lab]
