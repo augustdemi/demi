@@ -13,7 +13,7 @@ import os
 
 
 parser = argparse.ArgumentParser(description='extract feace images from raw datasets')
-parser.add_argument("-i","--input",  type=str, default='init', help="files created from GP")
+parser.add_argument("-i","--input",  type=str, default='n', help="files created from GP")
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
 parser.add_argument("-n","--nb_iter",type=int, default=1, help="number of VAE iterations")
 parser.add_argument("-w","--warming",type=int, default=1, help="factor on kl loss")
@@ -23,10 +23,10 @@ parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/pro
                     help="path to test data set")
 parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
 parser.add_argument("-dec", "--decoder", type=int, default=1, help="train decoder layer or not")
-parser.add_argument("-au", "--au_index", type=int, default=6, help="au index")
+parser.add_argument("-au", "--au_index", type=int, default=3, help="au index")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
-parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
+parser.add_argument("-rm", "--restored_model", type=str, default='model_au_all', help="already trianed model to restore")
 parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
 parser.add_argument("-f", "--fine_tune", type=int, default=0, help="if want to fine tune, gives 1")
 parser.add_argument("-lr", "--lr", type=float, default=0.1, help="learning rate")
@@ -180,10 +180,10 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 if source_data != 'init':
     from vae_model import VAE
 
-    batch_size = 10
+
+    batch_size = 32
     vae_model = VAE((160, 240, 1), batch_size, 12)
     vae_model.loadWeight(args.restored_model + '.h5', None, None)
-    print("@@@@ b: ", vae_model.model_train.get_weights()[59].shape)
     w = vae_model.model_train.get_weights()[58][:, 6]
     b = vae_model.model_train.get_weights()[59][6]
 
@@ -195,12 +195,15 @@ if source_data != 'init':
     print("------ after reshape")
     print("And shape of w: ", w.shape)
     print("And shape of b: ", b.shape)
-    model_train.layers[-1].weights[0].load(w)
-    model_train.layers[-1].weights[1].load(b)
-    print("before: ", model_train.get_weights())
+
+
     for i in range(len(model_train.layers) - 1):
-        model_train.layers[i].weights = vae_model.model_train.layers[i].weights
-    print("after: ", model_train.get_weights())
+        loaded = vae_model.model_train.layers[i].get_weights()
+        model_train.layers[i].set_weights(loaded)
+        if args.fine_tune > 0: model_train.layers[i].trainable = False
+    model_train.layers[-1].set_weights([w,b])
+    print("after: ", model_train.layers[-1].get_weights())
+
     print(">>>>>>>>> model loaded")
 
 if args.decoder == 0:
@@ -209,10 +212,11 @@ if args.decoder == 0:
     for layer in model_train.layers:
         print(layer, layer.trainable)
 
+
+
+
 ############ fine tune #############
 if args.fine_tune > 0:
-    for layer in model_train.layers[:-1]:
-        layer.trainable = False
     for layer in model_train.layers:
         print(layer, layer.trainable)
     sum_mult_out_dir += '/fine_tune'
