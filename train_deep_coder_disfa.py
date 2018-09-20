@@ -23,10 +23,10 @@ parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/pro
                     help="path to test data set")
 parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
 parser.add_argument("-dec", "--decoder", type=int, default=1, help="train decoder layer or not")
-parser.add_argument("-au", "--au_index", type=int, default=3, help="au index")
+parser.add_argument("-au", "--au_index", type=int, default=12, help="au index")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
-parser.add_argument("-rm", "--restored_model", type=str, default='model_au_all', help="already trianed model to restore")
+parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
 parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
 parser.add_argument("-f", "--fine_tune", type=int, default=0, help="if want to fine tune, gives 1")
 parser.add_argument("-lr", "--lr", type=float, default=0.1, help="learning rate")
@@ -207,7 +207,7 @@ if source_data != 'init':
                 sum_mult_out_dir += '/fine_tune'
                 sum_vac_disfa_dir += '/fine_tune'
 
-    print(">>>>>>>>> model loaded")
+    print(">>>>>>>>> model loaded from ", args.restored_model)
 
 if args.decoder == 0:
     for layer in model_train.layers[20:35]:
