@@ -600,18 +600,18 @@ def main():
                 ind1 = model_file.index('model')
                 resume_itr = int(model_file[ind1 + 5:])
                 print('resume_itr: ', resume_itr)
-        else:
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
-            print("2. Restoring model weights from " + model_file)
-            saver.restore(sess, model_file)
-            w = sess.run('model/w1:0').tolist()
-            b = sess.run('model/b1:0').tolist()
-            print("updated weights from ckpt: ", np.array(w), np.array(b))
-            if not FLAGS.test_test:
-                ind1 = model_file.index('model')
-                if FLAGS.train_test: resume_itr = 0
-                else: resume_itr = int(model_file[ind1 + 5:])
-                print('resume_itr: ', resume_itr)
+                # else:
+                #     model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+                #     print("2. Restoring model weights from " + model_file)
+                #     saver.restore(sess, model_file)
+                #     w = sess.run('model/w1:0').tolist()
+                #     b = sess.run('model/b1:0').tolist()
+                #     print("updated weights from ckpt: ", np.array(w), np.array(b))
+                #     if not FLAGS.test_test:
+                #         ind1 = model_file.index('model')
+                #         if FLAGS.train_test: resume_itr = 0
+                #         else: resume_itr = int(model_file[ind1 + 5:])
+                #         print('resume_itr: ', resume_itr)
     else:
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
