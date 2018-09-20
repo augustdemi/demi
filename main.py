@@ -550,7 +550,7 @@ def main():
                     print("updated weights from ckpt: ", w, b)
                     print('----------------------------------------------------------')
 
-            if FLAGS.init_weight:
+            if FLAGS.init_weight and (model_file == None):
                 w_arr = None
                 b_arr = None
                 print(">>>>>>>>>> test robert's model ")
