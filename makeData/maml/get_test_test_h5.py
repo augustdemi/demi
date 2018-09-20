@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 path = "/home/ml1323/project/robert_data/DISFA/new_dataset/test_b/"
-save_path = path + "/testset/"
+save_path = "/home/ml1323/project/robert_data/DISFA/new_dataset/half_test_h5/"
 if not os.path.exists(save_path): os.makedirs(save_path)
 
 subjects = os.listdir(path)
