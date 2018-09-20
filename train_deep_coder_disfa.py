@@ -54,10 +54,10 @@ w_1 = args.warming / 50
 
 if au_index < 12:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
-    TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same', au_idx=au_index)
 else:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
-    TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
+
+TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
 
 
 pp = ED.image_pipeline.FACE_pipeline(
