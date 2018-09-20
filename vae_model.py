@@ -58,7 +58,7 @@ class VAE:
         self.model_train.load_weights(vae_model)
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         loaded_weight = self.model_train.get_weights()[-2:]
-        if 'all' in vae_model:
+        if au_idx < 12:
             print(">>>>>>>>>>>>>> au_idx in ", vae_model + ": ", au_idx)
             w = loaded_weight[0][:, au_idx]
             b = loaded_weight[1][au_idx]
