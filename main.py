@@ -348,7 +348,7 @@ def test_robert():  # In case when test the model with the whole rest frames
         print("y_lab shape:", y_lab.shape)
         print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
         print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
-    print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir=+ "./logs/result/" + "test.txt")
+    print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/test.txt")
 
 
 
