@@ -67,15 +67,47 @@ class VAE:
 
     # only for test_test.(test_test는 사실 test_train 케이스도 포함임. 그래서 test_train인 경우 = w,b모두 None인 경우, 그냥 로버트 모델을 로드해서 씀)
     def loadWeight(self, vae_model, w=None, b=None):
-        self.model_train.load_weights(vae_model)
-        print("loaded weight from robert : ", self.model_train.get_weights()[58], self.model_train.get_weights()[59])
-        print("And shape of w: ", self.model_train.get_weights()[58].shape)
-        if w is not None and b is not None:
-            if w.shape[1] == b.shape[0] == 12:
-                self.model_train.layers[-1].weights[0].load(w)
-                self.model_train.layers[-1].weights[1].load(b)
-                print("loaded weight from maml : ", self.model_train.get_weights()[58],
-                      self.model_train.get_weights()[59])
+
+        if 'fine' in vae_model:
+            vae_model = VAE((160, 240, 1), 32, 1)
+            w_arr = []
+            b_arr = []
+            w_arr2 = []
+            b_arr2 = []
+            for i in range(12):
+                vae_model.model_train.load_weights(
+                    'w_decoder_batchsize32_allau_lr0.1_w1_another_iter300' + '_au' + str(i) + '_fine_iter400.h5')
+                for i in range(len(self.model_train.layers) - 1):
+                    loaded = vae_model.model_train.layers[i].get_weights()
+                    self.model_train.layers[i].set_weights(loaded)
+                w = vae_model.model_train.get_weights()[58]
+                b = vae_model.model_train.get_weights()[59]
+                w = w.reshape(2000, 1, 2)
+                b = b.reshape(1, 2)
+                w_arr.vstack(w)
+                b_arr.vstack(b)
+                w_arr2.vstack(w)
+                b_arr2.vstack(b)
+            print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+            print(w_arr.shape)
+            print(b_arr.shape)
+
+            print(w_arr2.shape)
+            print(b_arr2.shape)
+            self.model_train.layers[-1].set_weights([w_arr, b_arr])
+            print("loaded weight from robert : ", self.model_train.get_weights()[58],
+                  self.model_train.get_weights()[59])
+        else:
+            self.model_train.load_weights(vae_model)
+            print("loaded weight from robert : ", self.model_train.get_weights()[58],
+                  self.model_train.get_weights()[59])
+            print("And shape of w: ", self.model_train.get_weights()[58].shape)
+            if w is not None and b is not None:
+                if w.shape[1] == b.shape[0] == 12:
+                    self.model_train.layers[-1].weights[0].load(w)
+                    self.model_train.layers[-1].weights[1].load(b)
+                    print("loaded weight from maml : ", self.model_train.get_weights()[58],
+                          self.model_train.get_weights()[59])
 
     # only for test_test. 로드한 weight으로 pred값 도출. 배치로 한방에 predict하기 위해 로버트 모델을 쓴것.
     def testWithSavedModel(self, x):
