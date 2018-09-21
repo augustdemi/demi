@@ -123,7 +123,7 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
     z_mean, z_log_sigma = args
     batch_size = 32
     epsilon = []
-    for m, s in zip(np.ones(2000), np.ones(2000)):
+    for m, s in zip(np.zeros(2000), np.ones(2000)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
     epsilon = KB.concatenate(epsilon, 1)
     return z_mean + KB.exp(z_log_sigma) * epsilon
