@@ -114,7 +114,9 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
     print('Done initializing, starting training.')
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-        if itr <= 5000:
+        if itr <= 1000:
+            SAVE_INTERVAL = 100
+        elif itr <= 5000:
             SAVE_INTERVAL = 500
         else:
             SAVE_INTERVAL = 5000
