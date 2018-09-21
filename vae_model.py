@@ -70,10 +70,8 @@ class VAE:
 
         if 'fine' in vae_model:
             vae_model = VAE((160, 240, 1), 32, 1)
-            w_arr = []
-            b_arr = []
-            w_arr2 = []
-            b_arr2 = []
+            w_arr = None
+            b_arr = None
             for i in range(12):
                 vae_model.model_train.load_weights(
                     'w_decoder_batchsize32_allau_lr0.1_w1_another_iter300' + '_au' + str(i) + '_fine_iter400.h5')
@@ -84,16 +82,16 @@ class VAE:
                 b = vae_model.model_train.get_weights()[59]
                 w = w.reshape(2000, 1, 2)
                 b = b.reshape(1, 2)
-                w_arr.vstack(w)
-                b_arr.vstack(b)
-                w_arr2.vstack(w)
-                b_arr2.vstack(b)
+                if w_arr is None:
+                    w_arr = w
+                    b_arr = b
+                else:
+                    w_arr = np.hstack((w_arr, w))
+                    b_arr = np.vstack((b_arr, b))
             print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
             print(w_arr.shape)
             print(b_arr.shape)
 
-            print(w_arr2.shape)
-            print(b_arr2.shape)
             self.model_train.layers[-1].set_weights([w_arr, b_arr])
             print("loaded weight from robert : ", self.model_train.get_weights()[58],
                   self.model_train.get_weights()[59])
