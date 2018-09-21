@@ -22,8 +22,11 @@ all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au2
 for subject in subjects:
     subject_folder = os.path.join(path, subject)
     files = os.listdir(subject_folder)
-    test_file_names = [os.path.join(subject_folder, file) for file in files]
     print('original files len in ', subject, ' : ', len(files))
+    if len(files) > 4845:
+        files = files[:4845]
+    print('after trim ', subject, ' : ', len(files))
+    test_file_names = [os.path.join(subject_folder, file) for file in files]
     frame_idx = [int(file.split('_')[0].split('frame')[1].split('.')[0]) for file in files]
 
     label_per_subject = []
