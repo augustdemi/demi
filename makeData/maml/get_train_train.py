@@ -26,7 +26,8 @@ for subject in subjects:
     print('after trim ', subject, ' : ', len(files))
     test_file_names = [os.path.join(subject_folder, file) for file in files if
                        int(file.split('_')[0].split('frame')[1].split('.')[0]) < 4845]
-    frame_idx = [int(file.split('_')[0].split('frame')[1].split('.')[0]) for file in files]
+    frame_idx = [int(file.split('_')[0].split('frame')[1].split('.')[0]) for file in files if
+                 int(file.split('_')[0].split('frame')[1].split('.')[0]) < 4845]
 
     label_per_subject = []
     for au in all_au:
