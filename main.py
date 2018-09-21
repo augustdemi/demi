@@ -243,7 +243,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     import cv2
     import pickle
     batch_size = 10
-    vae_model = VAE((160, 240, 1), batch_size, FLAGS.num_au)
+    vae_model = VAE((160, 240, 1), batch_size, 12)
     vae_model.loadWeight(FLAGS.vae_model, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
@@ -296,7 +296,7 @@ def test_all(w, b, trained_model_dir):  # In case when test the model with the w
     import cv2
     import pickle
     batch_size = 10
-    vae_model = VAE((160, 240, 1), batch_size, FLAGS.num_au)
+    vae_model = VAE((160, 240, 1), batch_size, 12)
     vae_model.loadWeight(FLAGS.vae_model, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
