@@ -13,7 +13,7 @@ import os
 
 
 parser = argparse.ArgumentParser(description='extract feace images from raw datasets')
-parser.add_argument("-i","--input",  type=str, default='n', help="files created from GP")
+parser.add_argument("-i", "--input", type=str, default='init', help="files created from GP")
 parser.add_argument("-o","--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
 parser.add_argument("-n","--nb_iter",type=int, default=1, help="number of VAE iterations")
 parser.add_argument("-w","--warming",type=int, default=1, help="factor on kl loss")
