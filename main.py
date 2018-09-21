@@ -97,6 +97,7 @@ flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert 
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
 flags.DEFINE_bool('global_model', True, 'model is trained with all train/test tasks')
+flags.DEFINE_bool('robert', False, 'model is trained with all train/test tasks')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     SUMMARY_INTERVAL = 500
@@ -243,7 +244,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     import cv2
     import pickle
     batch_size = 10
-    if (sbjt_start_idx == 0): vae_model = VAE((160, 240, 1), batch_size, 12)
+    vae_model = VAE((160, 240, 1), batch_size, 12)
     vae_model.loadWeight(FLAGS.vae_model, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
@@ -288,6 +289,67 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
         test_file_names = data['test_file_names']
         y_hat = get_y_hat(test_file_names)
     return y_hat, data['lab']
+
+
+def test_robert():  # In case when test the model with the whole rest frames
+    from vae_model import VAE
+    import EmoData as ED
+    import cv2
+    import pickle
+    batch_size = 10
+    vae_model = VAE((160, 240, 1), batch_size, 12)
+    vae_model.loadWeight(FLAGS.vae_model, None, None)
+
+    pp = ED.image_pipeline.FACE_pipeline(
+        histogram_normalization=True,
+        grayscale=True,
+        resize=True,
+        rotation_range=3,
+        width_shift_range=0.03,
+        height_shift_range=0.03,
+        zoom_range=0.03,
+        random_flip=True,
+    )
+
+    def get_y_hat(file_names):
+        nb_samples = len(file_names)
+        t0, t1 = 0, batch_size
+        yhat = []
+        while True:
+            t1 = min(nb_samples, t1)
+            file_names_batch = file_names[t0:t1]
+            imgs = [cv2.imread(filename) for filename in file_names_batch]
+            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
+            pred = vae_model.testWithSavedModel(img_arr)
+            yhat.extend(pred)
+            if t1 == nb_samples: break
+            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
+            t1 += batch_size
+        return np.array(yhat)
+
+    test_subjects = os.listdir(FLAGS.testset_dir)
+    test_subjects.sort()
+
+    test_subjects = test_subjects[0:FLAGS.num_test_tasks]
+
+    print("test_subjects: ", test_subjects)
+
+    y_hat_all = []
+    y_lab_all = []
+    for test_subject in test_subjects:
+        print("============> subject: ", test_subject)
+        data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
+        test_file_names = data['test_file_names']
+        y_hat = get_y_hat(test_file_names)
+        y_lab = data['lab']
+        y_hat_all.append(y_hat)
+        y_lab_all.append(y_lab)
+        print("y_hat shape:", y_hat.shape)
+        print("y_lab shape:", y_lab.shape)
+        print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
+        print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
+    print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir=+ "./logs/result/" + "test.txt")
+
 
 
 def test_all(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
@@ -492,24 +554,27 @@ def main():
             return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
         if FLAGS.global_test:
-            print(
-                "<<<<<<<<<<<< want to see the evaluation by concatenating all subject's predictions >>>>>>>>>>>>>>>>>")
-            save_path = "./logs/result/test_test/" + trained_model_dir
-            if FLAGS.test_train:
-                save_path = "./logs/result/test_train/" + trained_model_dir
-            if not os.path.exists(save_path):
-                os.makedirs(save_path)
-            y_hat = []
-            y_lab = []
-            for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-                result = process(i)
-                y_hat.append(result[0])
-                y_lab.append(result[1])
-                print("y_hat shape:", result[0].shape)
-                print("y_lab shape:", result[1].shape)
-                print(">> y_hat_all shape:", np.vstack(y_hat).shape)
-                print(">> y_lab_all shape:", np.vstack(y_lab).shape)
-            print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
+            if FLAGS.robert:
+                test_robert()
+            else:
+                print(
+                    "<<<<<<<<<<<< want to see the evaluation by concatenating all subject's predictions >>>>>>>>>>>>>>>>>")
+                save_path = "./logs/result/test_test/" + trained_model_dir
+                if FLAGS.test_train:
+                    save_path = "./logs/result/test_train/" + trained_model_dir
+                if not os.path.exists(save_path):
+                    os.makedirs(save_path)
+                y_hat = []
+                y_lab = []
+                for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+                    result = process(i)
+                    y_hat.append(result[0])
+                    y_lab.append(result[1])
+                    print("y_hat shape:", result[0].shape)
+                    print("y_lab shape:", result[1].shape)
+                    print(">> y_hat_all shape:", np.vstack(y_hat).shape)
+                    print(">> y_lab_all shape:", np.vstack(y_lab).shape)
+                print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
 
         else:
             print("<<<<<<<<<<<< model was trained using all test/train tasks >>>>>>>>>>>>>>>>>")
