@@ -24,7 +24,7 @@ for subject in subjects:
     files = os.listdir(subject_folder)
     test_file_names = [os.path.join(subject_folder, file) for file in files]
     print('original files len in ', subject, ' : ', len(files))
-    frame_idx = [int(file.split('frame')[1].split('.')[0]) for file in files]
+    frame_idx = [int(file.split('_')[0].split('frame')[1].split('.')[0]) for file in files]
 
     label_per_subject = []
     for au in all_au:
