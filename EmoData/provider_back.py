@@ -17,12 +17,52 @@ def flow_from_hdf5(
     print(path_to_file)
     f = h5py.File(path_to_file, 'r')
     lock = threading.Lock()
-    
+
     # get the sice of the first group in the hdf5 file
     data = f[[i for i in f.keys()][0]]
-
     nb_samples = data.shape[0]
     nb_batches = math.ceil(nb_samples/batch_size)
+
+    all_indices = []
+    if au_idx < 12:
+        lab = f['lab'][:, au_idx]
+        N_total_label = lab.shape[0]
+
+        sub = f['sub']
+        subject_set = list(set(sub))
+        subject_set.sort()
+
+        per_subject_on_cnt = {}
+        per_subject_on_idx = {}
+        per_subject_off_idx = {}
+        for i in subject_set:
+            per_subject_on_cnt[i] = 0
+            per_subject_on_idx[i] = []
+            per_subject_off_idx[i] = []
+
+        for i in range(N_total_label):
+            if lab[i][1] == 0:
+                per_subject_off_idx[sub[i]].append(i)
+            else:
+                per_subject_on_idx[sub[i]].append(i)
+                per_subject_on_cnt[sub[i]] += 1
+
+        avg_num_on_intensity = int(np.average(list(per_subject_on_cnt.values())))
+        print('>>>>>>>>>>>>>> avg_num_on_intensity', avg_num_on_intensity)
+
+        for i in subject_set:
+            final_num_on_int = min(per_subject_on_cnt[i], avg_num_on_intensity)
+            required_per_subject_off_cnt = 2 * avg_num_on_intensity - final_num_on_int
+            all_indices.extend(per_subject_on_idx[i][:int(final_num_on_int)])
+            all_indices.extend(per_subject_off_idx[i][:int(required_per_subject_off_cnt)])
+        all_indices.sort()
+        nb_samples = len(all_indices)
+        nb_batches = math.ceil(nb_samples / batch_size)
+
+    print('-----------------------------------')
+    print('nb_samples: ', nb_samples)
+    print('nb_batches: ', nb_batches)
+    print('-----------------------------------')
 
     def _make_generator(data):
 
@@ -53,39 +93,6 @@ def flow_from_hdf5(
     res_gen['nb_batches']=nb_batches
 
     if au_idx < 12:
-        lab = f['lab'][:, au_idx]
-        N_total_label = lab.shape[0]
-
-        sub = f['sub']
-        subject_set = list(set(sub))
-        subject_set.sort()
-
-        per_subject_on_cnt = {}
-        per_subject_on_idx = {}
-        per_subject_off_idx = {}
-        for i in subject_set:
-            per_subject_on_cnt[i] = 0
-            per_subject_on_idx[i] = []
-            per_subject_off_idx[i] = []
-
-        for i in range(N_total_label):
-            if lab[i][1] == 0:
-                per_subject_off_idx[sub[i]].append(i)
-            else:
-                per_subject_on_idx[sub[i]].append(i)
-                per_subject_on_cnt[sub[i]] += 1
-
-        avg_num_on_intensity = int(np.average(list(per_subject_on_cnt.values())))
-        print('>>>>>>>>>>>>>> avg_num_on_intensity', avg_num_on_intensity)
-
-        all_indices = []
-        for i in subject_set:
-            final_num_on_int = min(per_subject_on_cnt[i], avg_num_on_intensity)
-            required_per_subject_off_cnt = 2 * avg_num_on_intensity - final_num_on_int
-            all_indices.extend(per_subject_on_idx[i][:int(final_num_on_int)])
-            all_indices.extend(per_subject_off_idx[i][:int(required_per_subject_off_cnt)])
-        all_indices.sort()
-
         for key in f:
             res_gen[key] = _make_generator(f[key][all_indices])
     else:
