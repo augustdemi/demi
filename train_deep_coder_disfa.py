@@ -192,8 +192,8 @@ if source_data != 'init':
                 print(model_train.layers[i], model_train.layers[i].trainable)
                 sum_mult_out_dir += '/fine_tune'
                 sum_vac_disfa_dir += '/fine_tune'
-        w = vae_model.model_train.get_weights()[58][:, 6]
-        b = vae_model.model_train.get_weights()[59][6]
+        w = vae_model.model_train.get_weights()[58][:, au_index]
+        b = vae_model.model_train.get_weights()[59][au_index]
         w = w.reshape(2000, 1, 2)
         b = b.reshape(1, 2)
         model_train.layers[-1].set_weights([w, b])
