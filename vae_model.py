@@ -74,10 +74,10 @@ class VAE:
             b_arr = None
             for i in range(12):
                 vae_model.model_train.load_weights(
-                    'w_decoder_batchsize32_allau_lr0.1_w1_another_iter300' + '_au' + str(i) + '_fine_iter400.h5')
-                for i in range(len(self.model_train.layers) - 1):
-                    loaded = vae_model.model_train.layers[i].get_weights()
-                    self.model_train.layers[i].set_weights(loaded)
+                    'w_decoder_batchsize32_allau_lr0.1_w1_another_iter301' + '_au' + str(i) + '_fine_iter0.h5')
+                for j in range(len(self.model_train.layers) - 1):
+                    loaded = vae_model.model_train.layers[j].get_weights()
+                    self.model_train.layers[j].set_weights(loaded)
                 w = vae_model.model_train.get_weights()[58]
                 b = vae_model.model_train.get_weights()[59]
                 w = w.reshape(2000, 1, 2)
