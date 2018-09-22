@@ -264,6 +264,8 @@ model_train.fit_generator(
             ]
         )
 
+model_train.summary()
+print(model_train.get_weights())
 model_train.save_weights(model_name)
 
 
