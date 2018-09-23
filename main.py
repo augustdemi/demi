@@ -99,7 +99,7 @@ flags.DEFINE_bool('global_model', True, 'model is trained with all train/test ta
 flags.DEFINE_bool('robert', False, 'model is trained with all train/test tasks')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
-    print("===============> Final weight: ", sess.run('model/w1:0').tolist(), sess.run('model/b1:0').tolist())
+    print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 500
     SAVE_INTERVAL = 5000
 
@@ -210,6 +210,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
+            print("===============> Final out weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
             if FLAGS.train_test:
                 retrained_model_dir = '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
