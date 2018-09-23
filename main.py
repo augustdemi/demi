@@ -303,7 +303,7 @@ def test_robert():  # In case when test the model with the whole rest frames
     import pickle
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size, 12)
-    if 'fine' in vae_model:
+    if 'fine' in FLAGS.vae_model:
         vae_model.loadWeight(FLAGS.vae_model, None, None, 1)
     else:
         vae_model.loadWeight(FLAGS.vae_model, None, None)
