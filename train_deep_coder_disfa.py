@@ -233,7 +233,7 @@ model_train.compile(
 
 from keras.callbacks import EarlyStopping
 
-early_stopping = EarlyStopping(monitor='val_loss', patience=10, verbose=1)
+early_stopping = EarlyStopping(monitor='val_softmaxpdf_1_loss', patience=3, verbose=1)
 
 model_train.fit_generator(
         generator = GEN_TR,
@@ -244,7 +244,7 @@ model_train.fit_generator(
         nb_epoch = nb_iter,
         max_q_size = 4,
         callbacks=[
-            #early_stopping,
+            early_stopping,
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
