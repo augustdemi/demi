@@ -99,6 +99,7 @@ flags.DEFINE_bool('global_model', True, 'model is trained with all train/test ta
 flags.DEFINE_bool('robert', False, 'model is trained with all train/test tasks')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
+    print("===============> Final weight: ", sess.run('model/w1:0').tolist(), sess.run('model/b1:0').tolist())
     SUMMARY_INTERVAL = 500
     SAVE_INTERVAL = 5000
 
@@ -502,7 +503,7 @@ def main():
     if FLAGS.init_weight and FLAGS.train:
         model.weights['w1'].load(pred_weights[0], sess)
         model.weights['b1'].load(pred_weights[1], sess)
-    print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
+        print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
     ################## Test ##################
@@ -656,10 +657,6 @@ def main():
         b = None
         print(">>>> model_file1: ", model_file)
 
-        #TODO delete this if
-        if FLAGS.local_subj > 0:
-            model_file = model_file[:model_file.index('subject')] + 'subject' + str(FLAGS.local_subj - 14)
-            print(">>>> model_file2: ", model_file)
         if model_file:
             if FLAGS.train_test:
                 if FLAGS.test_iter > 0:
