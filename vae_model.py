@@ -69,7 +69,7 @@ class VAE:
             w_arr = None
             b_arr = None
             for i in range(12):
-                temp_vae_model.model_train.load_weights(vae_model + 'au' + str(i) + '.h5')
+                temp_vae_model.model_train.load_weights(vae_model + '/au' + str(i) + '.h5')
                 for j in range(len(self.model_train.layers) - 1):
                     loaded = temp_vae_model.model_train.layers[j].get_weights()
                     self.model_train.layers[j].set_weights(loaded)
