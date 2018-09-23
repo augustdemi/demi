@@ -55,7 +55,10 @@ class VAE:
         self.z = z
 
     def computeLatentVal(self, x, vae_model):
-        self.model_train.load_weights(vae_model)
+        if vae_model.endswith('h5'):
+            self.model_train.load_weights(vae_model)
+        else:
+            self.model_train.load_weights(vae_model + '/au0.h5')
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         loaded_weight = self.model_train.get_weights()[-2:]
         return loaded_weight, z
@@ -63,7 +66,6 @@ class VAE:
     # only for test_test.(test_test는 사실 test_train 케이스도 포함임. 그래서 test_train인 경우 = w,b모두 None인 경우, 그냥 로버트 모델을 로드해서 씀)
     def loadWeight(self, vae_model, w=None, b=None, num_au=12):
         if num_au == 1:
-            vae_model = vae_model.split('au')[0]
             print("######## dir for iterative load of model: ", vae_model)
             temp_vae_model = VAE((160, 240, 1), 32, num_au)
             w_arr = None
