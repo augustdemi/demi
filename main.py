@@ -92,7 +92,6 @@ flags.DEFINE_integer('local_subj', 0, 'local weight subject')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 12, 'number of AUs used to make AE')
-flags.DEFINE_integer('au_idx', 12, 'au index to deal with in the given vae model')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
@@ -304,7 +303,10 @@ def test_robert():  # In case when test the model with the whole rest frames
     import pickle
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size, 12)
-    vae_model.loadWeight(FLAGS.vae_model, None, None)
+    if 'fine' in vae_model:
+        vae_model.loadWeight(FLAGS.vae_model, None, None, 1)
+    else:
+        vae_model.loadWeight(FLAGS.vae_model, None, None)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
@@ -582,6 +584,7 @@ def main():
                     print(">> y_lab_all shape:", np.vstack(y_lab).shape)
                 print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
 
+        # 각 subject별로 테스트할뿐 concatenate하지 않음
         else:
             print("<<<<<<<<<<<< model was trained using all test/train tasks >>>>>>>>>>>>>>>>>")
             all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
@@ -685,7 +688,7 @@ def main():
                 #         if FLAGS.train_test: resume_itr = 0
                 #         else: resume_itr = int(model_file[ind1 + 5:])
                 #         print('resume_itr: ', resume_itr)
-    
+
     print("=====================================================================================")
 
     if FLAGS.train:

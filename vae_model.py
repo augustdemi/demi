@@ -54,32 +54,25 @@ class VAE:
         self.model_au_int = model_au_int
         self.z = z
 
-    def computeLatentVal(self, x, vae_model, au_idx):
+    def computeLatentVal(self, x, vae_model):
         self.model_train.load_weights(vae_model)
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         loaded_weight = self.model_train.get_weights()[-2:]
-        if au_idx < 12:
-            print(">>>>>>>>>>>>>> au_idx in ", vae_model + ": ", au_idx)
-            w = loaded_weight[0][:, au_idx]
-            b = loaded_weight[1][au_idx]
-            loaded_weight= [w.reshape(2000,1,2), b.reshape(1,2)]
         return loaded_weight, z
 
     # only for test_test.(test_test는 사실 test_train 케이스도 포함임. 그래서 test_train인 경우 = w,b모두 None인 경우, 그냥 로버트 모델을 로드해서 씀)
-    def loadWeight(self, vae_model, w=None, b=None):
-
-        if 'fine' in vae_model:
-            vae_model = VAE((160, 240, 1), 32, 1)
+    def loadWeight(self, vae_model, w=None, b=None, num_au=12):
+        if num_au == 1:
+            temp_vae_model = VAE((160, 240, 1), 32, num_au)
             w_arr = None
             b_arr = None
             for i in range(12):
-                vae_model.model_train.load_weights(
-                    'w_decoder_batchsize32_allau_lr0.1_w1_another_iter301' + '_au' + str(i) + '_fine_iter0.h5')
+                temp_vae_model.model_train.load_weights(vae_model + 'au' + str(i) + '.h5')
                 for j in range(len(self.model_train.layers) - 1):
-                    loaded = vae_model.model_train.layers[j].get_weights()
+                    loaded = temp_vae_model.model_train.layers[j].get_weights()
                     self.model_train.layers[j].set_weights(loaded)
-                w = vae_model.model_train.get_weights()[58]
-                b = vae_model.model_train.get_weights()[59]
+                w = temp_vae_model.model_train.get_weights()[58]
+                b = temp_vae_model.model_train.get_weights()[59]
                 w = w.reshape(2000, 1, 2)
                 b = b.reshape(1, 2)
                 if w_arr is None:

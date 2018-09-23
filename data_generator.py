@@ -32,7 +32,7 @@ class DataGenerator(object):
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
         num_train = FLAGS.meta_batch_size
-        self.metatrain_character_folders = subject_folders[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + num_train]
+        self.metatrain_character_folders = subject_folders[FLAGS.train_start_idx:FLAGS.train_start_idx + num_train]
         if FLAGS.test_set:  # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
@@ -114,7 +114,7 @@ class DataGenerator(object):
                 file_names_batch = file_names[t0:t1]
                 imgs = [cv2.imread(filename) for filename in file_names_batch]
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
+                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
                 z_arr.append(z)
                 if t1 == nb_samples: break
                 t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
