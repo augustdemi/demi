@@ -130,9 +130,8 @@ def sampling(args): ########### input param의 평균과 분산에 noise(target_
 
 z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma]) # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
-aug_z = Reshape((2000,1))(z_mean)
 out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(
-    aug_z)  # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
+    Reshape((2000, 1))(z_mean))  # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
 
 D1 = Dense(latent_dim, activation='relu')
@@ -244,7 +243,7 @@ model_train.fit_generator(
         nb_epoch = nb_iter,
         max_q_size = 4,
         callbacks=[
-            early_stopping,
+            # early_stopping,
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
