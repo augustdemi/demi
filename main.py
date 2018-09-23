@@ -253,7 +253,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     import pickle
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size, 12)
-    vae_model.loadWeight(FLAGS.vae_model, w, b)
+    vae_model.loadWeight(FLAGS.vae_model_for_test, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
