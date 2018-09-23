@@ -63,6 +63,8 @@ class VAE:
     # only for test_test.(test_test는 사실 test_train 케이스도 포함임. 그래서 test_train인 경우 = w,b모두 None인 경우, 그냥 로버트 모델을 로드해서 씀)
     def loadWeight(self, vae_model, w=None, b=None, num_au=12):
         if num_au == 1:
+            vae_model = vae_model.split('au')[0]
+            print("######## dir for iterative load of model: ", vae_model)
             temp_vae_model = VAE((160, 240, 1), 32, num_au)
             w_arr = None
             b_arr = None
