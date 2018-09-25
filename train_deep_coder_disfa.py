@@ -218,18 +218,18 @@ if args.decoder == 0:
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
 
-# model_train.compile(
-#     optimizer=K.optimizers.Adadelta(
-#         lr=args.lr,
-#         rho=0.95,
-#         epsilon=1e-08,
-#         decay=0.0
-#     ),
-#     loss=loss
-# )
+model_train.compile(
+    optimizer=K.optimizers.Adadelta(
+        lr=args.lr,
+        rho=0.95,
+        epsilon=1e-08,
+        decay=0.0
+    ),
+    loss=loss
+)
 # model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss=loss)
-model_train.compile(K.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004),
-                    loss=loss)
+# model_train.compile(K.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004),
+#                     loss=loss)
 from keras.callbacks import EarlyStopping
 
 early_stopping = EarlyStopping(monitor='val_softmaxpdf_1_loss', patience=3, verbose=1)
