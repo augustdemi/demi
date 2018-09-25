@@ -165,7 +165,7 @@ model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data,
 
 model_rec_z = K.models.Model([inp_0], [out_0, z_mean])
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
-model_au_int= K.models.Model([inp_0], [out_1]) #??????????????????
+model_au_int = K.models.Model([inp_0], [out_1])
 
 inp_1 = Input(shape=[2000]) # latent dim 사이즈의 input 텐서
 h1 = D1(inp_1)
@@ -218,17 +218,17 @@ if args.decoder == 0:
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
 
-
-
-model_train.compile(
-        optimizer = K.optimizers.Adadelta(
-            lr=args.lr,
-            rho = 0.95,
-            epsilon = 1e-08,
-            decay = 0.0
-            ),
-        loss = loss
-        )
+# model_train.compile(
+#         optimizer = K.optimizers.Adadelta(
+#             lr=args.lr,
+#             rho = 0.95,
+#             epsilon = 1e-08,
+#             decay = 0.0
+#             ),
+#         loss = loss
+#         )
+model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False),
+                    loss=loss)
 
 from keras.callbacks import EarlyStopping
 
