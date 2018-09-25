@@ -227,7 +227,7 @@ if not os.path.exists(sum_vac_disfa_dir):
 #             ),
 #         loss = loss
 #         )
-model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False),
+model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0),
                     loss=loss)
 
 from keras.callbacks import EarlyStopping
