@@ -29,7 +29,7 @@ parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files crea
 parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
 parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
 parser.add_argument("-f", "--fine_tune", type=int, default=0, help="if want to fine tune, gives 1")
-parser.add_argument("-lr", "--lr", type=float, default=0.1, help="learning rate")
+parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate")
 
 args = parser.parse_args()
 
