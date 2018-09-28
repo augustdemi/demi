@@ -24,7 +24,7 @@ all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au2
 # min_file_len = min(file_len)
 
 for subject in subjects:
-    subject_folder = os.path.join(path, subject + '.h5')
+    subject_folder = os.path.join(path, subject)
     files = os.listdir(subject_folder)
     print('original files len in ', subject, ' : ', len(files))
     print('after trim ', subject, ' : ', len(files))
