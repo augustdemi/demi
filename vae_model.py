@@ -63,8 +63,9 @@ class VAE:
         loaded_weight = self.model_train.get_weights()[-2:]
         print('shape of loaded_weight in computeLatentVal(): ', loaded_weight[0].shape, loaded_weight[1].shape)
         if (loaded_weight[1].shape[0] > 1) and (au_idx < 12):
-            loaded_weight[0] = loaded_weight[au_idx, :]
-            loaded_weight[1] = loaded_weight[au_idx, :]
+            w = loaded_weight[0][:, au_idx]
+            b = loaded_weight[1][au_idx]
+            loaded_weight = [w.reshape(2000, 1, 2), b.reshape(1, 2)]
             print('after: shape of loaded_weight in computeLatentVal(): ', loaded_weight[0].shape,
                   loaded_weight[1].shape)
         return loaded_weight, z
