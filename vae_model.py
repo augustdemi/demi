@@ -54,13 +54,19 @@ class VAE:
         self.model_au_int = model_au_int
         self.z = z
 
-    def computeLatentVal(self, x, vae_model):
+    def computeLatentVal(self, x, vae_model, au_idx):
         if vae_model.endswith('h5'):
             self.model_train.load_weights(vae_model)
         else:
             self.model_train.load_weights(vae_model + '/au0.h5')
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         loaded_weight = self.model_train.get_weights()[-2:]
+        print('shape of loaded_weight in computeLatentVal(): ', loaded_weight[0].shape, loaded_weight[1].shape)
+        if (loaded_weight[1].shape[0] > 1) and (au_idx < 12):
+            loaded_weight[0] = loaded_weight[au_idx, :]
+            loaded_weight[1] = loaded_weight[au_idx, :]
+            print('after: shape of loaded_weight in computeLatentVal(): ', loaded_weight[0].shape,
+                  loaded_weight[1].shape)
         return loaded_weight, z
 
     # only for test_test.(test_test는 사실 test_train 케이스도 포함임. 그래서 test_train인 경우 = w,b모두 None인 경우, 그냥 로버트 모델을 로드해서 씀)

@@ -114,7 +114,7 @@ class DataGenerator(object):
                 file_names_batch = file_names[t0:t1]
                 imgs = [cv2.imread(filename) for filename in file_names_batch]
                 img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model)
+                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
                 z_arr.append(z)
                 if t1 == nb_samples: break
                 t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
