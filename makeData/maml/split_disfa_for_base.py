@@ -13,8 +13,12 @@ path = "/home/ml1323/project/robert_data/DISFA/h5_detected_bin_intensity/"
 files = os.listdir(path)
 files.sort()
 file_idx = np.array(range(0,len(files)))
-train_index = file_idx[:14]
-test_index = file_idx[14:]
+# train_index = file_idx[:14]
+# test_index = file_idx[14:]
+
+train_index = [1, 2, 3, 6, 7, 10, 15, 16, 17, 18, 20, 23, 24, 25]
+test_index = [i for i in file_idx if i not in train_index]
+
 
 print("TRAIN:", files[train_index], "TEST:", files[test_index])
 data_idx = {'train': train_index, 'test': test_index}
@@ -37,7 +41,7 @@ for key in data_idx.keys():
         imgs.append(img)
         labels.append(label)
         subjects.append(subject_number * np.ones(n_data))
-    save_path = "/home/ml1323/project/robert_data/DISFA/h5_maml/"
+    save_path = "/home/ml1323/project/robert_data/DISFA/h5_maml_nonzero_au/"
     if not os.path.exists(save_path):
             os.makedirs(save_path)
     # save_path = "D:/연구/프로젝트/DISFA/rrr/"
