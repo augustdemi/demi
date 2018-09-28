@@ -3,11 +3,15 @@ import os
 import numpy as np
 
 path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
-save_path = "/home/ml1323/project/robert_data/DISFA/new_dataset/trainset/"
+save_path = "/home/ml1323/project/robert_data/DISFA/nonzero_au/trainset/"
 if not os.path.exists(save_path): os.makedirs(save_path)
 
-subjects = os.listdir(path)
+# subjects = os.listdir(path)
+subjects = ['SN002', 'SN003', 'SN004', 'SN007', 'SN008', 'SN011', 'SN018', 'SN021', 'SN023', 'SN024', 'SN026', 'SN029',
+            'SN030', 'SN031']
+
 subjects.sort()
+
 all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
 
 # file_len = []
@@ -20,7 +24,7 @@ all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au2
 # min_file_len = min(file_len)
 
 for subject in subjects:
-    subject_folder = os.path.join(path, subject)
+    subject_folder = os.path.join(path, subject + '.h5')
     files = os.listdir(subject_folder)
     print('original files len in ', subject, ' : ', len(files))
     print('after trim ', subject, ' : ', len(files))

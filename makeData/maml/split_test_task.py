@@ -9,8 +9,10 @@ import numpy as np
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 'SN027', 'SN028', 'SN029', 'SN030',
-                 'SN031', 'SN032']
+# test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 'SN027', 'SN028', 'SN029', 'SN030',
+#                  'SN031', 'SN032']
+test_subjects = ['SN001', 'SN005', 'SN006', 'SN009', 'SN010', 'SN012',
+                 'SN013', 'SN016', 'SN017', 'SN025', 'SN027', 'SN028', 'SN032']
 
 for subject in test_subjects:
     detected_img_files = os.listdir(original_frame_path + subject)
@@ -69,7 +71,7 @@ for subject in test_subjects:
         print('test_b_on_idx len: ', len(test_b_on_idx))
         print('test_b_off_idx len: ', len(test_b_off_idx))
 
-        save_path = "/home/ml1323/project/robert_data/DISFA/new_dataset/"
+        save_path = "/home/ml1323/project/robert_data/DISFA/nonzero_au/"
         if not os.path.exists(save_path + "/test_a/" + au + "/" + subject + "/on"): os.makedirs(
             save_path + "/test_a/" + au + "/" + subject + "/on")
         if not os.path.exists(save_path + "/test_a/" + au + "/" + subject + "/off"): os.makedirs(

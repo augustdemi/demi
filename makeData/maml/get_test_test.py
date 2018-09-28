@@ -2,7 +2,7 @@ import pickle
 import os
 import numpy as np
 
-path = "/home/ml1323/project/robert_data/DISFA/new_dataset/test_b/"
+path = "/home/ml1323/project/robert_data/DISFA/nonzero_au/test_b/"
 save_path = path + "/testset/"
 if not os.path.exists(save_path): os.makedirs(save_path)
 
