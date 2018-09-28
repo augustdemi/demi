@@ -76,10 +76,6 @@ for subject in test_subjects:
             save_path + "/test_a/" + au + "/" + subject + "/on")
         if not os.path.exists(save_path + "/test_a/" + au + "/" + subject + "/off"): os.makedirs(
             save_path + "/test_a/" + au + "/" + subject + "/off")
-        if not os.path.exists(save_path + "/test_b/" + au + "/" + subject + "/on"): os.makedirs(
-            save_path + "/test_b/" + au + "/" + subject + "/on")
-        if not os.path.exists(save_path + "/test_b/" + au + "/" + subject + "/off"): os.makedirs(
-            save_path + "/test_b/" + au + "/" + subject + "/off")
 
         # copy on intensity frames for test_a
         for i in test_a_on_idx:
@@ -92,6 +88,7 @@ for subject in test_subjects:
                      save_path + "/test_a/" + au + "/" + subject + "/off/frame" + str(i) + ".jpg")
 
     # copy test_b
+    if not os.path.exists(save_path + "/test_b"): os.makedirs(save_path + "/test_b")
     for i in test_b_idx:
         copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
                  save_path + "/test_b/" + subject + "/frame" + str(i) + ".jpg")
