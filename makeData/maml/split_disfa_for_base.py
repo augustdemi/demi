@@ -16,8 +16,8 @@ file_idx = np.array(range(0,len(files)))
 # train_index = file_idx[:14]
 # test_index = file_idx[14:]
 
-train_index = [1, 2, 3, 6, 7, 10, 15, 16, 17, 18, 20, 23, 24, 25]
-test_index = [i for i in file_idx if i not in train_index]
+train_index = np.array([1, 2, 3, 6, 7, 10, 15, 16, 17, 18, 20, 23, 24, 25])
+test_index = np.array([i for i in file_idx if i not in train_index])
 
 
 print("TRAIN:", files[train_index], "TEST:", files[test_index])
