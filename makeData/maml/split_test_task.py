@@ -91,13 +91,7 @@ for subject in test_subjects:
             copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
                      save_path + "/test_a/" + au + "/" + subject + "/off/frame" + str(i) + ".jpg")
 
-        # copy on intensity frames for test_b
-        for i in test_b_on_idx:
-            copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_b/" + au + "/" + subject + "/on/frame" + str(i) + ".jpg")
-
-        # copy off intensity frames for test_b
-        for i in test_b_off_idx:
-            copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
-                     save_path + "/test_b/" + au + "/" + subject + "/off/frame" + str(i) + ".jpg")
-        print(">>>>> done: ", au)
+    # copy test_b
+    for i in test_b_idx:
+        copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
+                 save_path + "/test_b/" + subject + "/frame" + str(i) + ".jpg")
