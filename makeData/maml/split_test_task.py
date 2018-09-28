@@ -88,7 +88,7 @@ for subject in test_subjects:
                      save_path + "/test_a/" + au + "/" + subject + "/off/frame" + str(i) + ".jpg")
 
     # copy test_b
-    if not os.path.exists(save_path + "/test_b"): os.makedirs(save_path + "/test_b")
+    if not os.path.exists(save_path + "test_b/" + subject): os.makedirs(save_path + "test_b/" + subject)
     for i in test_b_idx:
         copyfile(original_frame_path + subject + "/frame" + str(i) + "_0.jpg",
                  save_path + "/test_b/" + subject + "/frame" + str(i) + ".jpg")
