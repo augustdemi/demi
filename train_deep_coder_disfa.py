@@ -28,8 +28,9 @@ parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at wh
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
 parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
 parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
-parser.add_argument("-f", "--fine_tune", type=int, default=0, help="if want to fine tune, gives 1")
+parser.add_argument("-f", "--fine_tune", type=bool, default=False, help="if want to fine tune, gives True")
 parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate")
+parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make the dataset balanced or not")
 
 args = parser.parse_args()
 
@@ -44,15 +45,13 @@ if args.saving_model == '':
 else:
     model_name = './' + args.saving_model + '.h5'
 
-target_std_vec = np.ones(2000)
-target_mean_vec = np.zeros(2000)
 
 batch_size = 32  # dont change it!
 log_dir_model = './model'
 latent_dim = 2000
 w_1 = args.warming / 50
 
-if au_index < 12:
+if args.fine_tune and au_index < 12:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
@@ -186,7 +185,7 @@ if source_data != 'init':
         for i in range(len(model_train.layers) - 1):
             loaded = vae_model.model_train.layers[i].get_weights()
             model_train.layers[i].set_weights(loaded)
-            if args.fine_tune > 0:
+            if args.fine_tune:
                 model_train.layers[i].trainable = False
                 print(model_train.layers[i], model_train.layers[i].trainable)
                 sum_mult_out_dir += '/fine_tune'
@@ -199,7 +198,7 @@ if source_data != 'init':
         print("after: ", model_train.layers[-1].get_weights())
     else:
         model_train.load_weights(args.restored_model + '.h5')
-        if args.fine_tune > 0:
+        if args.fine_tune:
             for i in range(len(model_train.layers) - 1):
                 model_train.layers[i].trainable = False
                 print(model_train.layers[i], model_train.layers[i].trainable)
