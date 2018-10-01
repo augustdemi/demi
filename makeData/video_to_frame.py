@@ -16,7 +16,7 @@ for rec in recs:
         os.makedirs(save_path + rec)
 
     while success:
-        cv2.imwrite(save_path + "/frame%d.jpg" % count, image)  # save frame as JPEG file
+        cv2.imwrite(save_path + rec + "/frame%d.jpg" % count, image)  # save frame as JPEG file
         success, image = vidcap.read()
         # print('Read a new frame: ', success)
         count += 1
