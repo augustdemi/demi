@@ -7,7 +7,7 @@ recs = [i.split(".")[0] for i in os.listdir(path) if i.endswith('.txt')]
 
 for rec in recs:
     print(rec)
-    file = [i for i in os.listdir(path + rec) if i.endswith('.avi')]
+    file = [i for i in os.listdir(path + rec) if i.endswith('.avi')][0]
     vidcap = cv2.VideoCapture(path + rec + '/' + file)
     success, image = vidcap.read()
     count = 0
