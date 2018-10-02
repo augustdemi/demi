@@ -94,7 +94,7 @@ class DataGenerator(object):
 
         batch_size = 10
         vae_model = VAE((self.img_size[0], self.img_size[1], 1), batch_size, FLAGS.num_au)
-        pp = ED.image_pipeline2.FACE_pipeline(
+        pp = ED.image_pipeline.FACE_pipeline(
             histogram_normalization=True,
             grayscale=True,
             resize=True,
