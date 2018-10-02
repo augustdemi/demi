@@ -253,7 +253,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     import cv2
     import pickle
     batch_size = 10
-    vae_model = VAE((160, 240, 1), batch_size, 12)
+    vae_model = VAE((160, 240, 1), batch_size, 1)
     vae_model.loadWeight(FLAGS.vae_model_for_test, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
@@ -297,7 +297,9 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
         test_file_names = data['test_file_names']
         y_hat = get_y_hat(test_file_names)
-    return y_hat, data['lab']
+    lab = data['lab'][:, FLAGS.au_idx]
+    y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
+    return y_hat, y_lab
 
 
 def test_robert():  # In case when test the model with the whole rest frames
@@ -306,8 +308,8 @@ def test_robert():  # In case when test the model with the whole rest frames
     import cv2
     import pickle
     batch_size = 10
-    vae_model = VAE((160, 240, 1), batch_size, 12)
-    if 'fine' in FLAGS.vae_model:
+    vae_model = VAE((160, 240, 1), batch_size, 1)
+    if 'tine' in FLAGS.vae_model:
         vae_model.loadWeight(FLAGS.vae_model, None, None, 1)
     else:
         vae_model.loadWeight(FLAGS.vae_model, None, None)
@@ -353,7 +355,8 @@ def test_robert():  # In case when test the model with the whole rest frames
         data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
         test_file_names = data['test_file_names']
         y_hat = get_y_hat(test_file_names)
-        y_lab = data['lab']
+        lab = data['lab'][:, FLAGS.au_idx]
+        y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         y_hat_all.append(y_hat)
         y_lab_all.append(y_lab)
         print("y_hat shape:", y_hat.shape)
