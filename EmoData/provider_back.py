@@ -209,3 +209,109 @@ def flow_from_folder(path_to_folder,
     res_gen['img']=_make_generator(valid_img)
     res_gen['lab']=_make_generator(valid_lab)
     return res_gen
+
+
+def flow_from_folder_kshot(path_to_folder,
+                           batch_size=64,
+                           padding=None,
+                           sbjt_start_idx=0,
+                           meta_batch_size=13,
+                           update_batch_size=30
+                           ):
+    from ..utils import get_images
+    import cv2
+
+    subjects = os.listdir(path_to_folder)
+    subjects.sort()
+    subject_folders = [os.path.join(path_to_folder, subject) for subject in subjects]
+    folders = subject_folders[sbjt_start_idx:sbjt_start_idx + meta_batch_size]
+
+    inputa_files = []
+    inputb_files = []
+    labelas = []
+    labelbs = []
+    # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
+    for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
+        # random.shuffle(sampled_character_folders)
+        off_imgs, on_imgs = get_images(sub_folder, range(2), 0, nb_samples=update_batch_size * 2, validate=False)
+        # Split data into a/b
+        half_off_img = int(len(off_imgs) / 2)
+        half_on_img = int(len(on_imgs) / 2)
+        for i in range(half_off_img):
+            inputa_files.append(off_imgs[2 * i])
+            inputb_files.append(off_imgs[2 * i + 1])
+        for i in range(half_on_img):
+            inputa_files.append(on_imgs[2 * i])
+            inputb_files.append(on_imgs[2 * i + 1])
+        label_for_this_subj = [0] * half_off_img
+        label_for_this_subj.extend([1] * half_on_img)
+        labelas.extend(label_for_this_subj)
+        labelbs.extend(label_for_this_subj)
+
+    print(">>>> inputa_files: ", inputa_files)
+    print("--------------------------------------------")
+    print(">>>> inputb_files: ", inputb_files)
+    print(">>> labelas: ", labelas)
+    #################################################################################
+
+    img_files = inputa_files.extend(inputb_files)
+    lab = labelas.extend(labelbs)
+    sub = []
+    for i in range(len(subjects)): sub.extend(subjects[i] * update_batch_size * 2)
+
+    np.random.seed(1)
+    np.random.shuffle(img_files)
+    np.random.seed(1)
+    np.random.shuffle(lab)
+    np.random.seed(1)
+    np.random.shuffle(sub)
+
+    f = {'img': img_files, 'lab': lab, 'sub': sub}
+
+    nb_samples = meta_batch_size * update_batch_size * 2
+    nb_batches = math.ceil(nb_samples / batch_size)
+    print('-----------------------------------')
+    print('nb_samples: ', nb_samples)
+    print('nb_batches: ', nb_batches)
+    print('-----------------------------------')
+
+    def _make_generator(data):
+
+        t0, t1 = 0, batch_size
+
+        while True:
+
+            t1 = min(nb_samples, t1)  # 배치 사이즈와 샘플 갯수중 작은게 t1
+            if t0 >= nb_samples:  # 샘플 갯수보다 to가 크면 변수 초기화
+                t0, t1 = 0, batch_size
+
+            if (key == 'img'):
+                files = data[t0:t1]
+                batch = []
+                for file in files:
+                    img = cv2.imread(file)
+                    batch.append(img)
+                batch = np.array(batch)
+            else:
+                batch = data[t0:t1]
+
+            if padding != None and batch.shape[0] < batch_size:  # 패딩 설정
+                if padding == 'same':
+                    batch = data[-batch_size:]
+                else:
+                    tmp = padding * np.ones([batch_size, *batch.shape[1:]])
+                    tmp[:batch.shape[0]] = batch
+                    batch = tmp
+
+            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
+            t1 += batch_size
+
+            yield batch  # 패딩이 적용된, 배치사이즈 만큼의 배치데이터 생성
+
+    res_gen = {}
+    res_gen['nb_samples'] = nb_samples
+    res_gen['nb_batches'] = nb_batches
+    for key in f:
+        res_gen[key] = _make_generator(f[key])
+
+    return res_gen
