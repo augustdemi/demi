@@ -22,7 +22,7 @@ parser.add_argument("-tr", "--training_data", type=str, default='/home/mihee/dev
 parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
                     help="path to test data set")
 parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
-parser.add_argument("-dec", "--decoder", type=int, default=1, help="train decoder layer or not")
+parser.add_argument("-dec", "--decoder", type=bool, default=True, help="train decoder layer or not")
 parser.add_argument("-au", "--au_index", type=int, default=12, help="au index")
 parser.add_argument("-num_au", "--num_au", type=int, default=12, help="number of au to make the model previously.")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
@@ -52,7 +52,7 @@ log_dir_model = './model'
 latent_dim = 2000
 w_1 = args.warming / 50
 
-if args.fine_tune and au_index < 12:
+if args.balance and au_index < 12:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
@@ -208,7 +208,7 @@ if source_data != 'init':
 
     print(">>>>>>>>> model loaded from ", args.restored_model)
 
-if args.decoder == 0:
+if not args.decoder:
     for layer in model_train.layers[20:35]:
         layer.trainable = False
     for layer in model_train.layers:
