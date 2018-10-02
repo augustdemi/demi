@@ -24,6 +24,7 @@ parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/pro
 parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
 parser.add_argument("-dec", "--decoder", type=int, default=1, help="train decoder layer or not")
 parser.add_argument("-au", "--au_index", type=int, default=12, help="au index")
+parser.add_argument("-num_au", "--num_au", type=int, default=12, help="number of au to make the model previously.")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
 parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
@@ -178,7 +179,7 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 if source_data != 'init':
     from vae_model import VAE
 
-    if au_index < 12:
+    if args.num_au == 12 and au_index < 12:
         batch_size = 32
         vae_model = VAE((160, 240, 1), batch_size, 12)
         vae_model.loadWeight(args.restored_model + '.h5', None, None)
