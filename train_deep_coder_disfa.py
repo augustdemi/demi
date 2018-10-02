@@ -32,6 +32,7 @@ parser.add_argument("-sm", "--saving_model", type=str, default='', help="model n
 parser.add_argument("-f", "--fine_tune", type=bool, default=False, help="if want to fine tune, gives True")
 parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate")
 parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make the dataset balanced or not")
+parser.add_argument("-kshot", "--kshot", type=bool, default=False, help="test kshot learning")
 
 args = parser.parse_args()
 
@@ -52,7 +53,9 @@ log_dir_model = './model'
 latent_dim = 2000
 w_1 = args.warming / 50
 
-if args.balance and au_index < 12:
+if args.kshot:
+    TR = ED.provider_back.flow_from_folder_kshot(args.training_data, batch_size, padding='same')
+elif args.balance and au_index < 12:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
