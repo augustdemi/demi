@@ -249,20 +249,19 @@ def flow_from_folder_kshot(path_to_folder,
         label_for_this_subj.extend([[0, 1]] * half_on_img)
         labelas.extend(label_for_this_subj)
         labelbs.extend(label_for_this_subj)
-        labelas = np.array(labelas)
-        labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
-        labelbs = np.array(labelbs)
-        labelbs = np.reshape(labelbs, (labelbs.shape[0], 1, labelbs.shape[1]))
+
 
     print(">>>> inputa_files: ", inputa_files)
     print("--------------------------------------------")
     print(">>>> inputb_files: ", inputb_files)
-    print(">>> labelas: ", labelas)
-    print(">> labelbs shape:", labelbs)
+
     #################################################################################
 
     inputa_files.extend(inputb_files)
     labelas.extend(labelbs)
+    labelas = np.array(labelas)
+    labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
+    print(">>> labelas: ", labelas)
     sub = []
     for i in range(len(subjects)): sub.extend(subjects[i] * update_batch_size * 2)
 
@@ -273,7 +272,7 @@ def flow_from_folder_kshot(path_to_folder,
     np.random.seed(1)
     np.random.shuffle(sub)
 
-    f = {'img': np.array(inputa_files), 'lab': np.array(labelas), 'sub': np.array(sub)}
+    f = {'img': np.array(inputa_files), 'lab': labelas, 'sub': np.array(sub)}
 
     nb_samples = meta_batch_size * update_batch_size * 2
     nb_batches = math.ceil(nb_samples / batch_size)
