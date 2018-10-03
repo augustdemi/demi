@@ -245,15 +245,20 @@ def flow_from_folder_kshot(path_to_folder,
         for i in range(half_on_img):
             inputa_files.append(on_imgs[2 * i])
             inputb_files.append(on_imgs[2 * i + 1])
-        label_for_this_subj = [0] * half_off_img
-        label_for_this_subj.extend([1] * half_on_img)
+        label_for_this_subj = [[1, 0]] * half_off_img
+        label_for_this_subj.extend([[0, 1]] * half_on_img)
         labelas.extend(label_for_this_subj)
         labelbs.extend(label_for_this_subj)
+        labelas = np.array(labelas)
+        labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
+        labelbs = np.array(labelbs)
+        labelbs = np.reshape(labelbs, (labelbs.shape[0], 1, labelbs.shape[1]))
 
     print(">>>> inputa_files: ", inputa_files)
     print("--------------------------------------------")
     print(">>>> inputb_files: ", inputb_files)
     print(">>> labelas: ", labelas)
+    print(">> labelbs shape:", labelbs)
     #################################################################################
 
     inputa_files.extend(inputb_files)
