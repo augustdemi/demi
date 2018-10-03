@@ -268,7 +268,7 @@ def flow_from_folder_kshot(path_to_folder,
     np.random.seed(1)
     np.random.shuffle(sub)
 
-    f = {'img': inputa_files, 'lab': labelas, 'sub': sub}
+    f = {'img': np.array(inputa_files), 'lab': np.array(labelas), 'sub': np.array(sub)}
 
     nb_samples = meta_batch_size * update_batch_size * 2
     nb_batches = math.ceil(nb_samples / batch_size)
