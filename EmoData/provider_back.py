@@ -263,7 +263,7 @@ def flow_from_folder_kshot(path_to_folder,
     labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
 
     sub = []
-    for i in range(len(subjects)): sub.extend([subjects[i]] * update_batch_size * 2)
+    for i in range(len(subjects)): sub.extend([subjects[i]] * update_batch_size * 4)
     print(sub)
     print(">>> img shape: ", np.array(inputa_files).shape)
     print(">>> label shape: ", labelas.shape)
@@ -301,6 +301,7 @@ def flow_from_folder_kshot(path_to_folder,
                     img = cv2.imread(file)
                     batch.append(img)
                 batch = np.array(batch)
+                print(batch.shape)
             else:
                 batch = data[t0:t1]
 
