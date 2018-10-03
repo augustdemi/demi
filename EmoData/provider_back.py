@@ -218,7 +218,9 @@ def flow_from_folder_kshot(path_to_folder,
                            meta_batch_size=13,
                            update_batch_size=30
                            ):
-    from ..utils import get_images
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    from utils import get_images
     import cv2
 
     subjects = os.listdir(path_to_folder)
