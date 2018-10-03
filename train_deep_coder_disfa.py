@@ -86,11 +86,11 @@ def generator(dat_dict, aug, mod=0, s=False):
                 preprocessing=True,
                 augmentation=aug)
         # lab = lab.argmax(2)
-        if au_index == 12:
-            lab = lab
-        else:
+        if lab.shape[1] == 12 and au_index < 12:
             lab = lab[:, au_index]
             lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
+        else:
+            lab = lab
         if mod==1:
             if(s): yield [img], [lab], [sub]
             else: yield [img], [lab]
