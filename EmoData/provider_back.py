@@ -261,11 +261,13 @@ def flow_from_folder_kshot(path_to_folder,
     labelas.extend(labelbs)
     labelas = np.array(labelas)
     labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
-    print(">>> label shape: ", labelas.shape)
-    sub = []
-    for i in range(len(subjects)): sub.extend(subjects[i] * update_batch_size * 2)
-    print(sub)
 
+    sub = []
+    for i in range(len(subjects)): sub.extend([subjects[i]] * update_batch_size * 2)
+    print(sub)
+    print(">>> img shape: ", np.array(inputa_files).shape)
+    print(">>> label shape: ", labelas.shape)
+    print(">>> sub shape: ", np.array(sub).shape)
     np.random.seed(1)
     np.random.shuffle(inputa_files)
     np.random.seed(1)
