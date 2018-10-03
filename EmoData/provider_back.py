@@ -256,19 +256,19 @@ def flow_from_folder_kshot(path_to_folder,
     print(">>> labelas: ", labelas)
     #################################################################################
 
-    img_files = inputa_files.extend(inputb_files)
-    lab = labelas.extend(labelbs)
+    inputa_files.extend(inputb_files)
+    labelas.extend(labelbs)
     sub = []
     for i in range(len(subjects)): sub.extend(subjects[i] * update_batch_size * 2)
 
     np.random.seed(1)
-    np.random.shuffle(img_files)
+    np.random.shuffle(inputa_files)
     np.random.seed(1)
-    np.random.shuffle(lab)
+    np.random.shuffle(labelas)
     np.random.seed(1)
     np.random.shuffle(sub)
 
-    f = {'img': img_files, 'lab': lab, 'sub': sub}
+    f = {'img': inputa_files, 'lab': labelas, 'sub': sub}
 
     nb_samples = meta_batch_size * update_batch_size * 2
     nb_batches = math.ceil(nb_samples / batch_size)
