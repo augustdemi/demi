@@ -277,7 +277,7 @@ def flow_from_folder_kshot(path_to_folder,
     print('nb_batches: ', nb_batches)
     print('-----------------------------------')
 
-    def _make_generator(data):
+    def _make_generator(data, key):
 
         t0, t1 = 0, batch_size
 
@@ -314,6 +314,6 @@ def flow_from_folder_kshot(path_to_folder,
     res_gen['nb_samples'] = nb_samples
     res_gen['nb_batches'] = nb_batches
     for key in f:
-        res_gen[key] = _make_generator(f[key])
+        res_gen[key] = _make_generator(f[key], key)
 
     return res_gen
