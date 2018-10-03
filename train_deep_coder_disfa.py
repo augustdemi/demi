@@ -47,8 +47,7 @@ if args.saving_model == '':
 else:
     model_name = './' + args.saving_model + '.h5'
 
-
-batch_size = 32  # dont change it!
+batch_size = 30  # dont change it!
 log_dir_model = './model'
 latent_dim = 2000
 w_1 = args.warming / 50
@@ -124,7 +123,7 @@ z_log_sigma = Dense(latent_dim)(emb) #
 
 def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
     z_mean, z_log_sigma = args
-    batch_size = 32
+    batch_size = 30
     epsilon = []
     for m, s in zip(np.zeros(2000), np.ones(2000)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
@@ -183,7 +182,6 @@ if source_data != 'init':
     from vae_model import VAE
 
     if args.num_au == 12 and au_index < 12:
-        batch_size = 32
         vae_model = VAE((160, 240, 1), batch_size, 12)
         vae_model.loadWeight(args.restored_model + '.h5', None, None)
         for i in range(len(model_train.layers) - 1):
