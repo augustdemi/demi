@@ -9,11 +9,11 @@ import numpy as np
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-# train_subjects = ['SN001', 'SN002', 'SN003', 'SN004', 'SN005', 'SN006', 'SN007', 'SN008', 'SN009', 'SN010', 'SN011',
-#                  'SN012', 'SN013', 'SN016']
+train_subjects = ['SN001', 'SN002', 'SN003', 'SN004', 'SN005', 'SN006', 'SN007', 'SN008', 'SN009', 'SN010', 'SN011',
+                  'SN012', 'SN013', 'SN016']
 
-train_subjects = ['SN002', 'SN003', 'SN004', 'SN007', 'SN008', 'SN011', 'SN018', 'SN021', 'SN023', 'SN024', 'SN026',
-                  'SN029', 'SN030', 'SN031']
+# train_subjects = ['SN002', 'SN003', 'SN004', 'SN007', 'SN008', 'SN011', 'SN018', 'SN021', 'SN023', 'SN024', 'SN026',
+#                   'SN029', 'SN030', 'SN031']
 for au in all_au:
     for subject in train_subjects:
         detected_img_files = os.listdir(original_frame_path + subject)
