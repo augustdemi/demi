@@ -5,7 +5,7 @@ lable_dir = '/home/ml1323/project/robert_data/DISFA/label/'
 subjects = os.listdir(lable_dir)
 
 num_pos_all = {}
-f_num_pos_all = open('/home/ml1323/project/robert_data/FERA/fera_label_summary.csv', "w")
+f_num_pos_all = open('/home/ml1323/project/robert_data/DISFA/disfa_label_summary.csv', "w")
 
 for subject in subjects:
     files = []
