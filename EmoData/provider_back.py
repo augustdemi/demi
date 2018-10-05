@@ -295,9 +295,8 @@ def flow_from_folder_kshot(path_to_folder,
                 t0, t1 = 0, batch_size
 
             if (key == 'img'):
-                files = data[t0:t1]
                 batch = []
-                for file in files:
+                for file in data[t0:t1]:
                     img = cv2.imread(file)
                     batch.append(img)
                 batch = np.array(batch)
@@ -307,7 +306,15 @@ def flow_from_folder_kshot(path_to_folder,
 
             if padding != None and batch.shape[0] < batch_size:  # 패딩 설정
                 if padding == 'same':
-                    batch = data[-batch_size:]
+                    if (key == 'img'):
+                        batch = []
+                        for file in data[-batch_size:]:
+                            img = cv2.imread(file)
+                            batch.append(img)
+                        batch = np.array(batch)
+                        print('padding applied: ', batch.shape)
+                    else:
+                        batch = data[-batch_size:]
                 else:
                     tmp = padding * np.ones([batch_size, *batch.shape[1:]])
                     tmp[:batch.shape[0]] = batch
