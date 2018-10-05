@@ -54,7 +54,7 @@ w_1 = args.warming / 50
 
 if args.kshot > 0:
     TR = ED.provider_back.flow_from_folder_kshot(args.training_data, batch_size, padding='same',
-                                                 update_batch_size=kshot)
+                                                 update_batch_size=args.kshot)
 elif args.balance and au_index < 12:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
