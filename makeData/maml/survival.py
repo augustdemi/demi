@@ -2,6 +2,7 @@ import os
 import pickle
 from shutil import copyfile
 
+save_path = "/home/ml1323/project/robert_data/DISFA/neww_dataset/"
 lable_dir = '/home/ml1323/project/robert_data/DISFA/label/'
 subjects = os.listdir(lable_dir)
 
@@ -13,7 +14,7 @@ test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 
 for subject in test_subjects:
     data = pickle.load(open('/home/ml1323/project/robert_data/DISFA/new_dataset/testset/' + subject + '.pkl', "rb"),
                        encoding='latin1')
-    test_a_idx = [x.split('/')[9].split('.')[0] for x in data['test_file_names']]
+    test_a_idx = [x.split('/')[9].split('.')[0].split('frame')[1] for x in data['test_file_names']]
     print(subject)
     print(test_a_idx)
 
@@ -39,7 +40,6 @@ for subject in test_subjects:
         print('test_a_on_idx len: ', len(test_a_on_idx))
         print('test_a_off_idx len: ', len(test_a_off_idx))
 
-        save_path = "/home/ml1323/project/robert_data/DISFA/nonzero_au/"
         if not os.path.exists(save_path + "/test_a/" + au + "/" + subject + "/on"): os.makedirs(
             save_path + "/test_a/" + au + "/" + subject + "/on")
         if not os.path.exists(save_path + "/test_a/" + au + "/" + subject + "/off"): os.makedirs(
