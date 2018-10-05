@@ -300,7 +300,7 @@ def flow_from_folder_kshot(path_to_folder,
                     img = cv2.imread(file)
                     batch.append(img)
                 batch = np.array(batch)
-                print(batch.shape)
+                # print(batch.shape)
             else:
                 batch = data[t0:t1]
 
@@ -312,7 +312,7 @@ def flow_from_folder_kshot(path_to_folder,
                             img = cv2.imread(file)
                             batch.append(img)
                         batch = np.array(batch)
-                        print('padding applied: ', batch.shape)
+                        # print('padding applied: ', batch.shape)
                     else:
                         batch = data[-batch_size:]
                 else:
