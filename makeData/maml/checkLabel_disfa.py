@@ -15,14 +15,16 @@ for subject in subjects:
     files.sort(key=lambda f: f[0])
     print(files)
     num_pos = [0] * 12
+    cnt = [0] * 12
     for i in range(len(files)):  # for each au
         f = open(lable_dir + subject + '/' + files[i][1])  # 각 subject별 한 au 파일
         while True:
             line = f.readline().split(',')
             if len(line) == 1: break
+            cnt[i] += 1
             intensity = int(line[1])
             if intensity > 0: num_pos[i] += 1
     num_pos_all.update({subject: num_pos})
-    f_num_pos_all.write(subject + ',' + ','.join(str(x) for x in num_pos) + '\n')
+    f_num_pos_all.write(subject + ',' + ','.join(str(x) for x in num_pos) + ',' + ','.join(str(x) for x in cnt) + '\n')
 
 print(num_pos_all)
