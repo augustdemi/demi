@@ -209,8 +209,9 @@ if source_data != 'init':
                 sum_vac_disfa_dir += '/fine_tune'
 
     print(">>>>>>>>> model loaded from ", args.restored_model)
+    print(model_train.layers[len(model_train.layers) - 1], model_train.layers[len(model_train.layers) - 1].trainable)
 
-if not args.decoder:
+if args.decoder is False:
     for layer in model_train.layers[20:35]:
         layer.trainable = False
     for layer in model_train.layers:
