@@ -5,6 +5,7 @@ lable_dir = '/home/ml1323/project/robert_data/DISFA/label/'
 subjects = os.listdir(lable_dir)
 
 num_pos_all = {}
+f_num_pos_all = open('/home/ml1323/project/robert_data/FERA/fera_label_summary.csv', "w")
 
 for subject in subjects:
     files = []
@@ -22,5 +23,6 @@ for subject in subjects:
             intensity = int(line[1])
             if intensity > 0: num_pos[i] += 1
     num_pos_all.update({subject: num_pos})
+    f_num_pos_all.write(subject + ',' + ','.join(str(x) for x in num_pos) + '\n')
 
 print(num_pos_all)
