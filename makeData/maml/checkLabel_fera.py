@@ -1,9 +1,7 @@
 import os
 import numpy as np
 
-lable_dir = '/home/ml1323/project/robert_data/FERA/BP4D-AUCoding/AUCoding'
-# save_path = 'D:/Download/label/'
-
+lable_dir = '/home/ml1323/project/robert_data/FERA/BP4D-AUCoding/AUCoding/'
 au_idx = [1, 2, 4, 6, 7, 10, 12, 14, 15, 17, 23]
 
 label_file_list = os.listdir(lable_dir)
@@ -22,8 +20,7 @@ for subject in subjects:
         f.readline()
         while True:
             line = f.readline().split(',')
-            if len(line) == 1:
-                break
+            if len(line) == 1: break
             frame = line[0]
             codes = np.array(line)[au_idx]
             codes = [int(code) for code in codes]
