@@ -32,7 +32,7 @@ for subject in subjects:
                     if codes[i] > 0: num_pos[i] += 1
     missing_data_all.update({subject: missing_data})
     num_pos_all.update({subject: num_pos})
-    f_num_pos_all.write(subject + ',' + ','.join(str(x) for x in num_pos))
+    f_num_pos_all.write(subject + ',' + ','.join(str(x) for x in num_pos) + '\n')
 
 f_num_pos_all.close()
 print(missing_data_all)
