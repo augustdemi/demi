@@ -9,6 +9,7 @@ subjects = set([file_name.split('_')[0] for file_name in label_file_list])  # di
 
 missing_data_all = {}
 num_pos_all = {}
+f_num_pos_all = open('/home/ml1323/project/robert_data/FERA/fera_label_summary.csv', "w")
 
 for subject in subjects:
     label_files = [file_name for file_name in label_file_list if
@@ -31,6 +32,8 @@ for subject in subjects:
                     if codes[i] > 0: num_pos[i] += 1
     missing_data_all.update({subject: missing_data})
     num_pos_all.update({subject: num_pos})
+    f_num_pos_all.write(subject + ',' + num_pos)
 
+f_num_pos_all.close()
 print(missing_data_all)
 print(num_pos_all)
