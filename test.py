@@ -367,7 +367,7 @@ def main():
     ################## Test ##################
     def _load_weight(trained_model_dir):
         all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-        if FLAGS.au_idx < 12: all_au = all_au[FLAGS.au_idx]
+        if FLAGS.au_idx < 12: all_au = [all_au[FLAGS.au_idx]]
         w_arr = None
         b_arr = None
         for au in all_au:
