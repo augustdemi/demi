@@ -197,7 +197,7 @@ def test_vae_each_subject(sbjt_start_idx=-1):  # In case when test the model wit
     if FLAGS.global_model:
         vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
     else:
-        vae_model.loadWeight(FLAGS.vae_model + '/sub' + sbjt_start_idx + '.h5', None, None, FLAGS.iterative_au)
+        vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_start_idx) + '.h5', None, None, FLAGS.iterative_au)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
