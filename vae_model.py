@@ -58,6 +58,7 @@ class VAE:
         if vae_model.endswith('h5'):
             self.model_train.load_weights(vae_model)
         else:
+            print('base vae in interative case: ', vae_model + '/' + os.listdir(vae_model)[0])
             self.model_train.load_weights(vae_model + '/' + os.listdir(vae_model)[0])
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         loaded_weight = self.model_train.get_weights()[-2:]
