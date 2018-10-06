@@ -105,11 +105,10 @@ class VAE:
                   self.model_train.get_weights()[59])
             print("And shape of w: ", self.model_train.get_weights()[58].shape)
             if w is not None and b is not None:
-                if w.shape[1] == b.shape[0] == 12:
-                    self.model_train.layers[-1].weights[0].load(w)
-                    self.model_train.layers[-1].weights[1].load(b)
-                    print("loaded weight from maml : ", self.model_train.get_weights()[58],
-                          self.model_train.get_weights()[59])
+                self.model_train.layers[-1].weights[0].load(w)
+                self.model_train.layers[-1].weights[1].load(b)
+                print("loaded weight from maml : ", self.model_train.get_weights()[58],
+                      self.model_train.get_weights()[59])
 
     # only for test_test. 로드한 weight으로 pred값 도출. 배치로 한방에 predict하기 위해 로버트 모델을 쓴것.
     def testWithSavedModel(self, x):
