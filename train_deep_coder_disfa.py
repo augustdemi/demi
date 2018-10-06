@@ -33,6 +33,8 @@ parser.add_argument("-f", "--fine_tune", type=bool, default=False, help="if want
 parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate")
 parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make the dataset balanced or not")
 parser.add_argument("-kshot", "--kshot", type=int, default=0, help="test kshot learning")
+parser.add_argument("-mbs", "--meta_batch_size", type=int, default=13, help="num of task to use for kshot learning")
+parser.add_argument("-sidx", "--start_idx", type=int, default=0, help="start idx of task to use for kshot learning")
 
 args = parser.parse_args()
 
@@ -54,7 +56,8 @@ w_1 = args.warming / 50
 
 if args.kshot > 0:
     TR = ED.provider_back.flow_from_folder_kshot(args.training_data, batch_size, padding='same',
-                                                 update_batch_size=args.kshot)
+                                                 start_idx=args.start_idx,
+                                                 meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
 elif args.balance and au_index < 12:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
