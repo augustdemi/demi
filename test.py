@@ -186,7 +186,7 @@ def test_all(w, b, trained_model_dir):  # In case when test the model with the w
                       log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
 
 
-def test_vae_each_subject(sbjt_start_idx=-1):  # In case when test the model with the whole rest frames
+def test_vae_each_subject(sbjt_idx):  # In case when test the model with the whole rest frames
     from vae_model import VAE
     import EmoData as ED
     import cv2
@@ -197,7 +197,7 @@ def test_vae_each_subject(sbjt_start_idx=-1):  # In case when test the model wit
     if FLAGS.global_model:
         vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
     else:
-        vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_start_idx) + '.h5', None, None, FLAGS.iterative_au)
+        vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_idx) + '.h5', None, None, FLAGS.iterative_au)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
@@ -228,14 +228,12 @@ def test_vae_each_subject(sbjt_start_idx=-1):  # In case when test the model wit
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
-    test_subjects = test_subjects[sbjt_start_idx:sbjt_start_idx + 1]
+    test_subject = test_subjects[sbjt_idx]
 
-    print("test_subjects: ", test_subjects)
-    for test_subject in test_subjects:
-        print("============> subject: ", test_subject)
-        data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-        test_file_names = data['test_file_names']
-        y_hat = get_y_hat(test_file_names)
+    print("============> subject: ", test_subject)
+    data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
+    test_file_names = data['test_file_names']
+    y_hat = get_y_hat(test_file_names)
     lab = data['lab'][:, FLAGS.au_idx]
     y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
     return y_hat, y_lab
@@ -445,7 +443,7 @@ def main():
 
             for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
                 if FLAGS.robert:
-                    result = test_vae_each_subject()
+                    result = test_vae_each_subject(i)
                 else:
                     result = test_each_subject(w_arr, b_arr, i)
                 y_hat.append(result[0])
