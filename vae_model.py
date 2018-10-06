@@ -3,7 +3,7 @@ import keras.backend as KB
 from keras.layers import Dense, Lambda, Input, Reshape
 import keras as K
 import numpy as np
-
+import os
 
 class VAE:
     def __init__(self, img_shape, batch_size, num_au):
@@ -58,7 +58,7 @@ class VAE:
         if vae_model.endswith('h5'):
             self.model_train.load_weights(vae_model)
         else:
-            self.model_train.load_weights(vae_model + '/au0.h5')
+            self.model_train.load_weights(vae_model + '/' + os.listdir(vae_model)[0])
         z, _ = self.model_z_int.predict(x, batch_size=len(x))
         loaded_weight = self.model_train.get_weights()[-2:]
         print('shape of loaded_weight in computeLatentVal(): ', loaded_weight[0].shape, loaded_weight[1].shape)
