@@ -228,8 +228,7 @@ def test_vae_each_subject(sbjt_start_idx=-1):  # In case when test the model wit
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
-
-    test_subjects = test_subjects[0:FLAGS.num_test_tasks]
+    test_subjects = test_subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.num_test_tasks]
 
     print("test_subjects: ", test_subjects)
     for test_subject in test_subjects:
