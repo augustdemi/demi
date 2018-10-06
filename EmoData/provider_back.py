@@ -263,6 +263,7 @@ def flow_from_folder_kshot(path_to_folder,
     labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
 
     sub = []
+    subjects = subjects[sbjt_start_idx:sbjt_start_idx + meta_batch_size]
     for i in range(len(subjects)): sub.extend([subjects[i]] * update_batch_size * 4)
     print(sub)
     print(">>> img shape: ", np.array(inputa_files).shape)
