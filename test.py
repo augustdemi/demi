@@ -67,7 +67,6 @@ flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 12, 'number of AUs used to make AE')
 flags.DEFINE_integer('au_idx', 12, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
-flags.DEFINE_string('vae_model_for_test', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
 flags.DEFINE_bool('global_model', True, 'model is trained with all train/test tasks')
@@ -83,7 +82,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     import pickle
     batch_size = 10
     vae_model = VAE((160, 240, 1), batch_size, 1)
-    vae_model.loadWeight(FLAGS.vae_model_for_test, w, b)
+    vae_model.loadWeight(FLAGS.vae_model, w, b)
 
     pp = ED.image_pipeline.FACE_pipeline(
         histogram_normalization=True,
