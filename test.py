@@ -115,17 +115,12 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
 
-    test_subjects = test_subjects[sbjt_start_idx:sbjt_start_idx + 1]
+    test_subject = test_subjects[sbjt_start_idx]
 
-    print("test_subjects: ", test_subjects)
-
-    y_hat_all = []
-    y_lab_all = []
-    for test_subject in test_subjects:
-        print("============> subject: ", test_subject)
-        data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-        test_file_names = data['test_file_names']
-        y_hat = get_y_hat(test_file_names)
+    print("============> subject: ", test_subject)
+    data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
+    test_file_names = data['test_file_names']
+    y_hat = get_y_hat(test_file_names)
     lab = data['lab'][:, FLAGS.au_idx]
     y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
     return y_hat, y_lab
@@ -411,8 +406,7 @@ def main():
         if FLAGS.robert:
             return test_vae_each_subject(sbjt_start_idx)
         else:
-            trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':' + str(
-                FLAGS.meta_batch_size) + '.ubs_' + str(
+            trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':1' + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
             w_arr, b_arr = _load_weight(trained_model_dir)
