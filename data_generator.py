@@ -35,10 +35,11 @@ class DataGenerator(object):
         if FLAGS.meta_batch_size < 0:
             self.metatrain_character_folders = subject_folders[
                                                FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + 1]
-
-            temp_train_subjects = os.listdir("/home/ml1323/project/robert_data/DISFA/new_dataset/train/au12/")
+            train_data_folder = "/home/ml1323/project/robert_data/DISFA/new_dataset/train/au12/"
+            temp_train_subjects = os.listdir(train_data_folder)
             temp_train_subjects.sort()
-            temp_train_subject_folders = [os.path.join(data_folder, subject) for subject in subjects][:12]
+            temp_train_subject_folders = [os.path.join(train_data_folder, subject) for subject in temp_train_subjects][
+                                         :12]
             self.metatrain_character_folders.extend(temp_train_subject_folders)
             print("********* self.metatrain_character_folders: ", self.metatrain_character_folders)
 
