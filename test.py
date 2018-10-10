@@ -73,6 +73,8 @@ flags.DEFINE_bool('global_model', True, 'model is trained with all train/test ta
 flags.DEFINE_bool('robert', False, 'model is trained with all train/test tasks')
 flags.DEFINE_bool('iterative_au', False,
                   'if vae_model is needed to be iteratively load per each au. In this case, vae_model should be dir, not file')
+flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
+
 
 
 def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
