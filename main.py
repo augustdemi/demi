@@ -79,6 +79,7 @@ flags.DEFINE_bool('train_test', False, 're-train model with the test set')
 flags.DEFINE_bool('train_test_inc', False, 're-train model increasingly')
 flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
 flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
+
 # for train, train_test
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 
@@ -92,6 +93,7 @@ flags.DEFINE_integer('num_au', 12, 'number of AUs used to make AE')
 flags.DEFINE_integer('au_idx', 12, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
+flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
