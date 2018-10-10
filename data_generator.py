@@ -32,7 +32,7 @@ class DataGenerator(object):
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
         ##############################
-        if FLAGS.meta_batch_size < 0:
+        if FLAGS.temp_train:
             self.metatrain_character_folders = subject_folders[
                                                FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + 1]
             train_data_folder = "/home/ml1323/project/robert_data/DISFA/new_dataset/train/au12/"
