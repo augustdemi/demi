@@ -31,14 +31,20 @@ class DataGenerator(object):
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
-        self.metatrain_character_folders = subject_folders[
-                                           FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         ##############################
-        temp_train_subjects = os.listdir("/home/ml1323/project/robert_data/DISFA/new_dataset/train/au12/")
-        temp_train_subjects.sort()
-        temp_train_subject_folders = [os.path.join(data_folder, subject) for subject in subjects][:12]
-        self.metatrain_character_folders.extend()
-        ##############################
+        if FLAGS.meta_batch_size < 0:
+            self.metatrain_character_folders = subject_folders[
+                                               FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + 1]
+
+            temp_train_subjects = os.listdir("/home/ml1323/project/robert_data/DISFA/new_dataset/train/au12/")
+            temp_train_subjects.sort()
+            temp_train_subject_folders = [os.path.join(data_folder, subject) for subject in subjects][:12]
+            self.metatrain_character_folders.extend(temp_train_subject_folders)
+            print("********* self.metatrain_character_folders: ", self.metatrain_character_folders)
+
+        else:  ##############################
+            self.metatrain_character_folders = subject_folders[
+                                               FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         if FLAGS.test_set:  # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
