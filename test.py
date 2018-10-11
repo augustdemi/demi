@@ -404,6 +404,40 @@ def main():
                 print('----------------------------------------------------------')
         return w_arr, b_arr
 
+    def _load_weight_local(trained_model_dir, sbjt_idx):
+        all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
+        if FLAGS.au_idx < 12: all_au = [all_au[FLAGS.au_idx]]
+        w_arr = None
+        b_arr = None
+        for au in all_au:
+            model_file = None
+            print('--------- model file dir: ', FLAGS.logdir + '/' + au + '/' + trained_model_dir)
+            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
+            print(">>>> model_file from ", au, ": ", model_file)
+
+            model_file = model_file[:model_file.index('subject')] + 'subject' + str(sbjt_idx)
+            print(">>>> model_file2: ", model_file)
+            print("Restoring model weights from " + model_file)
+            print('---------------------------------------------')
+            print(sess.run('model/w1:0'))
+            print(sess.run('model/b1:0'))
+            print(sess.run('model/w1:0').shape)
+            print(sess.run('model/b1:0').shape)
+            print('---------------------------------------------')
+
+            saver.restore(sess, model_file)
+            w = sess.run('model/w1:0')
+            b = sess.run('model/b1:0')
+            if w_arr is None:
+                w_arr = w
+                b_arr = b
+            else:
+                w_arr = np.hstack((w_arr, w))
+                b_arr = np.vstack((b_arr, b))
+            print("updated weights from ckpt: ", w, b)
+            print('----------------------------------------------------------')
+        return w_arr, b_arr
+
     def _per_subject_model(sbjt_start_idx):
         if FLAGS.robert:
             return test_vae_each_subject(sbjt_start_idx)
@@ -418,7 +452,7 @@ def main():
         trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':13' + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '/local/subject' + str(sbjt_start_idx)
-        w_arr, b_arr = _load_weight(trained_model_dir)
+        w_arr, b_arr = _load_weight_local(trained_model_dir)
         return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
     if FLAGS.global_test:  # subject별로 테스트 값을 concatenate 하여 테스트: 모델이 각 subject별로 생성되었을때만 오게됨
