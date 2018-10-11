@@ -452,7 +452,7 @@ def main():
         trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':13' + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '/local/'
-        w_arr, b_arr = _load_weight_local(trained_model_dir)
+        w_arr, b_arr = _load_weight_local(trained_model_dir, sbjt_start_idx)
         return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
     if FLAGS.global_test:  # subject별로 테스트 값을 concatenate 하여 테스트: 모델이 각 subject별로 생성되었을때만 오게됨
