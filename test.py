@@ -417,7 +417,7 @@ def main():
     def _per_subject_model_from_global(sbjt_start_idx):
         trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':13' + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '/local/subject' + sbjt_start_idx
+            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '/local/subject' + str(sbjt_start_idx)
         w_arr, b_arr = _load_weight(trained_model_dir)
         return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
