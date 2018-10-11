@@ -61,7 +61,7 @@ flags.DEFINE_string('test_result_dir', 'robert', 'directory for test result log'
 # for train_test, test_test
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
-flags.DEFINE_integer('local_subj', 0, 'local weight subject')
+
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 12, 'number of AUs used to make AE')
@@ -74,6 +74,7 @@ flags.DEFINE_bool('robert', False, 'model is trained with all train/test tasks')
 flags.DEFINE_bool('iterative_au', False,
                   'if vae_model is needed to be iteratively load per each au. In this case, vae_model should be dir, not file')
 flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
+flags.DEFINE_bool('local', False, 'save path from local weight')
 
 
 
@@ -413,6 +414,13 @@ def main():
             w_arr, b_arr = _load_weight(trained_model_dir)
             return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
+    def _per_subject_model_from_global(sbjt_start_idx):
+        trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':13' + '.ubs_' + str(
+            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '/local/subject' + sbjt_start_idx
+        w_arr, b_arr = _load_weight(trained_model_dir)
+        return test_each_subject(w_arr, b_arr, sbjt_start_idx)
+
     if FLAGS.global_test:  # subject별로 테스트 값을 concatenate 하여 테스트: 모델이 각 subject별로 생성되었을때만 오게됨
         print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
         save_path = "./logs/result/test_test/" + trained_model_dir
@@ -448,9 +456,12 @@ def main():
                 print(">> y_hat_all shape:", np.vstack(y_hat).shape)
                 print(">> y_lab_all shape:", np.vstack(y_lab).shape)
             print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
-        else:  # 모델이 각 subject 별로 train된 경우: vae와 MAML의 train_test두 경우에만 존재 가능
+        else:  # 모델이 각 subject 별로 train된 경우: vae와 MAML의 train_test두 경우에만 존재 가능 + local weight test의 경우
             for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-                result = _per_subject_model(i)  # weight load를 subject별로 다르게 주게 됨
+                if FLAGS.local:
+                    result = _per_subject_model_from_global(i)
+                else:
+                    result = _per_subject_model(i)  # weight load를 subject별로 다르게 주게 됨
                 y_hat.append(result[0])
                 y_lab.append(result[1])
                 print("y_hat shape:", result[0].shape)
