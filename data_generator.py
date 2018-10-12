@@ -81,16 +81,30 @@ class DataGenerator(object):
             # Split data into a/b
             half_off_img = int(len(off_imgs) / 2)
             half_on_img = int(len(on_imgs) / 2)
+            inputa_this_subj = []
+            inputb_this_subj = []
             for i in range(half_off_img):
-                inputa_files.append(off_imgs[2 * i])
-                inputb_files.append(off_imgs[2 * i + 1])
+                inputa_this_subj.append(off_imgs[2 * i])
+                inputb_this_subj.append(off_imgs[2 * i + 1])
             for i in range(half_on_img):
-                inputa_files.append(on_imgs[2 * i])
-                inputb_files.append(on_imgs[2 * i + 1])
-            label_for_this_subj = [0] * half_off_img
-            label_for_this_subj.extend([1] * half_on_img)
-            labelas.extend(label_for_this_subj)
-            labelbs.extend(label_for_this_subj)
+                inputa_this_subj.append(on_imgs[2 * i])
+                inputb_this_subj.append(on_imgs[2 * i + 1])
+            labela_this_subj = [0] * half_off_img
+            labela_this_subj.extend([1] * half_on_img)
+            labelb_this_subj = [0] * half_off_img
+            labelb_this_subj.extend([1] * half_on_img)
+            np.random.seed(1)
+            np.random.shuffle(inputa_this_subj)
+            np.random.seed(1)
+            np.random.shuffle(labela_this_subj)
+            np.random.seed(2)
+            np.random.shuffle(inputb_this_subj)
+            np.random.seed(2)
+            np.random.shuffle(labelb_this_subj)
+            inputa_files.extend(inputa_this_subj)
+            inputb_files.extend(inputb_this_subj)
+            labelas.extend(labela_this_subj)
+            labelbs.extend(labelb_this_subj)
 
 
         print(">>>> inputa_files: ", inputa_files)
