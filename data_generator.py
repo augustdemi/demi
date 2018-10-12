@@ -93,14 +93,17 @@ class DataGenerator(object):
             labela_this_subj.extend([1] * half_on_img)
             labelb_this_subj = [0] * half_off_img
             labelb_this_subj.extend([1] * half_on_img)
+
             np.random.seed(1)
             np.random.shuffle(inputa_this_subj)
             np.random.seed(1)
             np.random.shuffle(labela_this_subj)
+
             np.random.seed(2)
             np.random.shuffle(inputb_this_subj)
             np.random.seed(2)
             np.random.shuffle(labelb_this_subj)
+
             inputa_files.extend(inputa_this_subj)
             inputb_files.extend(inputb_this_subj)
             labelas.extend(labela_this_subj)
