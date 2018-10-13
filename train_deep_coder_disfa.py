@@ -51,8 +51,7 @@ else:
 
 batch_size = 32  # dont change it!
 log_dir_model = './model'
-latent_dim1 = 500
-latent_dim2 = 300
+latent_dim = 500
 w_1 = args.warming / 50
 
 if args.kshot > 0:
@@ -123,26 +122,25 @@ print("shape after flatten: ", emb.get_shape())
 n_feat = prod(shape)
 
 emb = Dropout(0.5)(emb)
-z_mean = Dense(latent_dim1)(
-    emb)  # latent_dim는 output space의 dim이 될것. activation함수는 none임 out_1(라벨값 y)을 위한 layer쌓는중  classifier?????????????
-z_log_sigma = Dense(latent_dim2)(emb)  #
+z_mean = Dense(latent_dim)(emb)  # latent_dim는 output space의 dim이 될것.
+z_log_sigma = Dense(latent_dim)(emb)  #
 
 def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
     z_mean, z_log_sigma = args
-    batch_size = 32
+    # batch_size = 32
     epsilon = []
-    for m, s in zip(np.zeros(latent_dim2), np.ones(latent_dim2)):
+    for m, s in zip(np.zeros(latent_dim), np.ones(latent_dim)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
     epsilon = KB.concatenate(epsilon, 1)
     return z_mean + KB.exp(z_log_sigma) * epsilon
 
 
-z = Lambda(sampling, output_shape=(latent_dim2,))([z_mean, z_log_sigma])  # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
+z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma])  # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
 out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(
-    Reshape((latent_dim2, 1))(z_mean))  # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
+    Reshape((latent_dim, 1))(z_mean))  # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
-D1 = Dense(latent_dim1, activation='relu')
+D1 = Dense(latent_dim, activation='relu')
 D2 = Dense(n_feat, activation='relu')  # n_feat  = conv 결과 shape들의 곱이 ouputspace의 dim
 h_decoded = D1(z) # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
 print(h_decoded)
