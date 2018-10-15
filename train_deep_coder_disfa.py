@@ -188,10 +188,6 @@ model_rec_z = K.models.Model([inp_0], [out_0, z_mean])
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
 
-inp_1 = Input(shape=[latent_dim])  # latent dim 사이즈의 input 텐서
-h1 = D1(inp_1)
-x1 = D2(h1) # reconstructed x1. feature space에서 샘플링한 z가 아니라 임의의 inp_1으로 생성
-out_11  = EE.networks.decoder(x1, shape, norm=1) # out_1: 위에서 쌓은 레이어로 디코더 실행, 결과는 reconstructed img ????? out_1 변수가 받는 값이 두가지?
 
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
@@ -213,7 +209,7 @@ if source_data != 'init':
                 sum_vac_disfa_dir += '/fine_tune'
         w = vae_model.model_train.get_weights()[58][:, au_index]
         b = vae_model.model_train.get_weights()[59][au_index]
-        w = w.reshape(latent_dim, 1, 2)
+        w = w.reshape(latent_dim3, 1, 2)
         b = b.reshape(1, 2)
         model_train.layers[-1].set_weights([w, b])
         print("after: ", model_train.layers[-1].get_weights())
