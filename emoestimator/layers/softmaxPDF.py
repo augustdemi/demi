@@ -44,7 +44,7 @@ class softmaxPDF(Layer):
 
         # score = tf.clip_by_value(score, -20, 20)
 
-        return tf.nn.softmax(z)
+        return tf.nn.softmax(z, name='softmax')
 
     def compute_output_shape(self, input_shape):
         return (input_shape[0], self.nb_outputs, self.nb_classes)
