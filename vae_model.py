@@ -79,9 +79,11 @@ class VAE:
         self.model_train.load_weights(vae_model)
         # get weight
         layer_dict_whole_vae = dict([(layer.name, layer) for layer in self.model_train.layers])
+        list(layer_dict_whole_vae.keys())
         w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
         w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
-        w_softmaxpdf_1 = layer_dict_whole_vae['softmaxpdf_1'].get_weights()
+        print('check the last layer of model_train: ', self.model_train.layers[-1].name)
+        w_softmaxpdf_1 = self.model_train.layers[-1].get_weights()
         print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1)
 
         # whene w and b is not None = w and b is from MAML
@@ -93,7 +95,8 @@ class VAE:
         layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_z_intensity.layers])
         layer_dict_3layers['intermediate'].set_weights(w_intermediate)
         layer_dict_3layers['z_mean'].set_weights(w_z_mean)
-        layer_dict_3layers['softmaxpdf_1'].set_weights(w_softmaxpdf_1)
+        print('check the last layer of model_z_intensity: ', self.model_z_intensity.layers[-1].name)
+        self.model_z_intensity.layers[-1].set_weights(w_softmaxpdf_1)
 
 
 
@@ -106,11 +109,12 @@ class VAE:
         else:
             print('base vae in interative case: ', vae_model + '/' + os.listdir(vae_model)[0])
             self.model_train.load_weights(vae_model + '/' + os.listdir(vae_model)[0])
+        ##############################
         z, _ = self.model_z_intensity.predict(x, batch_size=len(x))
         print(">>>>>>>>> z shape:", z.shape)
         layer_dict_whole_vae = dict([(layer.name, layer) for layer in self.model_train.layers])
         loaded_weight = layer_dict_whole_vae['softmaxpdf_1'].get_weights()
-
+        ##############################
         print('[vae_model]shape of loaded_weight in computeLatentVal(): ', loaded_weight[0].shape,
               loaded_weight[1].shape)
         if (loaded_weight[1].shape[0] > 1) and (au_idx < 12):
