@@ -34,7 +34,7 @@ parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make th
 parser.add_argument("-kshot", "--kshot", type=int, default=0, help="test kshot learning")
 parser.add_argument("-mbs", "--meta_batch_size", type=int, default=13, help="num of task to use for kshot learning")
 parser.add_argument("-sidx", "--start_idx", type=int, default=0, help="start idx of task to use for kshot learning")
-parser.add_argument("-deep", "--deep_feature", type=bool, default=False, help="extract deep feature")
+parser.add_argument("-deep", "--deep_feature", type=str, default='', help="dir to save the extracted deep feature")
 
 args = parser.parse_args()
 
@@ -281,24 +281,38 @@ model_train.fit_generator(
         )
 
 if nb_iter > 0: model_train.save_weights(model_name)
+import cv2
 
-if args.deep_feature:
+if args.deep_feature is not '':
     vae_model = VAE((160, 240, 1), batch_size, args.num_au)
     vae_model.loadWeight(args.restored_model + '.h5')
-    GEN_TR = generator(TR, False)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
-    GEN_TE = generator(TE, False)
 
-    all_deep_feat = []
+    path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
+    all_subjects = os.listdir(path)
 
-    print('>>>>> whole data len:', len(all_deep_feat))
+    for subject in all_subjects:
+        per_sub_path = path + subject
+        files = os.listdir(per_sub_path)
+        detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in files]
+        detected_frame_idx = list(set(detected_frame_idx))
 
-    with open('/home/ml1323/project/robert_code/reduced_features_with_ids.csv', 'a') as f:
-        while True:
-            img, _ = next(GEN_TR)
-            model_deep_feature = vae_model.model_deep_feature.predict(img)
-            print(model_deep_feature.shape)
+        imgs = [cv2.imread(per_sub_path + "/frame" + str(i) + "_0.jpg") for i in detected_frame_idx]
+        pre_processed_img_arr = []
+        for img in imgs:
+            img2, _, _ = pp.transform(img, preprocessing=True, augmentation=False)
+            pre_processed_img_arr.append(img2)
+        model_deep_feature = vae_model.model_deep_feature.predict(pre_processed_img_arr)
+        print('len deep feat:', len(model_deep_feature))
+        print('len files:', len(detected_frame_idx))
+        if not os.path.exists(args.deep_feature):
+            os.makedirs(args.deep_feature)
+        save_path = args.deep_feature + '/' + subject + '.csv'
+        with open(save_path, 'a') as f:
             for i in range(len(model_deep_feature)):
-                f.write(','.join([str(x) for x in model_deep_feature[i]]) + '\n')
+                out_csv = np.hstack((subject, "frame" + detected_frame_idx[i], [str(x) for x in model_deep_feature[i]]))
+                f.write(','.join(out_csv) + '\n')
+        print(">>>>>>>>done: ", subject, len(model_deep_feature))
+
 
 end_time = datetime.now()
 elapse = end_time - start_time
