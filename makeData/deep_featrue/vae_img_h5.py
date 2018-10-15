@@ -44,7 +44,7 @@ for subject in os.listdir(path):
         print('done;', file)
 
     print('img_arr: ', len(img_arr))
-    print('>>>before:', label_for_all_au.shape)
+    print('>>>before:', np.array(label_for_all_au).shape)
     final_label = np.array(label_for_all_au).transpose(1, 0, 2)
     print('>>>after:', final_label.shape)
 
