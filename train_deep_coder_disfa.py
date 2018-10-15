@@ -22,8 +22,8 @@ parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/pro
                     help="path to test data set")
 parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
 parser.add_argument("-dec", "--decoder", type=bool, default=True, help="train decoder layer or not")
-parser.add_argument("-au", "--au_index", type=int, default=12, help="au index")
-parser.add_argument("-num_au", "--num_au", type=int, default=12, help="number of au to make the model previously.")
+parser.add_argument("-au", "--au_index", type=int, default=8, help="au index")
+parser.add_argument("-num_au", "--num_au", type=int, default=8, help="number of au to make the model previously.")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
 parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
@@ -40,6 +40,8 @@ args = parser.parse_args()
 
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 # lins input
+
+TOTAL_AU = 8
 source_data = args.input
 nb_iter = args.nb_iter
 au_index = args.au_index
@@ -60,7 +62,7 @@ if args.kshot > 0:
     TR = ED.provider_back.flow_from_folder_kshot(args.training_data, batch_size, padding='same',
                                                  sbjt_start_idx=args.start_idx,
                                                  meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
-elif args.balance and au_index < 12:
+elif args.balance and au_index < TOTAL_AU:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
@@ -91,7 +93,7 @@ def generator(dat_dict, aug, mod=0, s=False):
                 preprocessing=True,
                 augmentation=aug)
         # lab = lab.argmax(2)
-        if lab.shape[1] == 12 and au_index < 12:
+        if lab.shape[1] == TOTAL_AU and au_index < TOTAL_AU:
             lab = lab[:, au_index]
             lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         else:
@@ -193,8 +195,8 @@ sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
 if source_data != 'init':
-    if args.num_au == 12 and au_index < 12:
-        vae_model = VAE((160, 240, 1), batch_size, 12)
+    if args.num_au == TOTAL_AU and au_index < TOTAL_AU:
+        vae_model = VAE((160, 240, 1), batch_size, TOTAL_AU)
         vae_model.loadWeight(args.restored_model + '.h5', None, None)
         for i in range(len(model_train.layers) - 1):
             loaded = vae_model.model_train.layers[i].get_weights()
@@ -221,13 +223,6 @@ if source_data != 'init':
 
     print(">>>>>>>>> model loaded from ", args.restored_model)
     print(model_train.layers[len(model_train.layers) - 1], model_train.layers[len(model_train.layers) - 1].trainable)
-
-if args.decoder is False:
-    for layer in model_train.layers[20:35]:
-        layer.trainable = False
-    for layer in model_train.layers:
-        print(layer, layer.trainable)
-
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
