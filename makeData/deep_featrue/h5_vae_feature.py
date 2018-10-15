@@ -17,7 +17,7 @@ for file_name in os.listdir(path):
     files.append((int(file_name.split(".")[0].split("SN0")[1]), file_name))
 
 files.sort(key=lambda f: f[0])
-data_idx = {'train': [f[1] for f in files[:14]], 'test': [f[1] for f in files[14:]]}
+data_idx = {'train': [f[1] for f in files[:2]], 'test': [f[1] for f in files[14:]]}
 print(data_idx)
 
 
@@ -85,9 +85,9 @@ for key in data_idx.keys():
     # print('reshaped_subjects', reshaped_subjects.shape)
     random_idx = list(range(0, len(reshaped_features)))
     random.shuffle(random_idx)
-    reshaped_features = reshaped_features[random_idx]
-    reshaped_labels = reshaped_labels[random_idx]
-    reshaped_subjects = reshaped_subjects[random_idx]
+    reshaped_features = features[random_idx]
+    reshaped_labels = labels[random_idx]
+    reshaped_subjects = subjects[random_idx]
 
     hfs = h5py.File(save_path + key + ".h5", 'w')
     hfs.create_dataset('feat', data=reshaped_features)
