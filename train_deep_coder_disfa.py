@@ -244,7 +244,7 @@ model_train.summary()
 #                     loss=loss)
 from keras.callbacks import EarlyStopping
 
-early_stopping = EarlyStopping(monitor='val_softmaxpdf_1_loss', patience=3, verbose=1)
+early_stopping = EarlyStopping(monitor='softmaxpdf_1_loss', patience=3, verbose=1)
 
 model_train.fit_generator(
         generator = GEN_TR,
