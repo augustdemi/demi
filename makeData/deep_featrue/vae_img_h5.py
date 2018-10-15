@@ -24,7 +24,7 @@ for subject in os.listdir(path):
     label_for_all_au = []
     for file in file_names:  # file = intensity of each au
         intensities_for_one_au = []
-        f = open(label_path, 'r')
+        f = open(label_path + file, 'r')
         all_labels = f.readlines()
         for idx in detected_frame_idx:
             intensity_onehot = np.zeros(2)
