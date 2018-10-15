@@ -26,7 +26,7 @@ def get_labet(subject, frames):
     # label_path= "D:/연구/프로젝트/SN001/label/"
     all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
-    frame_idx = [frame.split('frame')[1] for frame in frames]
+    frame_idx = [int(frame.split('frame')[1]) for frame in frames]
     label_for_all_au = []
     for au in all_au:  # file = intensity of each au
         intensities_for_one_au = []
