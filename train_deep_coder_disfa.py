@@ -4,13 +4,12 @@ import keras.backend as KB
 from keras.layers import Dense, Lambda, Input, Reshape
 import keras as K
 import numpy as np
-import h5py
 import argparse
 from datetime import datetime
-import tensorflow as tf
-start_time = datetime.now()
 import os
+from vae_model import VAE
 
+start_time = datetime.now()
 
 parser = argparse.ArgumentParser(description='extract feace images from raw datasets')
 parser.add_argument("-i", "--input", type=str, default='init', help="files created from GP")
@@ -35,6 +34,7 @@ parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make th
 parser.add_argument("-kshot", "--kshot", type=int, default=0, help="test kshot learning")
 parser.add_argument("-mbs", "--meta_batch_size", type=int, default=13, help="num of task to use for kshot learning")
 parser.add_argument("-sidx", "--start_idx", type=int, default=0, help="start idx of task to use for kshot learning")
+parser.add_argument("-deep", "--deep_feature", type=bool, default=False, help="extract deep feature")
 
 args = parser.parse_args()
 
@@ -194,8 +194,6 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 
 model_train.summary()
 if source_data != 'init':
-    from vae_model import VAE
-
     if args.num_au == 12 and au_index < 12:
         vae_model = VAE((160, 240, 1), batch_size, 12)
         vae_model.loadWeight(args.restored_model + '.h5', None, None)
@@ -283,9 +281,25 @@ model_train.fit_generator(
             ]
         )
 
-model_train.save_weights(model_name)
+if nb_iter > 0: model_train.save_weights(model_name)
 
+if args.deep_feature:
+    vae_model = VAE((160, 240, 1), batch_size, 1)
+    vae_model.loadWeight('/home/ml1323/project/robert_code/vae_log/new/h5/allaus_iter200.h5')
+    GEN_TR = generator(TR, False)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
+    GEN_TE = generator(TE, False)
 
+    all_deep_feat = []
+
+    print('>>>>> whole data len:', len(all_deep_feat))
+
+    with open('/home/ml1323/project/robert_code/reduced_features_with_ids.csv', 'a') as f:
+        while True:
+            img, _ = next(GEN_TR)
+            model_deep_feature = vae_model.model_deep_feature.predict(img)
+            print(model_deep_feature.shape)
+            for i in range(len(model_deep_feature)):
+                f.write(','.join([str(x) for x in model_deep_feature[i]]) + '\n')
 
 end_time = datetime.now()
 elapse = end_time - start_time
