@@ -59,9 +59,9 @@ for key in data_idx.keys():
         print(">>>> file: " + file)
         f = open(path + file, 'r')
         lines = f.readlines()
-        all_features_per_sub = [line[2:] for line in lines]  # 0 = subejct, 1=frame index
-        frames = [line[1] for line in lines]  # 0 = subejct, 1=frame index
-        subject = lines[0][0]
+        all_features_per_sub = [line.split(',')[2:] for line in lines]  # 0 = subejct, 1=frame index
+        frames = [line.split(',')[1] for line in lines]  # 0 = subejct, 1=frame index
+        subject = lines[0].split(',')[0]
         if len(all_features_per_sub) == 4846: all_features_per_sub = all_features_per_sub[:4845]
         label = get_labet(subject, frames)
         f.close()
