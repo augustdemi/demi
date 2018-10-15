@@ -18,13 +18,13 @@ for subject in os.listdir(path):
     ####### label ############
     label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/"
     # label_path= "D:/연구/프로젝트/SN001/label/"
-    file_names = [subject + '_au1.txt', subject + '_au2.txt', subject + '_au4.txt', subject + '_au6.txt',
-                  subject + '_au9.txt', subject + '_au12.txt', subject + '_au25.txt', subject + '_au26.txt']
+
+    all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
     label_for_all_au = []
-    for file in file_names:  # file = intensity of each au
+    for au in all_au:  # file = intensity of each au
         intensities_for_one_au = []
-        f = open(label_path + file, 'r')
+        f = open(label_path + subject + '_' + au + '.txt', 'r')
         all_labels = f.readlines()
         for idx in detected_frame_idx:
             intensity_onehot = np.zeros(2)
@@ -41,7 +41,7 @@ for subject in os.listdir(path):
 
         label_for_all_au.append(intensities_for_one_au)
         f.close()
-        print('done;', file)
+        print('done;', au)
 
     print('img_arr: ', len(img_arr))
     print('>>>before:', np.array(label_for_all_au).shape)
