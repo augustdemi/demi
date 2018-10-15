@@ -14,11 +14,12 @@ files = []
 
 for file_name in os.listdir(path):
     if (file_name.startswith("outa")):
-        files.append((int(file_name.split(".")[0].split("_")[1]), file_name))
+        files.append((int(file_name.split(".")[0].split("SN00")[1]), file_name))
 
 files.sort(key=lambda f: f[0])
+print(files)
 
-print("TRAIN:", files[:14], "TEST:", files[14:])
+print("TRAIN:", files.file_name[:14], "TEST:", files.file_name[14:])
 data_idx = {'train': files[:14], 'test': files[14:]}
 for key in data_idx.keys():
     imgs = []
