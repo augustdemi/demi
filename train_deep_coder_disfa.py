@@ -311,7 +311,8 @@ if args.deep_feature is not '':
         save_path = args.deep_feature + '/' + subject + '.csv'
         with open(save_path, 'a') as f:
             for i in range(len(model_deep_feature)):
-                out_csv = np.hstack((subject, "frame" + detected_frame_idx[i], [str(x) for x in model_deep_feature[i]]))
+                out_csv = np.hstack(
+                    (subject, "frame" + str(detected_frame_idx[i]), [str(x) for x in model_deep_feature[i]]))
                 f.write(','.join(out_csv) + '\n')
         print(">>>>>>>>done: ", subject, len(model_deep_feature))
 
