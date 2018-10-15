@@ -49,7 +49,7 @@ for subject in os.listdir(path):
     print('>>>after:', final_label.shape)
 
     # min_len = np.min([len(detected_frame_idx), final_label.shape[0]])
-    hf = h5py.File("/home/ml1323/project/robert_data/DISFA/vae_img_h5/" + subject + ".h5", 'w')
+    hf = h5py.File("/home/ml1323/project/robert_data/DISFA/h5_per_sub_bin_int/" + subject + ".h5", 'w')
     hf.create_dataset('img', data=img_arr)
     hf.create_dataset('lab', data=final_label)
     print("img :" + str(hf['img'].shape))
