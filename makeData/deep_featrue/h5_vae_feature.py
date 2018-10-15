@@ -48,7 +48,9 @@ def get_labet(subject, frames):
         label_for_all_au.append(intensities_for_one_au)
         f.close()
         print('done;', au)
-    return label_for_all_au
+    final_label = np.array(label_for_all_au).transpose(1, 0, 2)
+    print('final_label: ', final_label.shape)
+    return final_label
 
 
 for key in data_idx.keys():
