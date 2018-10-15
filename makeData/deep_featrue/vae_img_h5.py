@@ -44,12 +44,12 @@ for subject in os.listdir(path):
         print('done;', file)
 
     print('img_arr: ', len(img_arr))
-    print('>>>before:', label_for_all_au)
+    print('>>>before:', label_for_all_au.shape)
     final_label = np.array(label_for_all_au).transpose(1, 0, 2)
-    print('>>>after:', final_label)
+    print('>>>after:', final_label.shape)
 
     # min_len = np.min([len(detected_frame_idx), final_label.shape[0]])
-    hf = h5py.File("/home/ml1323/project/robert_data/DISFA/vea_img_h5/" + subject + ".h5", 'w')
+    hf = h5py.File("/home/ml1323/project/robert_data/DISFA/vae_img_h5/" + subject + ".h5", 'w')
     hf.create_dataset('img', data=img_arr)
     hf.create_dataset('lab', data=final_label)
     print("img :" + str(hf['img'].shape))
