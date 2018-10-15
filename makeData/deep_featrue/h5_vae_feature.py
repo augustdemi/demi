@@ -61,7 +61,7 @@ for key in data_idx.keys():
         print(">>>> file: " + file)
         f = open(path + file, 'r')
         lines = f.readlines()
-        all_features_per_sub = [line.split(',')[2:] for line in lines]  # 0 = subejct, 1=frame index
+        all_features_per_sub = [np.array(line.split(',')[2:]) for line in lines]  # 0 = subejct, 1=frame index
         frames = [line.split(',')[1] for line in lines]  # 0 = subejct, 1=frame index
         subject = lines[0].split(',')[0]
         if len(all_features_per_sub) == 4846: all_features_per_sub = all_features_per_sub[:4845]
@@ -69,20 +69,20 @@ for key in data_idx.keys():
         f.close()
         subject_number = int(subject.split("SN")[1])
         n_data = len(all_features_per_sub)
-        features.append(all_features_per_sub)
-        labels.append(label)
-        subjects.append(subject_number * np.ones(n_data))
+        features.extend(all_features_per_sub)
+        labels.extend(label)
+        subjects.extend(subject_number * np.ones(n_data))
 
     # save_path = "D:/연구/프로젝트/DISFA/rrr/"
-    reshaped_labels = labels[0]
-    reshaped_subjects = subjects[0]
-    for i in range(1, len(features)):
-        reshaped_labels = np.concatenate((reshaped_labels, labels[i]), axis=0)
-        reshaped_subjects = np.concatenate((reshaped_subjects, subjects[i]), axis=0)
-    reshaped_features = np.array(features)
-    print('reshaped_features', reshaped_features.shape)
-    print('reshaped_labels', reshaped_labels.shape)
-    print('reshaped_subjects', reshaped_subjects.shape)
+    # reshaped_labels = labels[0]
+    # reshaped_subjects = subjects[0]
+    # for i in range(1, len(features)):
+    #     reshaped_labels = np.concatenate((reshaped_labels, labels[i]), axis=0)
+    #     reshaped_subjects = np.concatenate((reshaped_subjects, subjects[i]), axis=0)
+    # reshaped_features = np.array(features)
+    # print('reshaped_features', reshaped_features.shape)
+    # print('reshaped_labels', reshaped_labels.shape)
+    # print('reshaped_subjects', reshaped_subjects.shape)
     random_idx = list(range(0, len(reshaped_features)))
     random.shuffle(random_idx)
     reshaped_features = reshaped_features[random_idx]
