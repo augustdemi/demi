@@ -284,7 +284,7 @@ model_train.fit_generator(
 if nb_iter > 0: model_train.save_weights(model_name)
 
 if args.deep_feature:
-    vae_model = VAE((160, 240, 1), batch_size, 1)
+    vae_model = VAE((160, 240, 12), batch_size, args.num_au)
     vae_model.loadWeight('/home/ml1323/project/robert_code/vae_log/new/h5/allaus_iter200.h5')
     GEN_TR = generator(TR, False)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
     GEN_TE = generator(TE, False)
