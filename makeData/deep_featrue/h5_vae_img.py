@@ -10,23 +10,22 @@ path = "/home/ml1323/project/robert_data/DISFA/h5_per_sub_bin_int/"
 
 
 
-files = os.listdir(path)
-files.sort()
-file_idx = np.array(range(0, len(files)))
-# train_index = file_idx[:14]
-# test_index = file_idx[14:]
+files = []
 
-train_index = np.array([1, 2, 3, 6, 7, 10, 15, 16, 17, 18, 20, 23, 24, 25])
-test_index = np.array([i for i in file_idx if i not in train_index])
+for file_name in os.listdir(path):
+    if (file_name.startswith("outa")):
+        files.append((int(file_name.split(".")[0].split("_")[1]), file_name))
 
-print("TRAIN:", files[train_index], "TEST:", files[test_index])
-data_idx = {'train': train_index, 'test': test_index}
+files.sort(key=lambda f: f[0])
+
+print("TRAIN:", files[:14], "TEST:", files[14:])
+data_idx = {'train': files[:14], 'test': files[14:]}
 for key in data_idx.keys():
     imgs = []
     labels = []
     subjects = []
     total_n = 0
-    for i in data_idx[key]:
+    for file in files:
         file = files[i]
         print(">>>> file: " + file)
         hf = h5py.File(path + file, 'r')
