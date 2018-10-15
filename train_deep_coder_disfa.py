@@ -51,7 +51,9 @@ else:
 
 batch_size = 32  # dont change it!
 log_dir_model = './model'
-latent_dim = 500
+latent_dim1 = 2048
+latent_dim2 = 500
+latent_dim3 = 300
 w_1 = args.warming / 50
 
 if args.kshot > 0:
@@ -113,7 +115,7 @@ out_0_shape = Y[1].shape[1:]
 print("inp_0_shape", inp_0_shape)
 print("out_0_shape", out_0_shape)
 inp_0       = Input(shape=inp_0_shape) # 케라스의 텐서 선언 ???????? input shape만을 위해 X를 사용하고 데이터 사용 더이상 안함? 텐서는 사이즈만으로 뭘함?
-emb, shape  = EE.networks.encoder(inp_0, norm=1) # conv넷을 여러번 씌워준 결과 emb와 그 shape ???????????????????.
+emb, shape = EE.networks.encoder(inp_0, norm=1)
 
 from numpy import prod
 from keras.layers import Dropout
@@ -122,32 +124,45 @@ print("shape after flatten: ", emb.get_shape())
 n_feat = prod(shape)
 
 emb = Dropout(0.5)(emb)
-z_mean = Dense(latent_dim)(emb)  # latent_dim는 output space의 dim이 될것.
-z_log_sigma = Dense(latent_dim)(emb)  #
+
+latent_feat = Dense(latent_dim1, activation='relu', name='latent_feat')(emb)  # into 2048
+intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(emb)  # into 500
+z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
+z_log_sigma = Dense(latent_dim3)(intermediate)
+print('==============================')
+print('emb', emb.shape)
+print('latent_feat', latent_feat.shape)
+print('intermediate', intermediate.shape)
+print('z_mean', z_mean.shape)
+print('z_log_sigma', z_log_sigma.shape)
 
 def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
     z_mean, z_log_sigma = args
     # batch_size = 32
     epsilon = []
-    for m, s in zip(np.zeros(latent_dim), np.ones(latent_dim)):
+    for m, s in zip(np.zeros(latent_dim3), np.ones(latent_dim3)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
     epsilon = KB.concatenate(epsilon, 1)
     return z_mean + KB.exp(z_log_sigma) * epsilon
 
 
-z = Lambda(sampling, output_shape=(latent_dim,))([z_mean, z_log_sigma])  # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
+z = Lambda(sampling, output_shape=(latent_dim3,))([z_mean, z_log_sigma])  # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
-out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(
-    Reshape((latent_dim, 1))(z_mean))  # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
+out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(Reshape((latent_dim3, 1))(z_mean))
+# out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
-D1 = Dense(latent_dim, activation='relu')
-D2 = Dense(n_feat, activation='relu')  # n_feat  = conv 결과 shape들의 곱이 ouputspace의 dim
-h_decoded = D1(z) # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
-print(h_decoded)
-print(n_feat)
-x_decoded_mean = D2(h_decoded)
-print(x_decoded_mean)
+D1 = Dense(latent_dim2, activation='relu')  # into 500
+D2 = Dense(latent_dim1, activation='relu')  # into 2048
+D3 = Dense(n_feat, activation='sigmoid')  # into 2400
+h_decoded1 = D1(z)  # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
+h_decoded2 = D2(h_decoded1)
+x_decoded_mean = D3(h_decoded2)
 
+print('z', z.shape)
+print('h_decoded1', h_decoded1.shape)
+print('h_decoded2', h_decoded2.shape)
+print('x_decoded_mean', x_decoded_mean.shape)
+print('==============================')
 out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 layer로 디코더 실행. 근데 사실상 이 디코더에 오기까지 오리지날 트레인 x를 인코드하는거부터 시작됨. vae.
 
 
