@@ -24,7 +24,7 @@ for key in data_idx.keys():
     labels = []
     subjects = []
     total_n = 0
-    for file in files:
+    for file in data_idx[key]:
         print(">>>> file: " + file)
         hf = h5py.File(path + file, 'r')
         img = hf['img'].value
