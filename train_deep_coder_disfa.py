@@ -301,6 +301,8 @@ if args.deep_feature is not '':
         for img in imgs:
             img2, _, _ = pp.transform(img, preprocessing=True, augmentation=False)
             pre_processed_img_arr.append(img2)
+        pre_processed_img_arr = np.array(pre_processed_img_arr)
+        print('pre_processed_img_arr:', pre_processed_img_arr.shape)
         model_deep_feature = vae_model.model_deep_feature.predict(pre_processed_img_arr)
         print('len deep feat:', len(model_deep_feature))
         print('len files:', len(detected_frame_idx))
