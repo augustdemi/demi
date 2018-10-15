@@ -17,10 +17,8 @@ for file_name in os.listdir(path):
 
 
 files.sort(key=lambda f: f[0])
-print(files)
-
-print("TRAIN:", files.file_name[:14], "TEST:", files.file_name[14:])
-data_idx = {'train': files[:14], 'test': files[14:]}
+data_idx = {'train': [f[1] for f in files[:14]], 'test': [f[1] for f in files[14:]]}
+print(data_idx)
 for key in data_idx.keys():
     imgs = []
     labels = []
