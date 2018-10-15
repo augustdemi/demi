@@ -192,7 +192,6 @@ model_au_int = K.models.Model([inp_0], [out_1])
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
-model_train.summary()
 if source_data != 'init':
     if args.num_au == 12 and au_index < 12:
         vae_model = VAE((160, 240, 1), batch_size, 12)
@@ -285,7 +284,7 @@ if nb_iter > 0: model_train.save_weights(model_name)
 
 if args.deep_feature:
     vae_model = VAE((160, 240, 1), batch_size, args.num_au)
-    vae_model.loadWeight(args.restored_model)
+    vae_model.loadWeight(args.restored_model + '.h5')
     GEN_TR = generator(TR, False)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
     GEN_TE = generator(TE, False)
 
