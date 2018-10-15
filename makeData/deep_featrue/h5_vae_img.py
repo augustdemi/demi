@@ -13,7 +13,7 @@ path = "/home/ml1323/project/robert_data/DISFA/h5_per_sub_bin_int/"
 files = []
 
 for file_name in os.listdir(path):
-    files.append((int(file_name.split(".")[0].split("SN00")[0]), file_name))
+    files.append((int(file_name.split(".")[0].split("SN0")[1]), file_name))
 
 
 files.sort(key=lambda f: f[0])
