@@ -74,21 +74,20 @@ for key in data_idx.keys():
         subjects.append(subject_number * np.ones(n_data))
 
     # save_path = "D:/연구/프로젝트/DISFA/rrr/"
-    reshaped_features = features[0]
     reshaped_labels = labels[0]
     reshaped_subjects = subjects[0]
     for i in range(1, len(features)):
-        reshaped_features = np.concatenate((reshaped_features, features[i]), axis=0)
         reshaped_labels = np.concatenate((reshaped_labels, labels[i]), axis=0)
         reshaped_subjects = np.concatenate((reshaped_subjects, subjects[i]), axis=0)
+    reshaped_features = np.array(features)
+    print('reshaped_features', reshaped_features.shape)
+    print('reshaped_labels', reshaped_labels.shape)
+    print('reshaped_subjects', reshaped_subjects.shape)
     random_idx = list(range(0, len(reshaped_features)))
     random.shuffle(random_idx)
     reshaped_features = reshaped_features[random_idx]
     reshaped_labels = reshaped_labels[random_idx]
     reshaped_subjects = reshaped_subjects[random_idx]
-    print('reshaped_features', reshaped_features.shape)
-    print('reshaped_labels', reshaped_labels.shape)
-    print('reshaped_subjects', reshaped_subjects.shape)
 
     hfs = h5py.File(save_path + key + ".h5", 'w')
     hfs.create_dataset('feat', data=reshaped_features)
