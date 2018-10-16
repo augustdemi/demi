@@ -252,9 +252,12 @@ import cv2
 
 if args.deep_feature is not '':
     model_train.load_weights(args.restored_model + '.h5')
-    print('check the last layer of model_train: ', model_train.layers[-1].name)
-    print("[vae_model]loaded weight from VAE : ", model_train.layers[-1].get_weights())
-    print("[vae_model]loaded weight in model_deep_feature : ", model_deep_feature.layers[-1].get_weights())
+    layer_dict_whole_vae = dict([(layer.name, layer) for layer in model_train.layers])
+    w_latent_feat = layer_dict_whole_vae['latent_feat'].get_weights()
+    print("[vae_model]loaded latent_feat weight from VAE : ", w_latent_feat)
+    layer_dict_model_deep_feature = dict([(layer.name, layer) for layer in model_deep_feature.layers])
+    w_latent_feat2 = layer_dict_model_deep_feature['latent_feat'].get_weights()
+    print("[vae_model]loaded latent_feat weight in model_deep_feature : ", w_latent_feat2)
     model_train.summary()
     model_deep_feature.summary()
     path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
