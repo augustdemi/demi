@@ -42,8 +42,8 @@ for au in all_au:
         print('train_off_idx len: ', len(train_off_idx))
 
         save_path_per_au_sub = save_path + au + "/" + subject
-        if not os.path.exists(save_path + "/on"): os.makedirs(save_path + "/on")
-        if not os.path.exists(save_path + "/off"): os.makedirs(save_path + "/off")
+        if not os.path.exists(save_path_per_au_sub + "/on"): os.makedirs(save_path_per_au_sub + "/on")
+        if not os.path.exists(save_path_per_au_sub + "/off"): os.makedirs(save_path_per_au_sub + "/off")
 
         # copy on intensity frames for train
         file_path_to_save = []
