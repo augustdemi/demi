@@ -105,7 +105,9 @@ sum_mult_out_dir += '/fine_tune'
 sum_vac_disfa_dir += '/fine_tune'
 
 three_layers = feature_layer(batch_size, 1)
+three_layers.three_layers(args.restored_model + '.h5', au_index=args.au_index)
 model_intensity = three_layers.model_intensity
+
 
 for i in range(len(model_intensity.layers) - 1):
     model_intensity.layers[i].trainable = False
@@ -145,14 +147,14 @@ model_intensity.fit_generator(
     max_q_size=4,
     callbacks=[
         # early_stopping,
-        EE.callbacks.summary_multi_output(
-            gen_list=(generator(TR, False, 1), generator(TE, False, 1)),
-            predictor=model_intensity.predict,  # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
-            batch_size=batch_size,
-            title=['TR', 'TE'],
-            one_hot=True,
-            log_dir=sum_mult_out_dir,
-        )
+        # EE.callbacks.summary_multi_output(
+        #     gen_list=(generator(TR, False, 1), generator(TE, False, 1)),
+        #     predictor=model_intensity.predict,  # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
+        #     batch_size=batch_size,
+        #     title=['TR', 'TE'],
+        #     one_hot=True,
+        #     log_dir=sum_mult_out_dir,
+        # )
     ]
 )
 
