@@ -71,8 +71,6 @@ def generator(dat_dict, w_sub=False):
         feature = next(dat_dict['feat'])
         lab = next(dat_dict['lab'])
         sub = next(dat_dict['sub'])
-        feature = np.arrary(feature)
-
         if lab.shape[1] == TOTAL_AU and au_index < TOTAL_AU:
             lab = lab[:, au_index]
             lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
