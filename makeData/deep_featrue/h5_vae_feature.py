@@ -61,7 +61,7 @@ for key in data_idx.keys():
         print(">>>> file: " + file)
         f = open(path + file, 'r')
         lines = f.readlines()
-        all_features_per_sub = [np.array([int(elt) for elt in line.split(',')[2:]]) for line in
+        all_features_per_sub = [np.array([float(elt) for elt in line.split(',')[2:]]) for line in
                                 lines]  # 0 = subejct, 1=frame index
         frames = [line.split(',')[1] for line in lines]  # 0 = subejct, 1=frame index
         subject = lines[0].split(',')[0]
@@ -76,9 +76,9 @@ for key in data_idx.keys():
 
     random_idx = list(range(0, len(features)))
     random.shuffle(random_idx)
-    features = features[random_idx]
-    labels = labels[random_idx]
-    subjects = subjects[random_idx]
+    features = np.array(features)[random_idx]
+    labels = np.array(labels)[random_idx]
+    subjects = np.array(subjects)[random_idx]
 
     print(features)
     hfs = h5py.File(save_path + key + ".h5", 'w')
