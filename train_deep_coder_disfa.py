@@ -7,7 +7,6 @@ import numpy as np
 import argparse
 from datetime import datetime
 import os
-from vae_model import VAE
 
 start_time = datetime.now()
 
@@ -186,43 +185,16 @@ loss = [rec_loss, pred_loss, vae_loss]
 
 model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
 
-model_rec_z = K.models.Model([inp_0], [out_0, z_mean])
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
-
+model_deep_feature = K.models.Model([inp_0], [latent_feat])
 
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
 if source_data != 'init':
-    if args.num_au == TOTAL_AU and au_index < TOTAL_AU:
-        vae_model = VAE((160, 240, 1), batch_size, TOTAL_AU)
-        vae_model.loadWeight(args.restored_model + '.h5', None, None)
-        for i in range(len(model_train.layers) - 1):
-            loaded = vae_model.model_train.layers[i].get_weights()
-            model_train.layers[i].set_weights(loaded)
-            if args.fine_tune:
-                model_train.layers[i].trainable = False
-                print(model_train.layers[i], model_train.layers[i].trainable)
-                sum_mult_out_dir += '/fine_tune'
-                sum_vac_disfa_dir += '/fine_tune'
-        w = vae_model.model_train.get_weights()[58][:, au_index]
-        b = vae_model.model_train.get_weights()[59][au_index]
-        w = w.reshape(latent_dim3, 1, 2)
-        b = b.reshape(1, 2)
-        model_train.layers[-1].set_weights([w, b])
-        print("after: ", model_train.layers[-1].get_weights())
-    else:
-        model_train.load_weights(args.restored_model + '.h5')
-        if args.fine_tune:
-            for i in range(len(model_train.layers) - 1):
-                model_train.layers[i].trainable = False
-                print(model_train.layers[i], model_train.layers[i].trainable)
-                sum_mult_out_dir += '/fine_tune'
-                sum_vac_disfa_dir += '/fine_tune'
-
+    model_train.load_weights(args.restored_model + '.h5')
     print(">>>>>>>>> model loaded from ", args.restored_model)
-    print(model_train.layers[len(model_train.layers) - 1], model_train.layers[len(model_train.layers) - 1].trainable)
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
@@ -279,9 +251,12 @@ if nb_iter > 0: model_train.save_weights(model_name)
 import cv2
 
 if args.deep_feature is not '':
-    vae_model = VAE((160, 240, 1), batch_size, args.num_au)
-    vae_model.loadWeight(args.restored_model + '.h5')
-
+    model_train.load_weights(args.restored_model + '.h5')
+    print('check the last layer of model_train: ', model_train.layers[-1].name)
+    print("[vae_model]loaded weight from VAE : ", model_train.layers[-1].get_weights())
+    print("[vae_model]loaded weight in model_deep_feature : ", model_deep_feature.layers[-1].get_weights())
+    model_train.summary()
+    model_deep_feature.summary()
     path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
     all_subjects = os.listdir(path)
 
@@ -298,18 +273,18 @@ if args.deep_feature is not '':
             pre_processed_img_arr.append(img2)
         pre_processed_img_arr = np.array(pre_processed_img_arr)
         print('pre_processed_img_arr:', pre_processed_img_arr.shape)
-        model_deep_feature = vae_model.model_deep_feature.predict(pre_processed_img_arr)
-        print('len deep feat:', len(model_deep_feature))
+        deep_feature = model_deep_feature.predict(pre_processed_img_arr)
+        print('len deep feat:', len(deep_feature))
         print('len files:', len(detected_frame_idx))
         if not os.path.exists(args.deep_feature):
             os.makedirs(args.deep_feature)
         save_path = args.deep_feature + '/' + subject + '.csv'
         with open(save_path, 'a') as f:
-            for i in range(len(model_deep_feature)):
+            for i in range(len(deep_feature)):
                 out_csv = np.hstack(
-                    (subject, "frame" + str(detected_frame_idx[i]), [str(x) for x in model_deep_feature[i]]))
+                    (subject, "frame" + str(detected_frame_idx[i]), [str(x) for x in deep_feature[i]]))
                 f.write(','.join(out_csv) + '\n')
-        print(">>>>>>>>done: ", subject, len(model_deep_feature))
+        print(">>>>>>>>done: ", subject, len(deep_feature))
 
 
 end_time = datetime.now()
