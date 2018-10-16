@@ -75,7 +75,7 @@ flags.DEFINE_bool('iterative_au', False,
                   'if vae_model is needed to be iteratively load per each au. In this case, vae_model should be dir, not file')
 flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
 flags.DEFINE_bool('local', False, 'save path from local weight')
-
+flags.DEFINE_string('feature_path', "", 'path for feature vector')
 
 
 def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
