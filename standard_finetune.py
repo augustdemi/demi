@@ -65,32 +65,27 @@ else:
 TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
 
 
-def generator(dat_dict, aug, mod=0, s=False):
+def generator(dat_dict, w_sub=False):
     while True:
 
         feature = next(dat_dict['feat'])
         lab = next(dat_dict['lab'])
         sub = next(dat_dict['sub'])
+        feature = np.arrary(feature)
 
         if lab.shape[1] == TOTAL_AU and au_index < TOTAL_AU:
             lab = lab[:, au_index]
             lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
         else:
             lab = lab
-        if mod == 1:
-            if (s):
-                yield [feature], [lab], [sub]
-            else:
-                yield [feature], [lab]
+        if w_sub:
+            yield [feature], [lab], [sub]
         else:
-            if (s):
-                yield [feature], [feature, lab, feature], [sub]
-            else:
-                yield [feature], [feature, lab, feature]
+            yield [feature], [lab]
 
 
-GEN_TR = generator(TR, True)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
-GEN_TE = generator(TE, False)
+GEN_TR = generator(TR)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
+GEN_TE = generator(TE)
 
 
 def pred_loss(y_true, y_pred):
@@ -147,14 +142,14 @@ model_intensity.fit_generator(
     max_q_size=4,
     callbacks=[
         # early_stopping,
-        # EE.callbacks.summary_multi_output(
-        #     gen_list=(generator(TR, False, 1), generator(TE, False, 1)),
-        #     predictor=model_intensity.predict,  # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
-        #     batch_size=batch_size,
-        #     title=['TR', 'TE'],
-        #     one_hot=True,
-        #     log_dir=sum_mult_out_dir,
-        # )
+        EE.callbacks.summary_multi_output(
+            gen_list=(generator(TR), generator(TE)),
+            predictor=model_intensity.predict,  # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
+            batch_size=batch_size,
+            title=['TR', 'TE'],
+            one_hot=True,
+            log_dir=sum_mult_out_dir,
+        )
     ]
 )
 
