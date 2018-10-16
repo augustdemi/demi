@@ -5,8 +5,9 @@ import tensorflow as tf
 import cv2
 
 from tensorflow.python.platform import flags
-from utils import get_images
-from vae_model import VAE
+from utils import get_kshot_feature
+from feature_layers import feature_layer
+from build_vae import VAE
 import EmoData as ED
 
 FLAGS = flags.FLAGS
@@ -65,19 +66,19 @@ class DataGenerator(object):
 
         # make list of files
         print('Generating filenames')
-        inputa_files = []
-        inputb_files = []
+        inputa_features = []
+        inputb_features = []
         labelas = []
         labelbs = []
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
             if train:
-                off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
-                                               nb_samples=FLAGS.update_batch_size * 2, validate=False)
+                off_imgs, on_imgs = get_kshot_feature(sub_folder, FLAGS.feature_path, FLAGS.kshot_seed,
+                                                      nb_samples=FLAGS.update_batch_size * 2, validate=False)
             else:
-                off_imgs, on_imgs = get_images(sub_folder, range(self.num_classes), FLAGS.kshot_seed,
-                                               nb_samples=FLAGS.update_batch_size * 2, validate=True)
+                off_imgs, on_imgs = get_kshot_feature(sub_folder, FLAGS.feature_path, FLAGS.kshot_seed,
+                                                      nb_samples=FLAGS.update_batch_size * 2, validate=True)
             # Split data into a/b
             half_off_img = int(len(off_imgs) / 2)
             half_on_img = int(len(on_imgs) / 2)
@@ -104,16 +105,15 @@ class DataGenerator(object):
             np.random.seed(2)
             np.random.shuffle(labelb_this_subj)
 
-            inputa_files.extend(inputa_this_subj)
-            inputb_files.extend(inputb_this_subj)
+            inputa_features.extend(inputa_this_subj)
+            inputb_features.extend(inputb_this_subj)
             labelas.extend(labela_this_subj)
             labelbs.extend(labelb_this_subj)
 
-
-        print(">>>> inputa_files: ", inputa_files)
+        print(">>>> inputa_features: ", inputa_features)
         print(">>> labelas: ", labelas)
         print("--------------------------------------------")
-        print(">>>> inputb_files: ", inputb_files)
+        print(">>>> inputb_features: ", inputb_features)
         print(">>> labelbs: ", labelbs)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
@@ -124,56 +124,20 @@ class DataGenerator(object):
 
 
         batch_size = 10
-        vae_model = VAE((self.img_size[0], self.img_size[1], 1), batch_size, FLAGS.num_au)
-        pp = ED.image_pipeline.FACE_pipeline(
-            histogram_normalization=True,
-            grayscale=True,
-            resize=True,
-            rotation_range=3,
-            width_shift_range=0.03,
-            height_shift_range=0.03,
-            zoom_range=0.03,
-            random_flip=True,
-        )
+        three_layers = feature_layer(batch_size, FLAGS.num_au)
+        three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
 
-        def latent_feature(file_names):
-            nb_samples = len(file_names)
-            t0, t1 = 0, batch_size
-            z_arr = []
-            while True:
-                t1 = min(nb_samples, t1)
-                file_names_batch = file_names[t0:t1]
-                imgs = [cv2.imread(filename) for filename in file_names_batch]
-                img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-                weights, z = vae_model.computeLatentVal(img_arr, FLAGS.vae_model, FLAGS.au_idx)
-                z_arr.append(z)
-                if t1 == nb_samples: break
-                t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
-                t1 += batch_size
-
-            return np.concatenate(z_arr), weights
-
-        inputa_latent_feat, self.pred_weights = latent_feature(inputa_files)
-        inputb_latent_feat, self.pred_weights = latent_feature(inputb_files)
+        inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)
+        inputb_latent_feat = three_layers.model_final_latent_feat.predict(inputb_features)
         print(">>> z_arr len:", len(inputa_latent_feat))
         #################################################################################
 
-        # print("original inputa: ", inputa_latent_feat)
-        # print("original inputb: ", inputb_latent_feat)
-        # np.random.seed(1)
-        # np.random.shuffle(inputa_latent_feat)
-        # np.random.seed(1)
-        # np.random.shuffle(labelas)
-        # np.random.seed(2)
-        # np.random.shuffle(inputb_latent_feat)
-        # np.random.seed(2)
-        # np.random.shuffle(labelbs)
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
         inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
-                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2000])
+                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 300])
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
         inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor,
-                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2000])
+                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 300])
 
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
