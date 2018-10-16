@@ -7,7 +7,7 @@ import numpy as np
 import argparse
 from datetime import datetime
 import os
-from feature_layer import feature_layer
+from feature_layers import feature_layer
 
 start_time = datetime.now()
 
