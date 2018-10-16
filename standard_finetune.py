@@ -125,7 +125,8 @@ model_z_intensity.compile(
         epsilon=1e-08,
         decay=0.0
     ),
-    loss=pred_loss
+    loss=[pred_loss],
+    loss_weights=[0, 1]
 )
 
 model_z_intensity.summary()
