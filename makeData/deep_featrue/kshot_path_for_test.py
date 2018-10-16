@@ -72,7 +72,7 @@ for subject in test_subjects:
 
         # copy off intensity frames for train
         file_path_to_save = []
-        with open(save_path_teat_a_per_au_sub + "/on/file_path.csv", 'w') as f:
+        with open(save_path_teat_a_per_au_sub + "/off/file_path.csv", 'w') as f:
             for i in test_a_off_idx:
                 file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
             f.write(','.join(file_path_to_save))
