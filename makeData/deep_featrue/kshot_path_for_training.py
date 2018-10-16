@@ -1,12 +1,5 @@
-import h5py as h
-import random
 import os
-from shutil import copyfile
-import numpy as np
 
-# on/off intensity를 라벨로 매칭시킨 h5로부터 maml을 위한 이미지 경로와 이미지 파일 생성
-
-# original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path/train/"
 
@@ -47,7 +40,7 @@ for au in all_au:
 
         # copy on intensity frames for train
         file_path_to_save = []
-        with open(save_path_per_au_sub + "/on/file_path.csv", 'a') as f:
+        with open(save_path_per_au_sub + "/on/file_path.csv", 'w') as f:
             for i in train_on_idx:
                 file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
             f.write(','.join(file_path_to_save))
@@ -55,8 +48,9 @@ for au in all_au:
 
         # copy off intensity frames for train
         file_path_to_save = []
-        with open(save_path_per_au_sub + "/off/file_path.csv", 'a') as f:
+        with open(save_path_per_au_sub + "/off/file_path.csv", 'w') as f:
             for i in train_off_idx:
                 file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
             f.write(','.join(file_path_to_save))
-        print(">>>>> done: ", au)
+        print(">>>>> done: ", subject)
+    print("========================================= done: ", au)
