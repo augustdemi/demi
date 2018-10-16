@@ -17,7 +17,7 @@ for file_name in os.listdir(path):
     files.append((int(file_name.split(".")[0].split("SN0")[1]), file_name))
 
 files.sort(key=lambda f: f[0])
-data_idx = {'train': [f[1] for f in files[:1]], 'test': [f[1] for f in files[14:]]}
+data_idx = {'train': [f[1] for f in files[:14]], 'test': [f[1] for f in files[14:]]}
 print(data_idx)
 
 
@@ -33,7 +33,6 @@ def get_labet(subject, frames):
         f = open(label_path + subject + '_' + au + '.txt', 'r')
         all_labels = f.readlines()
         for idx in frame_idx:
-            intensity_onehot = np.zeros(2)
             try:
                 intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
             except:
@@ -79,8 +78,9 @@ for key in data_idx.keys():
     features = np.array(features)[random_idx]
     labels = np.array(labels)[random_idx]
     subjects = np.array(subjects)[random_idx]
-
-    print(features)
+    print('shape of feat: ', features.shape)
+    print('shape of labels: ', labels.shape)
+    print('shape of subjects: ', subjects.shape)
     hfs = h5py.File(save_path + key + ".h5", 'w')
     hfs.create_dataset('feat', data=features)
     hfs.create_dataset('lab', data=labels)
