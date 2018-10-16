@@ -281,7 +281,7 @@ if args.deep_feature is not '':
         if not os.path.exists(args.deep_feature):
             os.makedirs(args.deep_feature)
         save_path = args.deep_feature + '/' + subject + '.csv'
-        with open(save_path, 'a') as f:
+        with open(save_path, 'w') as f:
             for i in range(len(deep_feature)):
                 out_csv = np.hstack(
                     (subject, "frame" + str(detected_frame_idx[i]), [str(x) for x in deep_feature[i]]))
