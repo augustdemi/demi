@@ -7,7 +7,7 @@ import numpy as np
 import argparse
 from datetime import datetime
 import os
-from vae_model import VAE
+from feature_layer import feature_layer
 
 start_time = datetime.now()
 
@@ -104,11 +104,8 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 sum_mult_out_dir += '/fine_tune'
 sum_vac_disfa_dir += '/fine_tune'
 
-vae_model = VAE((160, 240, 1), batch_size, args.num_au, new_num_au=1)
-print(">>>>>>>>> model loaded from ", args.restored_model)
-vae_model.loadWeight(args.restored_model + '.h5')
-model_z_intensity = vae_model.model_z_intensity
-model_intensity = vae_model.model_intensity
+three_layers = feature_layer(batch_size, 1)
+model_intensity = three_layers.model_intensity
 
 for i in range(len(model_intensity.layers) - 1):
     model_intensity.layers[i].trainable = False
@@ -129,9 +126,6 @@ model_intensity.compile(
 )
 
 model_intensity.summary()
-print('-----------------------> model_z_intensity', )
-model_z_intensity.summary()
-
 print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights())
 
 # model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss=loss)
@@ -139,7 +133,7 @@ print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].g
 #                     loss=loss)
 from keras.callbacks import EarlyStopping
 
-early_stopping = EarlyStopping(monitor='val_softmaxpdf_1_loss', patience=3, verbose=1)
+early_stopping = EarlyStopping(monitor='softmaxpdf_1_loss', patience=3, verbose=1)
 
 model_intensity.fit_generator(
     generator=GEN_TR,
@@ -162,7 +156,7 @@ model_intensity.fit_generator(
     ]
 )
 
-if nb_iter > 0: model_z_intensity.save_weights(model_name)
+if nb_iter > 0: model_intensity.save_weights(model_name)
 
 end_time = datetime.now()
 elapse = end_time - start_time
