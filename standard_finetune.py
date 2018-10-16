@@ -53,12 +53,6 @@ else:
 batch_size = 32  # dont change it!
 log_dir_model = './model'
 
-vae_model = VAE((160, 240, 1), batch_size, args.num_au)
-print(">>>>>>>>> model loaded from ", args.restored_model)
-vae_model.loadWeight(args.restored_model + '.h5')
-model_z_intensity = vae_model.model_z_intensity
-model_intensity = vae_model.model_intensity
-
 if args.kshot > 0:
     TR = ED.provider_back.flow_from_folder_kshot(args.training_data, batch_size, padding='same',
                                                  sbjt_start_idx=args.start_idx,
@@ -110,26 +104,31 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 sum_mult_out_dir += '/fine_tune'
 sum_vac_disfa_dir += '/fine_tune'
 
-for i in range(len(model_z_intensity.layers) - 1):
-    model_z_intensity.layers[i].trainable = False
-for i in range(len(model_z_intensity.layers)):
-    print(model_z_intensity.layers[i], model_z_intensity.layers[i].trainable)
+vae_model = VAE((160, 240, 1), batch_size, args.num_au)
+print(">>>>>>>>> model loaded from ", args.restored_model)
+vae_model.loadWeight(args.restored_model + '.h5')
+model_z_intensity = vae_model.model_z_intensity
+model_intensity = vae_model.model_intensity
+
+for i in range(len(model_intensity.layers) - 1):
+    model_intensity.layers[i].trainable = False
+for i in range(len(model_intensity.layers)):
+    print(model_intensity.layers[i], model_intensity.layers[i].trainable)
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
 
-model_z_intensity.compile(
+model_intensity.compile(
     optimizer=K.optimizers.Adadelta(
         lr=args.lr,
         rho=0.95,
         epsilon=1e-08,
         decay=0.0
     ),
-    loss=[pred_loss],
-    loss_weights=[0, 1]
+    loss=pred_loss
 )
 
-model_z_intensity.summary()
+model_intensity.summary()
 
 # model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss=loss)
 # model_train.compile(K.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004),
@@ -138,7 +137,7 @@ from keras.callbacks import EarlyStopping
 
 early_stopping = EarlyStopping(monitor='val_softmaxpdf_1_loss', patience=3, verbose=1)
 
-model_z_intensity.fit_generator(
+model_intensity.fit_generator(
     generator=GEN_TR,
     samples_per_epoch=960,  # number of samples to process before going to the next epoch.
     validation_data=GEN_TE,  # integer, total number of iterations on the data.
