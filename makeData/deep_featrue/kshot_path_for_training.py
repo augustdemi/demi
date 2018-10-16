@@ -59,5 +59,4 @@ for au in all_au:
             for i in train_off_idx:
                 file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
             f.write(','.join(file_path_to_save))
-            cd.
         print(">>>>> done: ", au)
