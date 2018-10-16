@@ -105,7 +105,7 @@ sum_mult_out_dir += '/fine_tune'
 sum_vac_disfa_dir += '/fine_tune'
 
 three_layers = feature_layer(batch_size, 1)
-three_layers.three_layers(args.restored_model + '.h5', au_index=args.au_index)
+three_layers.loadWeight(args.restored_model + '.h5', au_index=args.au_index)
 model_intensity = three_layers.model_intensity
 
 
