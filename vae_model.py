@@ -45,6 +45,16 @@ class VAE:
             epsilon = KB.concatenate(epsilon, 1)
             return z_mean + KB.exp(z_log_sigma) * epsilon
 
+        ################# From here, reconstruct the model from input = 2048 with only 3 required layers to finetune only softmax layer
+        inp_1 = Input(shape=[latent_dim1])
+        intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
+        z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
+        out_1 = EE.layers.softmaxPDF(new_num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
+        model_z_intensity = K.models.Model([inp_1], [z_mean, out_1])
+        model_intensity = K.models.Model([inp_1], [out_1])
+
+
+
         z = Lambda(sampling, output_shape=(latent_dim3,))([z_mean, z_log_sigma])  # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
         out_1 = EE.layers.softmaxPDF(num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
         D1 = Dense(latent_dim2, activation='relu')  # into 500
@@ -66,13 +76,7 @@ class VAE:
         model_deep_feature = K.models.Model([inp_0], [latent_feat])
 
         ################# Above: to load the model.
-        ################# From here, reconstruct the model from input = 2048 with only 3 required layers to finetune only softmax layer
-        inp_1 = Input(shape=[latent_dim1])
-        intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
-        z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
-        out_1 = EE.layers.softmaxPDF(new_num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
-        model_z_intensity = K.models.Model([inp_1], [z_mean, out_1])
-        model_intensity = K.models.Model([inp_1], [out_1])
+
 
         self.model_train = model_train
         self.model_z_intensity = model_z_intensity
