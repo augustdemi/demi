@@ -258,8 +258,7 @@ if args.deep_feature is not '':
     layer_dict_model_deep_feature = dict([(layer.name, layer) for layer in model_deep_feature.layers])
     w_latent_feat2 = layer_dict_model_deep_feature['latent_feat'].get_weights()
     print("[vae_model]loaded latent_feat weight in model_deep_feature : ", w_latent_feat2)
-    model_train.summary()
-    model_deep_feature.summary()
+
     path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
     all_subjects = os.listdir(path)
 
