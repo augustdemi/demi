@@ -68,7 +68,7 @@ TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
 def generator(dat_dict, aug, mod=0, s=False):
     while True:
 
-        img = next(dat_dict['img'])
+        feature = next(dat_dict['feat'])
         lab = next(dat_dict['lab'])
         sub = next(dat_dict['sub'])
 
@@ -79,14 +79,14 @@ def generator(dat_dict, aug, mod=0, s=False):
             lab = lab
         if mod == 1:
             if (s):
-                yield [img], [lab], [sub]
+                yield [feature], [lab], [sub]
             else:
-                yield [img], [lab]
+                yield [feature], [lab]
         else:
             if (s):
-                yield [img], [img, lab, img], [sub]
+                yield [feature], [feature, lab, feature], [sub]
             else:
-                yield [img], [img, lab, img]
+                yield [feature], [feature, lab, feature]
 
 
 GEN_TR = generator(TR, True)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
@@ -129,6 +129,10 @@ model_intensity.compile(
 )
 
 model_intensity.summary()
+print('-----------------------> model_z_intensity', )
+model_z_intensity.summary()
+
+print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights())
 
 # model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss=loss)
 # model_train.compile(K.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004),
