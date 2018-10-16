@@ -104,7 +104,7 @@ sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.lo
 sum_mult_out_dir += '/fine_tune'
 sum_vac_disfa_dir += '/fine_tune'
 
-vae_model = VAE((160, 240, 1), batch_size, args.num_au)
+vae_model = VAE((160, 240, 1), batch_size, args.num_au, new_num_au=1)
 print(">>>>>>>>> model loaded from ", args.restored_model)
 vae_model.loadWeight(args.restored_model + '.h5')
 model_z_intensity = vae_model.model_z_intensity

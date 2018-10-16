@@ -6,12 +6,15 @@ import numpy as np
 import os
 
 class VAE:
-    def __init__(self, img_shape, batch_size, num_au):
+    def __init__(self, img_shape, batch_size, num_au, new_num_au=0):
 
         latent_dim1 = 2048
         latent_dim2 = 500
         latent_dim3 = 300
         num_of_intensity = 2
+        TOTAL_AU = 8
+        # 새롭게 쌓아질 3개 layer의 softmax 층의 au갯수. 따로 명시되지 않으면 이전모델(로드된 모델)의 갯수 그대로.
+        if new_num_au == 0: new_num_au = num_au
 
         inp_0 = Input(shape=img_shape)
         emb, shape = EE.networks.encoder(inp_0, norm=1)
@@ -67,17 +70,20 @@ class VAE:
         inp_1 = Input(shape=[latent_dim1])
         intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
         z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
-        out_1 = EE.layers.softmaxPDF(num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
+        out_1 = EE.layers.softmaxPDF(new_num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
         model_z_intensity = K.models.Model([inp_1], [z_mean, out_1])
         model_intensity = K.models.Model([inp_1], [out_1])
-
 
         self.model_train = model_train
         self.model_z_intensity = model_z_intensity
         self.model_intensity = model_intensity
         self.model_deep_feature = model_deep_feature
+        self.TOTAL_AU = TOTAL_AU
+        self.num_au = num_au
+        self.new_num_au = new_num_au
+        self.latent_dim3 = latent_dim3
 
-    def loadWeight(self, vae_model, w=None, b=None, iterative_au=False):
+    def loadWeight(self, vae_model, w=None, b=None, au_index=-1):
         self.model_train.load_weights(vae_model)
         # get weight
         layer_dict_whole_vae = dict([(layer.name, layer) for layer in self.model_train.layers])
@@ -98,7 +104,15 @@ class VAE:
         layer_dict_3layers['intermediate'].set_weights(w_intermediate)
         layer_dict_3layers['z_mean'].set_weights(w_z_mean)
         print('check the last layer of model_z_intensity: ', self.model_z_intensity.layers[-1].name)
-        self.model_z_intensity.layers[-1].set_weights(w_softmaxpdf_1)
+        print('dimension of model_z_intensity: ')
+        if self.num_au == self.new_num_au:
+            self.model_z_intensity.layers[-1].set_weights(w_softmaxpdf_1)
+        else:
+            w = w_softmaxpdf_1[0][:, au_index]
+            b = w_softmaxpdf_1[1][au_index]
+            w = w.reshape(self.latent_dim3, 1, 2)
+            b = b.reshape(1, 2)
+            self.model_z_intensity.layers[-1].set_weights([w, b])
 
 
 
@@ -119,7 +133,7 @@ class VAE:
         ##############################
         print('[vae_model]shape of loaded_weight in computeLatentVal(): ', loaded_weight[0].shape,
               loaded_weight[1].shape)
-        if (loaded_weight[1].shape[0] > 1) and (au_idx < 12):
+        if (loaded_weight[1].shape[0] > 1) and (au_idx < self.TOTAL_AU):
             w = loaded_weight[0][:, au_idx]
             b = loaded_weight[1][au_idx]
             loaded_weight = [w.reshape(2000, 1, 2), b.reshape(1, 2)]
@@ -134,7 +148,7 @@ class VAE:
             temp_vae_model = VAE((160, 240, 1), 32, 1)
             w_arr = None
             b_arr = None
-            for i in range(12):
+            for i in range(self.TOTAL_AU):
                 temp_vae_model.model_train.load_weights(vae_model + '/au' + str(i) + '.h5')
                 for j in range(len(self.model_train.layers) - 1):
                     loaded = temp_vae_model.model_train.layers[j].get_weights()
