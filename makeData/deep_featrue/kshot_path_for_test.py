@@ -76,8 +76,8 @@ for subject in test_subjects:
             for i in test_a_off_idx:
                 file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
             f.write(','.join(file_path_to_save))
-        print(">>>>> done: ", subject)
-    print("========================================= done: ", au)
+        print(">>>>> done: ", au)
+    print("========================================= done: ", subject)
 
     # copy test_b
     if not os.path.exists(save_path + "test_b/" + subject): os.makedirs(save_path + "test_b/" + subject)
