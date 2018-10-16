@@ -121,7 +121,7 @@ model_intensity.compile(
 )
 
 model_intensity.summary()
-print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[1][au_index])
+print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[1])
 
 # model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss=loss)
 # model_train.compile(K.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004),
