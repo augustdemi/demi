@@ -63,16 +63,18 @@ class VAE:
         model_deep_feature = K.models.Model([inp_0], [latent_feat])
 
         ################# Above: to load the model.
-        ################# From here, reconstruct the model from input = 2048 with only 3 required layers
+        ################# From here, reconstruct the model from input = 2048 with only 3 required layers to finetune only softmax layer
         inp_1 = Input(shape=[latent_dim1])
         intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
         z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
         out_1 = EE.layers.softmaxPDF(num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
         model_z_intensity = K.models.Model([inp_1], [z_mean, out_1])
+        model_intensity = K.models.Model([inp_1], [out_1])
 
 
         self.model_train = model_train
         self.model_z_intensity = model_z_intensity
+        self.model_intensity = model_intensity
         self.model_deep_feature = model_deep_feature
 
     def loadWeight(self, vae_model, w=None, b=None, iterative_au=False):
