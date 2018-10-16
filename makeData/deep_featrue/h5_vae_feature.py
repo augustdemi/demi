@@ -17,7 +17,7 @@ for file_name in os.listdir(path):
     files.append((int(file_name.split(".")[0].split("SN0")[1]), file_name))
 
 files.sort(key=lambda f: f[0])
-data_idx = {'train': [f[1] for f in files[:2]], 'test': [f[1] for f in files[14:]]}
+data_idx = {'train': [f[1] for f in files[:1]], 'test': [f[1] for f in files[14:]]}
 print(data_idx)
 
 
@@ -61,7 +61,8 @@ for key in data_idx.keys():
         print(">>>> file: " + file)
         f = open(path + file, 'r')
         lines = f.readlines()
-        all_features_per_sub = [np.array(line.split(',')[2:]) for line in lines]  # 0 = subejct, 1=frame index
+        all_features_per_sub = [np.array([int(elt) for elt in line.split(',')[2:]]) for line in
+                                lines]  # 0 = subejct, 1=frame index
         frames = [line.split(',')[1] for line in lines]  # 0 = subejct, 1=frame index
         subject = lines[0].split(',')[0]
         if len(all_features_per_sub) == 4846: all_features_per_sub = all_features_per_sub[:4845]
@@ -73,26 +74,17 @@ for key in data_idx.keys():
         labels.extend(label)
         subjects.extend(subject_number * np.ones(n_data))
 
-    # save_path = "D:/연구/프로젝트/DISFA/rrr/"
-    # reshaped_labels = labels[0]
-    # reshaped_subjects = subjects[0]
-    # for i in range(1, len(features)):
-    #     reshaped_labels = np.concatenate((reshaped_labels, labels[i]), axis=0)
-    #     reshaped_subjects = np.concatenate((reshaped_subjects, subjects[i]), axis=0)
-    # reshaped_features = np.array(features)
-    # print('reshaped_features', reshaped_features.shape)
-    # print('reshaped_labels', reshaped_labels.shape)
-    # print('reshaped_subjects', reshaped_subjects.shape)
-    random_idx = list(range(0, len(reshaped_features)))
+    random_idx = list(range(0, len(features)))
     random.shuffle(random_idx)
-    reshaped_features = features[random_idx]
-    reshaped_labels = labels[random_idx]
-    reshaped_subjects = subjects[random_idx]
+    features = features[random_idx]
+    labels = labels[random_idx]
+    subjects = subjects[random_idx]
 
+    print(features)
     hfs = h5py.File(save_path + key + ".h5", 'w')
-    hfs.create_dataset('feat', data=reshaped_features)
-    hfs.create_dataset('lab', data=reshaped_labels)
-    hfs.create_dataset('sub', data=reshaped_subjects)
+    hfs.create_dataset('feat', data=features)
+    hfs.create_dataset('lab', data=labels)
+    hfs.create_dataset('sub', data=subjects)
     hfs.close()
     print(save_path + key + ".h5")
     print("=========================================")
