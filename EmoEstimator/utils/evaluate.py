@@ -26,10 +26,6 @@ def _acc(y_hat, y_lab):
     def fun(y_hat,y_lab):
         y_hat = np.round(y_hat)
         y_lab = np.round(y_lab)
-        print("y_hat: ")
-        print(y_hat)
-        print("y_lab: ")
-        print(y_lab)
         return np.mean(y_hat==y_lab)
     return _process(y_hat, y_lab, fun)
 
