@@ -57,6 +57,8 @@ class summary_multi_output(Callback):
         self.nb_inputs = len(X)
 
         print(self.title)
+        print(X)
+        print(Y)
 
         X, Y = self.dat[0]
         out = print_summary(y[0], y[0], verbose=0)
@@ -74,7 +76,6 @@ class summary_multi_output(Callback):
                 tmp = tf.placeholder(tf.float32) 
                 self.dict_summary[para_name] = tmp
                 tf.summary.scalar(para_name, tmp) 
-
         self.merged = tf.summary.merge_all()
         self.writer = tf.summary.FileWriter(self.log_dir)
 
@@ -83,17 +84,23 @@ class summary_multi_output(Callback):
         for [X, Y], dset in zip(self.dat, self.title):
             print()
             print(dset)
+
             Y_hat = self.predictor(X,batch_size=self.batch_size)
+
             if type(Y_hat) is not list:Y_hat = [Y_hat]
             if self.one_hot:
                 for i in range(len(Y_hat)):
                     Y_hat[i]=Y_hat[i].argmax(2)
             for i, [y_hat, y_lab] in enumerate(zip(Y_hat, Y)):
                 print(i)
+                print(" >>>>>>>> y hat ")
+                print(y_hat)
+                print(" >>>>>>>> y lab ")
+                print(y_lab)
                 out = print_summary(
                         y_hat, y_lab, 
-                        verbose=1, 
-                        log_dir=self.log_dir+'/'+dset+'_'+str(i)+'.txt'
+                        verbose=1,
+                    log_dir=self.log_dir + '/' + dset + '_' + str(i) + '_' + str(epoch).zfill(4) + '.txt'
                         )
 
                 for metric, values in zip(out['index'], out['data']):
@@ -168,9 +175,10 @@ class summary_intensity(Callback):
         self.writer = tf.summary.FileWriter(self.log_dir)
 
     def on_epoch_end(self, epoch, logs={}):
-        print()
+        print("====== y hat / self.y =====")
         Y_hat = self.predictor.predict(self.X, batch_size=self.batch_size)
-
+        print(Y_hat)
+        print(self.Y)
         out = print_summary(Y_hat, self.Y, verbose=1)
 
         tensor_list = []
