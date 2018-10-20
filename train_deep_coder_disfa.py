@@ -126,9 +126,9 @@ n_feat = prod(shape)
 
 emb = Dropout(0.5)(emb)
 
-# latent_feat = Dense(latent_dim1, activation='relu', name='latent_feat')(emb)  # into 2048
+latent_feat = Dense(latent_dim1, activation='relu', name='latent_feat')(emb)  # into 2048
 # intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(latent_feat)  # into 500
-z_mean = Dense(latent_dim3, name='latent_feat')(emb)  # into latent_dim = 300은. output space의 dim이 될것.
+z_mean = Dense(latent_dim3, name='z_mean')(latent_feat)  # into latent_dim = 300은. output space의 dim이 될것.
 z_log_sigma = Dense(latent_dim3)(emb)
 print('==============================')
 print('emb', emb.shape)
