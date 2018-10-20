@@ -54,7 +54,7 @@ batch_size = 32  # dont change it!
 log_dir_model = './model'
 latent_dim1 = 2048
 latent_dim2 = 500
-latent_dim3 = 500
+latent_dim3 = 2048
 w_1 = args.warming / 50
 
 if args.kshot > 0:
@@ -126,13 +126,13 @@ n_feat = prod(shape)
 
 emb = Dropout(0.5)(emb)
 
-latent_feat = Dense(latent_dim1, activation='relu', name='latent_feat')(emb)  # into 2048
+# latent_feat = Dense(latent_dim1, activation='relu', name='latent_feat')(emb)  # into 2048
 # intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(latent_feat)  # into 500
-z_mean = Dense(latent_dim3, name='z_mean')(latent_feat)  # into latent_dim = 300은. output space의 dim이 될것.
-z_log_sigma = Dense(latent_dim3)(latent_feat)
+z_mean = Dense(latent_dim3, name='latent_feat')(emb)  # into latent_dim = 300은. output space의 dim이 될것.
+z_log_sigma = Dense(latent_dim3)(emb)
 print('==============================')
 print('emb', emb.shape)
-print('latent_feat', latent_feat.shape)
+# print('latent_feat', latent_feat.shape)
 # print('intermediate', intermediate.shape)
 print('z_mean', z_mean.shape)
 print('z_log_sigma', z_log_sigma.shape)
@@ -161,7 +161,7 @@ x_decoded_mean = D3(h_decoded2)
 
 print('z', z.shape)
 # print('h_decoded1', h_decoded1.shape)
-print('h_decoded2', h_decoded2.shape)
+# print('h_decoded2', h_decoded2.shape)
 print('x_decoded_mean', x_decoded_mean.shape)
 print('==============================')
 out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 layer로 디코더 실행. 근데 사실상 이 디코더에 오기까지 오리지날 트레인 x를 인코드하는거부터 시작됨. vae.
@@ -187,7 +187,7 @@ model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data,
 
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
-model_deep_feature = K.models.Model([inp_0], [latent_feat])
+model_deep_feature = K.models.Model([inp_0], [z_mean])
 
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
