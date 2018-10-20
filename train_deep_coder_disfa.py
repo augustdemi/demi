@@ -154,7 +154,7 @@ out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(Reshape((latent_dim
 
 # D1 = Dense(latent_dim2, activation='relu')  # into 500
 # D2 = Dense(latent_dim1, activation='relu')  # into 2048
-D3 = Dense(latent_dim1, activation='sigmoid')  # into 2400
+D3 = Dense(n_feat, activation='sigmoid')  # into 2400
 # h_decoded1 = D1(z)  # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
 # h_decoded2 = D2(z)
 x_decoded_mean = D3(z)
