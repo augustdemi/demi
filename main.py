@@ -269,7 +269,7 @@ def main():
     inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
     metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
-    pred_weights = data_generator.pred_weights
+    # pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
     if FLAGS.train:
         print("===================================3")
@@ -319,11 +319,11 @@ def main():
 
     print("========================================================================================")
     print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
-    print('weights from vae : ', pred_weights)
-    if FLAGS.init_weight and FLAGS.train:
-        model.weights['w1'].load(pred_weights[0], sess)
-        model.weights['b1'].load(pred_weights[1], sess)
-        print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
+    # print('weights from vae : ', pred_weights)
+    # if FLAGS.init_weight and FLAGS.train:
+    #     model.weights['w1'].load(pred_weights[0], sess)
+    #     model.weights['b1'].load(pred_weights[1], sess)
+    #     print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
 
