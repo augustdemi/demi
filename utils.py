@@ -123,7 +123,7 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
             all_feat_data.update({line[1]: line[2:]})  # key = frame, value = feature vector
 
         # on/off 이미지를 구분해 놓은 csv파일로부터 라벨별 이미지 경로 읽어와( au, subject별 on 혹은 off 이미지)
-        img_path_list = open(kshot_path + label + '/file_path.csv').readline().split(',')
+        img_path_list = open(kshot_path + '/' + label + '/file_path.csv').readline().split(',')
         feature_list_per_label = []
         for i in img_path_list:
             frame = img_path_list[i].split('/')[-1].split('.')[0]
