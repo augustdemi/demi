@@ -111,10 +111,10 @@ class DataGenerator(object):
             labelas.extend(labela_this_subj)
             labelbs.extend(labelb_this_subj)
 
-        print(">>>> inputa_features: ", inputa_features)
+        # print(">>>> inputa_features: ", inputa_features)
         print(">>> labelas: ", labelas)
         print("--------------------------------------------")
-        print(">>>> inputb_features: ", inputb_features)
+        # print(">>>> inputb_features: ", inputb_features)
         print(">>> labelbs: ", labelbs)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
