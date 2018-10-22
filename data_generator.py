@@ -28,6 +28,7 @@ class DataGenerator(object):
         self.num_classes = FLAGS.num_classes
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
+        self.weight_dim = 2048
         data_folder = FLAGS.datadir
         subjects = os.listdir(data_folder)
         subjects.sort()
@@ -134,10 +135,10 @@ class DataGenerator(object):
 
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
         inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
-                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 300])
+                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.weight_dim])
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
         inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor,
-                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 300])
+                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.weight_dim])
 
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
