@@ -37,7 +37,7 @@ class feature_layer:
         trained_model = VAE((160, 240, 1), self.batch_size, self.TOTAL_AU).model_train
         print(">>>>>>>>> model loaded from ", vae_model_name)
         trained_model.load_weights(vae_model_name + '.h5')
-        # get weight
+        #### get weight
         layer_dict_whole_vae = dict([(layer.name, layer) for layer in trained_model.layers])
         # w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
         w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
@@ -50,7 +50,7 @@ class feature_layer:
             w_softmaxpdf_1 = [w, b]
             print("[vae_model]loaded weight from MAML : ", w_softmaxpdf_1)
 
-        # set weight for 3 layers
+        #### set weight for 3 layers
         layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
         # layer_dict_3layers['intermediate'].set_weights(w_intermediate)
         layer_dict_3layers['z_mean'].set_weights(w_z_mean)
@@ -61,10 +61,12 @@ class feature_layer:
         if w_softmaxpdf_1[1].shape[0] == self.num_au:
             self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
         else:
+            print(">>>>>>>>>>> going to choose this index in VAE:", au_index)
             w = w_softmaxpdf_1[0][:, au_index]
             b = w_softmaxpdf_1[1][au_index]
             w = w.reshape(self.latent_dim3, 1, 2)
             b = b.reshape(1, 2)
+            print(w, b)
             self.model_intensity.layers[-1].set_weights([w, b])
 
 
