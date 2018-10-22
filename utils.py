@@ -11,10 +11,8 @@ FLAGS = flags.FLAGS
 
 ## Image helper
 def get_images(path, label_int, seed, nb_samples=None, validate=False):
-    subject = int(path[-1])
     print("============================================")
-    print(">>>>>>>>>>>>>subject: ", subject)
-    # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
+    print(">>>>>>>>>>>>>subject: ", path)
     labels = ['off', 'on']  # off = 0, on =1
 
     # check count of existing samples
@@ -42,9 +40,9 @@ def get_images(path, label_int, seed, nb_samples=None, validate=False):
 
         img_path_list = os.listdir(os.path.join(path, label))
         if validate:
-            random.seed(subject + seed + 10)
+            random.seed(1)
         else:
-            random.seed(subject + seed)
+            random.seed(0)
         random_imgs = random.sample(img_path_list, n_samples)
         random_img_path = [os.path.join(path, label, img) for img in random_imgs]
         return random_img_path
@@ -105,7 +103,7 @@ def get_kshot_from_img_path(path, seed, nb_samples=None, validate=False):
 
 
 def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=False):
-    subject = int(kshot_path[-1])
+    subject = int(kshot_path.split('/')[-1])
     print("============================================")
     print(">>>>>>>>>>>>>subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
@@ -115,7 +113,7 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
     feature_list = []
     for label in labels:
         # 모든 feature 파일이 존재하는 경로
-        feature_file_path = feat_path + str(subject) + '.csv'
+        feature_file_path = feat_path + '/' + subject + '.csv'
         print('=============feature_file_path: ', feature_file_path)
         f = open(feature_file_path, 'r')
         lines = f.readlines()
@@ -152,9 +150,9 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
         print("validate: ", validate)
         print("label: ", label)
         if validate:
-            random.seed(subject + seed + 10)
+            random.seed(1)
         else:
-            random.seed(subject + seed)
+            random.seed(0)
         random_features = random.sample(fetures, n_samples)
         return random_features
 
