@@ -23,6 +23,7 @@ class MAML:
         self.update_lr = FLAGS.update_lr
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
         self.classification = False
+        self.weight_dim = 2048
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
             self.classification = True
@@ -182,7 +183,7 @@ class MAML:
 
     def getWeightVar(self):
         tf.set_random_seed(FLAGS.weight_seed)
-        w1 = tf.get_variable("w1", [2000, 1, 2])
+        w1 = tf.get_variable("w1", [self.weight_dim, 1, 2])
         b1 = tf.get_variable("b1", [1, 2])
         weight_tensor = {"w1": w1, "b1": b1}
         return weight_tensor
