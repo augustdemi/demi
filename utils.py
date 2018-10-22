@@ -129,7 +129,8 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
             frame = path.split('/')[-1].split('.')[0].split('_')[0]
             feature_list_per_label.append(all_feat_data[frame])
             feature_list.append(feature_list_per_label)
-            print('=============frame: ', frame)
+            if label is 'on':
+                print('=============on frame: ', frame)
 
 
 
