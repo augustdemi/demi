@@ -115,7 +115,7 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
     feature_list = []
     for label in labels:
         # 모든 feature 파일이 존재하는 경로
-        feature_file_path = feat_path + subject + '.csv'
+        feature_file_path = feat_path + str(subject) + '.csv'
         print('=============feature_file_path: ', feature_file_path)
         f = open(feature_file_path, 'r')
         lines = f.readlines()
