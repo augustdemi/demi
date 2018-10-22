@@ -11,14 +11,14 @@ class feature_layer:
 
         latent_dim1 = 2048
         latent_dim2 = 500
-        latent_dim3 = 300
+        latent_dim3 = 2048
         num_of_intensity = 2
         TOTAL_AU = 8
 
         ################# From here, reconstruct the model from input = 2048 with only 3 required layers to finetune only softmax layer
         inp_1 = Input(shape=[latent_dim1])
-        intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
-        z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
+        # intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
+        z_mean = Dense(latent_dim3, name='z_mean')(inp_1)  # into latent_dim = 300은. output space의 dim이 될것.
         out_1 = EE.layers.softmaxPDF(num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
 
         model_intensity = K.models.Model([inp_1], [out_1])
