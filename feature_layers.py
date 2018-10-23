@@ -1,24 +1,20 @@
 import EmoEstimator as EE
 from build_vae import VAE
-from keras.layers import Dense, Lambda, Input, Reshape
+from keras.layers import Dense, Input, Reshape
 import keras as K
-import numpy as np
-import os
-
-
 class feature_layer:
     def __init__(self, batch_size, num_au):  # num_au : will be used for building soft max layer
 
         latent_dim1 = 2048
         latent_dim2 = 500
-        latent_dim3 = 2048
+        latent_dim3 = 300
         num_of_intensity = 2
         TOTAL_AU = 8
 
         ################# From here, reconstruct the model from input = 2048 with only 3 required layers to finetune only softmax layer
         inp_1 = Input(shape=[latent_dim1])
-        # intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
-        z_mean = Dense(latent_dim3, name='z_mean')(inp_1)  # into latent_dim = 300은. output space의 dim이 될것.
+        intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
+        z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
         out_1 = EE.layers.softmaxPDF(num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
 
         model_intensity = K.models.Model([inp_1], [out_1])
@@ -39,7 +35,7 @@ class feature_layer:
         trained_model.load_weights(vae_model_name + '.h5')
         #### get weight
         layer_dict_whole_vae = dict([(layer.name, layer) for layer in trained_model.layers])
-        # w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
+        w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
         w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
         print('check the last layer of model_train: ', trained_model.layers[-1].name)
         w_softmaxpdf_1 = trained_model.layers[-1].get_weights()
@@ -52,7 +48,7 @@ class feature_layer:
 
         #### set weight for 3 layers
         layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
-        # layer_dict_3layers['intermediate'].set_weights(w_intermediate)
+        layer_dict_3layers['intermediate'].set_weights(w_intermediate)
         layer_dict_3layers['z_mean'].set_weights(w_z_mean)
         print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
         trained_model.summary()
