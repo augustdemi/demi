@@ -39,12 +39,12 @@ class feature_layer:
         w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
         print('check the last layer of model_train: ', trained_model.layers[-1].name)
         w_softmaxpdf_1 = trained_model.layers[-1].get_weights()
-        print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1)
+        print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1[1])
 
         # whene w and b is not None = w and b is from MAML
         if w is not None and b is not None:
             w_softmaxpdf_1 = [w, b]
-            print("[vae_model]loaded weight from MAML : ", w_softmaxpdf_1)
+            print("[vae_model]loaded weight from MAML : ", w_softmaxpdf_1[1])
 
         #### set weight for 3 layers
         layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
