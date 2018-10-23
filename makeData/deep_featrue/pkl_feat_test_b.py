@@ -71,4 +71,4 @@ for subject in subjects:
     print('len of test_features:', len(test_features))
 
     out = open(save_path + subject + ".pkl", 'wb')
-    pickle.dump({'test_file_names': test_features, 'lab': label_per_subject}, out, protocol=2)
+    pickle.dump({'test_features': test_features, 'lab': label_per_subject}, out, protocol=2)
