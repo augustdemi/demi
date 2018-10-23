@@ -14,7 +14,7 @@ all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 for subject in subjects:
     subject_folder = os.path.join(kshot_path, subject)
     files = os.listdir(subject_folder)
-    test_file_paths = open(os.path.join(kshot_path, subject, 'file_path.csv'))
+    test_file_paths = open(os.path.join(kshot_path, subject, 'file_path.csv')).split(',')
     print('original files len in ', subject, ' : ', len(files))
     frame_idx = [int(path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for path in test_file_paths]
 
