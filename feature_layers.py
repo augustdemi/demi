@@ -62,7 +62,6 @@ class feature_layer:
             b = w_softmaxpdf_1[1][au_index]
             w = w.reshape(self.latent_dim3, 1, 2)
             b = b.reshape(1, 2)
-            print(w, b)
             self.model_intensity.layers[-1].set_weights([w, b])
 
 
