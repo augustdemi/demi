@@ -64,7 +64,7 @@ class feature_layer:
                 b = b.reshape(1, 2)
                 self.model_intensity.layers[-1].set_weights([w, b])
         else:
-            self.model_intensity.load_weight(vae_model_name + '.h5')
+            self.model_intensity.load_weights(vae_model_name + '.h5')
             # whene w and b is not None = w and b is from MAML
             if w is not None and b is not None:
                 w_softmaxpdf_1 = [w, b]

@@ -159,10 +159,12 @@ def test_all(w, b, trained_model_dir):  # In case when test the model with the w
 def test_vae_each_subject(sbjt_idx):  # In case when test the model with the whole rest frames
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
-    if FLAGS.au_idx == 8:  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
-        three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
-    else:  # 한 au를 이용하여 vae모델이 finetune된경우 레이어 갯수가 같으므로 그냥 디폴트 function으로 load
-        three_layers.model_intensity.load_weight(FLAGS.vae_model + '.h5')
+    three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
+    # if FLAGS.au_idx == 8:  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
+    #     three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
+    # else:  # 한 au를 이용하여 vae모델이 finetune된경우 레이어 갯수가 같으므로 그냥 디폴트 function으로 load
+    #     three_layers.model_intensity.load_weight(FLAGS.vae_model + '.h5')
+
     # if FLAGS.global_model:
     #     vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
     # else:
