@@ -16,7 +16,7 @@ for subject in subjects:
     files = os.listdir(subject_folder)
     test_file_paths = open(os.path.join(kshot_path, subject, 'file_path.csv'))
     print('original files len in ', subject, ' : ', len(files))
-    frame_idx = [int(path.split('/')[-1].split('.')[0].split('_')[0]) for path in test_file_paths]
+    frame_idx = [int(path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for path in test_file_paths]
 
     label_per_subject = []
     for au in all_au:
