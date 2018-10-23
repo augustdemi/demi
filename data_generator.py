@@ -2,14 +2,10 @@
 import numpy as np
 import os
 import tensorflow as tf
-import cv2
 
 from tensorflow.python.platform import flags
 from utils import get_kshot_feature
 from feature_layers import feature_layer
-from build_vae import VAE
-import EmoData as ED
-
 FLAGS = flags.FLAGS
 
 
@@ -30,11 +26,19 @@ class DataGenerator(object):
         self.dim_input = np.prod(self.img_size)
         self.weight_dim = 300
         data_folder = FLAGS.datadir
-        subjects = os.listdir(data_folder)
-        subjects.sort()
-        subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
-        self.metatrain_character_folders = subject_folders[
-                                           FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        if data_folder.split('/')[-1].startswith('au'):
+            subjects = os.listdir(data_folder)
+            subjects.sort()
+            subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
+            self.metatrain_character_folders = subject_folders[
+                                               FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        else:
+            for au in os.listdir(data_folder):
+                subjects = os.listdir(os.path.join(data_folder, au))
+                subjects.sort()
+                subject_folders = [os.path.join(data_folder, au, subject) for subject in subjects]
+                self.metatrain_character_folders = subject_folders[
+                                                   FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         if FLAGS.test_set:  # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
@@ -99,11 +103,11 @@ class DataGenerator(object):
             labelas.extend(labela_this_subj)
             labelbs.extend(labelb_this_subj)
 
-        print(">>>> inputa_features: ", inputa_features[-1])
-        print(">>> labelas: ", labelas)
+        # print(">>>> inputa_features: ", inputa_features[-1])
+        # print(">>> labelas: ", labelas)
         print("--------------------------------------------")
-        print(">>>> inputb_features: ", inputb_features[-1])
-        print(">>> labelbs: ", labelbs)
+        # print(">>>> inputb_features: ", inputb_features[-1])
+        # print(">>> labelbs: ", labelbs)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
         print(">>>>>>>>>>>>>>>>>> random seed for weight: ", FLAGS.weight_seed)
