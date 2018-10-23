@@ -23,7 +23,7 @@ class MAML:
         self.update_lr = FLAGS.update_lr
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
         self.classification = False
-        self.weight_dim = 2048
+        self.weight_dim = 300
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
             self.classification = True

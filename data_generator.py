@@ -28,26 +28,13 @@ class DataGenerator(object):
         self.num_classes = FLAGS.num_classes
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
-        self.weight_dim = 2048
+        self.weight_dim = 300
         data_folder = FLAGS.datadir
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
-        ##############################
-        if FLAGS.temp_train:
-            self.metatrain_character_folders = subject_folders[
-                                               FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + 1]
-            train_data_folder = "/home/ml1323/project/robert_data/DISFA/new_dataset/train/au12/"
-            temp_train_subjects = os.listdir(train_data_folder)
-            temp_train_subjects.sort()
-            temp_train_subject_folders = [os.path.join(train_data_folder, subject) for subject in temp_train_subjects][
-                                         :12]
-            self.metatrain_character_folders.extend(temp_train_subject_folders)
-            print("********* self.metatrain_character_folders: ", self.metatrain_character_folders)
-
-        else:  ##############################
-            self.metatrain_character_folders = subject_folders[
-                                               FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        self.metatrain_character_folders = subject_folders[
+                                           FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         if FLAGS.test_set:  # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
@@ -55,6 +42,7 @@ class DataGenerator(object):
                 self.metatest_character_folders = self.metatrain_character_folders
             else:
                 self.metatest_character_folders = self.metatrain_character_folders
+
 
     def make_data_tensor(self, train=True):
         if train:
@@ -86,11 +74,11 @@ class DataGenerator(object):
             inputa_this_subj = []
             inputb_this_subj = []
             for i in range(half_off_img):
-                inputa_this_subj.append(off_imgs[2 * i])
-                inputb_this_subj.append(off_imgs[2 * i + 1])
+                inputa_this_subj.append([float(k) for k in off_imgs[2 * i]])
+                inputb_this_subj.append([float(k) for k in off_imgs[2 * i + 1]])
             for i in range(half_on_img):
-                inputa_this_subj.append(on_imgs[2 * i])
-                inputb_this_subj.append(on_imgs[2 * i + 1])
+                inputa_this_subj.append([float(k) for k in on_imgs[2 * i]])
+                inputb_this_subj.append([float(k) for k in on_imgs[2 * i + 1]])
             labela_this_subj = [0] * half_off_img
             labela_this_subj.extend([1] * half_on_img)
             labelb_this_subj = [0] * half_off_img
