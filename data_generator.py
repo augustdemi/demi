@@ -99,10 +99,10 @@ class DataGenerator(object):
             labelas.extend(labela_this_subj)
             labelbs.extend(labelb_this_subj)
 
-        # print(">>>> inputa_features: ", inputa_features)
+        print(">>>> inputa_features: ", inputa_features[-1])
         print(">>> labelas: ", labelas)
         print("--------------------------------------------")
-        # print(">>>> inputb_features: ", inputb_features)
+        print(">>>> inputb_features: ", inputb_features[-1])
         print(">>> labelbs: ", labelbs)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
@@ -115,6 +115,11 @@ class DataGenerator(object):
         batch_size = 10
         three_layers = feature_layer(batch_size, FLAGS.num_au)
         three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
+        print('###########################################################')
+        three_layers.model_final_latent_feat.summary()
+        print('###########################################################')
+        print('loaded softmax weight of model_intensity: ',
+              three_layers.model_final_latent_feat.layers[-1].get_weights()[1])
 
         inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)
         inputb_latent_feat = three_layers.model_final_latent_feat.predict(inputb_features)
@@ -122,6 +127,7 @@ class DataGenerator(object):
         #################################################################################
 
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
+        print(inputa_latent_feat_tensor.shape)
         inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
                                                [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.weight_dim])
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
