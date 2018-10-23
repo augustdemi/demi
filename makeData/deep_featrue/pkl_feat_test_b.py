@@ -53,7 +53,7 @@ for subject in subjects:
 
     test_features = []
     # 모든 feature 파일이 존재하는 경로
-    feature_file_path = feat_path + '/' + subject + '.csv'
+    feature_file_path = os.path.join(feat_path, subject, 'file_path.csv')
     print('=============feature_file_path: ', feature_file_path)
     f = open(feature_file_path, 'r')
     lines = f.readlines()
