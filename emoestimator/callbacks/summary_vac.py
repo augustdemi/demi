@@ -30,7 +30,7 @@ class summary_vac(Callback):
             X.append(x)
             Y.append(y)
 
-        #        print("1111")
+        # print("1111")
         #        print(Y)
 
         # transpose and concatonate datasets

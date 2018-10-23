@@ -98,7 +98,7 @@ class summary_multi_output(Callback):
                 print(" >>>>>>>> y lab ")
                 print(y_lab)
                 out = print_summary(
-                        y_hat, y_lab,
+                    y_hat, y_lab,
                     verbose=1,
                     log_dir=self.log_dir + '/' + dset + '_' + str(i) + '_' + str(epoch).zfill(4) + '.txt'
                         )
