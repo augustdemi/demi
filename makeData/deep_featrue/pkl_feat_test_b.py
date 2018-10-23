@@ -65,7 +65,7 @@ for subject in subjects:
     for path in test_file_paths:
         try:
             frame = path.split('/')[-1].split('.')[0].split('_')[0]
-            test_features.append(all_feat_data[frame])
+            test_features.extend(all_feat_data[frame])
         except:
             print('CHECK DATA FOR frame: ', frame, ' from ', path)
     print('len of test_features:', len(test_features))
