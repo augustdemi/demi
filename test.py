@@ -8,7 +8,7 @@ from tensorflow.python.platform import flags
 from datetime import datetime
 import os
 import pickle
-
+from feature_layers import feature_layer
 start_time = datetime.now()
 FLAGS = flags.FLAGS
 
@@ -64,8 +64,8 @@ flags.DEFINE_string('keep_train_dir', None,
 
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
-flags.DEFINE_integer('num_au', 12, 'number of AUs used to make AE')
-flags.DEFINE_integer('au_idx', 12, 'au index to use in the given AE')
+flags.DEFINE_integer('num_au', 8, 'number of AUs used to make AE')
+flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
@@ -79,40 +79,9 @@ flags.DEFINE_string('feature_path', "", 'path for feature vector')
 
 
 def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
-    from vae_model import VAE
-    import EmoData as ED
-    import cv2
-    import pickle
     batch_size = 10
-    vae_model = VAE((160, 240, 1), batch_size, 1)
-    vae_model.loadWeight(FLAGS.vae_model, w, b)
-
-    pp = ED.image_pipeline.FACE_pipeline(
-        histogram_normalization=True,
-        grayscale=True,
-        resize=True,
-        rotation_range=3,
-        width_shift_range=0.03,
-        height_shift_range=0.03,
-        zoom_range=0.03,
-        random_flip=True,
-    )
-
-    def get_y_hat(file_names):
-        nb_samples = len(file_names)
-        t0, t1 = 0, batch_size
-        yhat = []
-        while True:
-            t1 = min(nb_samples, t1)
-            file_names_batch = file_names[t0:t1]
-            imgs = [cv2.imread(filename) for filename in file_names_batch]
-            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-            pred = vae_model.testWithSavedModel(img_arr)
-            yhat.extend(pred)
-            if t1 == nb_samples: break
-            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
-            t1 += batch_size
-        return np.array(yhat)
+    three_layers = feature_layer(batch_size, FLAGS.num_au)
+    three_layers.loadWeight(FLAGS.vae_model, w, b, au_index=FLAGS.au_idx)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
@@ -121,8 +90,8 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
 
     print("============> subject: ", test_subject)
     data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-    test_file_names = data['test_file_names']
-    y_hat = get_y_hat(test_file_names)
+    test_features = data['test_features']
+    y_hat = three_layers.model_final_latent_feat.predict(test_features)
     lab = data['lab'][:, FLAGS.au_idx]
     y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
     return y_hat, y_lab
@@ -184,56 +153,25 @@ def test_all(w, b, trained_model_dir):  # In case when test the model with the w
 
 
 def test_vae_each_subject(sbjt_idx):  # In case when test the model with the whole rest frames
-    from vae_model import VAE
-    import EmoData as ED
-    import cv2
-    import pickle
     batch_size = 10
-
-    vae_model = VAE((160, 240, 1), batch_size, FLAGS.num_au)
-    if FLAGS.global_model:
-        vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
-    else:
-        vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_idx) + '.h5', None, None, FLAGS.iterative_au)
-
-    pp = ED.image_pipeline.FACE_pipeline(
-        histogram_normalization=True,
-        grayscale=True,
-        resize=True,
-        rotation_range=3,
-        width_shift_range=0.03,
-        height_shift_range=0.03,
-        zoom_range=0.03,
-        random_flip=True,
-    )
-
-    def get_y_hat(file_names):
-        nb_samples = len(file_names)
-        t0, t1 = 0, batch_size
-        yhat = []
-        while True:
-            t1 = min(nb_samples, t1)
-            file_names_batch = file_names[t0:t1]
-            imgs = [cv2.imread(filename) for filename in file_names_batch]
-            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-            pred = vae_model.testWithSavedModel(img_arr)
-            yhat.extend(pred)
-            if t1 == nb_samples: break
-            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
-            t1 += batch_size
-        return np.array(yhat)
-
+    three_layers = feature_layer(batch_size, FLAGS.num_au)
+    three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
+    # if FLAGS.global_model:
+    #     vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
+    # else:
+    #     vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_idx) + '.h5', None, None, FLAGS.iterative_au)
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
     test_subject = test_subjects[sbjt_idx]
 
     print("============> subject: ", test_subject)
     data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-    test_file_names = data['test_file_names']
-    y_hat = get_y_hat(test_file_names)
+    test_features = data['test_features']
+    y_hat = three_layers.model_final_latent_feat.predict(test_features)
     lab = data['lab'][:, FLAGS.au_idx]
     y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
     return y_hat, y_lab
+
 
 
 def test_vae_global_model():
@@ -300,6 +238,8 @@ def test_vae_global_model():
 
 def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
+    TOTAL_NUM_AU = 8
+    all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
     if FLAGS.train == False:
         orig_meta_batch_size = FLAGS.meta_batch_size
@@ -360,8 +300,8 @@ def main():
 
     ################## Test ##################
     def _load_weight(trained_model_dir):
-        all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-        if FLAGS.au_idx < 12: all_au = [all_au[FLAGS.au_idx]]
+        all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
+        if FLAGS.au_idx < TOTAL_NUM_AU: all_au = [all_au[FLAGS.au_idx]]
         w_arr = None
         b_arr = None
         for au in all_au:
@@ -405,8 +345,8 @@ def main():
         return w_arr, b_arr
 
     def _load_weight_local(trained_model_dir, sbjt_idx):
-        all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-        if FLAGS.au_idx < 12: all_au = [all_au[FLAGS.au_idx]]
+        all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
+        if FLAGS.au_idx < TOTAL_NUM_AU: all_au = [all_au[FLAGS.au_idx]]
         w_arr = None
         b_arr = None
         for au in all_au:
@@ -509,8 +449,6 @@ def main():
         print("<<<<<<<<<<<< NOT CONCATENATE >>>>>>>>>>>>>>")
         if FLAGS.robert:
             test_all()
-        all_au = ['au1', 'au2', 'au4', 'au5', 'au6', 'au9', 'au12', 'au15', 'au17', 'au20', 'au25', 'au26']
-        # all_au=['au12']
         if FLAGS.test_test:
             trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
                 FLAGS.meta_batch_size) + '.ubs_' + str(
