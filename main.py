@@ -255,21 +255,12 @@ def main():
     dim_input = data_generator.dim_input
 
     if FLAGS.train:  # only construct training model if needed
-        print("===================================1")
-
-        # image_tensor, label_tensor = data_generator.make_data_tensor()
-        # inputa = tf.slice(image_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1]) #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
-        # #여기서 NK는 N개씩 K번 쌓은것. N개씩 쌓을때 0~N-1의 라벨을 하나씩 담되 랜덤 순서로 담음.
-        # inputb = tf.slice(image_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1])  #(모든 task수, NK, 모든 dim) = (meta_batch_size, NK, 2000)
-        # labela = tf.slice(label_tensor, [0, 0, 0], [-1, num_classes * FLAGS.update_batch_size, -1])  #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
-        # labelb = tf.slice(label_tensor, [0, num_classes * FLAGS.update_batch_size, 0], [-1, -1, -1]) #(모든 task수, NK, 모든 label) = (meta_batch_size, NK, N)
         inputa, inputb, labela, labelb = data_generator.make_data_tensor()
         metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
     metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
-    # pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
     if FLAGS.train:
         print("===================================3")
@@ -304,13 +295,6 @@ def main():
 
     print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
 
-    # if FLAGS.stop_grad:
-    #     trained_model_dir += 'stopgrad'
-    # if FLAGS.baseline:
-    #     trained_model_dir += FLAGS.baseline
-    # else:
-    #     print('Norm setting not recognized.')
-
 
     resume_itr = 0
 
@@ -319,11 +303,6 @@ def main():
 
     print("========================================================================================")
     print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
-    # print('weights from vae : ', pred_weights)
-    # if FLAGS.init_weight and FLAGS.train:
-    #     model.weights['w1'].load(pred_weights[0], sess)
-    #     model.weights['b1'].load(pred_weights[1], sess)
-    #     print('updated weights from vae?: ', FLAGS.init_weight, sess.run(model.weights['w1']), sess.run('model/b1:0'))
     print("========================================================================================")
 
 
