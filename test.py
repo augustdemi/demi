@@ -348,11 +348,7 @@ def main():
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/all_aus/' + trained_model_dir)
         print(">>>> model_file from all_aus: ", model_file)
         if (model_file == None):
-            print(
-                "############################################################################################")
-            print("####################################################################### None for ", au)
-            print(
-                "############################################################################################")
+            print("####################################################################### None for all_aus")
         else:
             if FLAGS.test_iter > 0:
                 files = os.listdir(model_file[:model_file.index('model')])
