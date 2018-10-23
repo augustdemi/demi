@@ -295,7 +295,7 @@ def main():
     tf.train.start_queue_runners()
 
     print("========================================================================================")
-    print('initial weights: ', sess.run(model.weights['w1']), sess.run('model/b1:0'))
+    print('initial weights: ', sess.run('model/b1:0'))
 
     print("========================================================================================")
 
@@ -371,6 +371,8 @@ def main():
             saver.restore(sess, model_file)
             w = sess.run('model/w1:0')
             b = sess.run('model/b1:0')
+            print("updated weights from ckpt: ", w, b)
+            print('----------------------------------------------------------')
         return w, b
 
 
