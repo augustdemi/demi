@@ -170,9 +170,9 @@ def test_vae_each_subject(sbjt_idx):  # In case when test the model with the who
     y_hat = three_layers.model_final_latent_feat.predict(test_features)
     if FLAGS.au_idx < 8:
         lab = data['lab'][:, FLAGS.au_idx]
+        y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
     else:
-        lab = data['lab']
-    y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
+        y_lab = data['lab']
     return y_hat, y_lab
 
 
