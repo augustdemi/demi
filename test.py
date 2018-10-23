@@ -346,7 +346,7 @@ def main():
         model_file = None
         print('--------- model file dir: ', FLAGS.logdir + '/all_aus/' + trained_model_dir)
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/all_aus/' + trained_model_dir)
-        print(">>>> model_file from ", au, ": ", model_file)
+        print(">>>> model_file from all_aus: ", model_file)
         if (model_file == None):
             print(
                 "############################################################################################")
