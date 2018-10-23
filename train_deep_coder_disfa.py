@@ -54,7 +54,7 @@ batch_size = 32  # dont change it!
 log_dir_model = './model'
 latent_dim1 = 2048
 latent_dim2 = 500
-latent_dim3 = 2048
+latent_dim3 = 300
 w_1 = args.warming / 50
 
 if args.kshot > 0:
@@ -127,8 +127,8 @@ n_feat = prod(shape)
 emb = Dropout(0.5)(emb)
 
 latent_feat = Dense(latent_dim1, activation='relu', name='latent_feat')(emb)  # into 2048
-# intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(latent_feat)  # into 500
-z_mean = Dense(latent_dim3, name='z_mean')(latent_feat)  # into latent_dim = 300은. output space의 dim이 될것.
+intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(latent_feat)  # into 500
+z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
 z_log_sigma = Dense(latent_dim3)(latent_feat)
 print('==============================')
 print('emb', emb.shape)
@@ -137,9 +137,9 @@ print('emb', emb.shape)
 print('z_mean', z_mean.shape)
 print('z_log_sigma', z_log_sigma.shape)
 
-def sampling(args): ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
+
+def sampling(args):
     z_mean, z_log_sigma = args
-    # batch_size = 32
     epsilon = []
     for m, s in zip(np.zeros(latent_dim3), np.ones(latent_dim3)):
         epsilon.append(KB.random_normal(shape=[batch_size, 1], mean=m, std=s))
@@ -152,11 +152,11 @@ z = Lambda(sampling, output_shape=(latent_dim3,))([z_mean, z_log_sigma])  # 발�
 out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(Reshape((latent_dim3, 1))(z_mean))
 # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
-# D1 = Dense(latent_dim2, activation='relu')  # into 500
+D1 = Dense(latent_dim2, activation='relu')  # into 500
 D2 = Dense(latent_dim1, activation='relu')  # into 2048
 D3 = Dense(n_feat, activation='sigmoid')  # into 2400
-# h_decoded1 = D1(z)  # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
-h_decoded2 = D2(z)
+h_decoded1 = D1(z)  # latent space에서 샘플링한 z를 인풋으로하여 아웃풋도 latent space인 fullyconnected layer
+h_decoded2 = D2(h_decoded1)
 x_decoded_mean = D3(h_decoded2)
 
 print('z', z.shape)
@@ -176,15 +176,14 @@ def rec_loss(img, rec):
     return mse
 
 def pred_loss(y_true, y_pred):
-    # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     ce = EE.losses.categorical_crossentropy(y_true, y_pred)
     return (1 - w_1) * ce
 
 
 loss = [rec_loss, pred_loss, vae_loss]
 
-model_train = K.models.Model([inp_0], [out_0, out_1, out_0]) #inp_0: train data, out_0 : reconstruted img, out_1: predicted label. (vae)에서 쌓은 레이어로 모델만듦
-
+model_train = K.models.Model([inp_0], [out_0, out_1,
+                                       out_0])  # inp_0: train data, out_0 : reconstruted img, out_1: predicted label.
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
 model_deep_feature = K.models.Model([inp_0], [z_mean])
@@ -211,9 +210,7 @@ model_train.compile(
 
 model_train.summary()
 
-# model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss=loss)
-# model_train.compile(K.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004),
-#                     loss=loss)
+
 from keras.callbacks import EarlyStopping
 
 early_stopping = EarlyStopping(monitor='softmaxpdf_1_loss', patience=3, verbose=1)
@@ -230,20 +227,19 @@ model_train.fit_generator(
             # early_stopping,
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
-                predictor = model_au_int.predict, # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
+                predictor=model_au_int.predict,
                 batch_size = batch_size,
                 title = ['TR','TE'],
                 one_hot=True,
                 log_dir=sum_mult_out_dir,
             ),
             EE.callbacks.summary_vac_disfa(
-                gen = generator(TE, False, s=True), # data augment 되지 않은, 형태가 [img], [img, lab, img]인 데이터
-                predictor = model_rec_z_y.predict, # reconstructed x와 z mean얻어냄
+                gen=generator(TE, False, s=True),
+                predictor=model_rec_z_y.predict,
                 log_dir=sum_vac_disfa_dir,
                 nb_batches=10,
                 batch_size=batch_size,
-                ),
-            # K.callbacks.ModelCheckpoint(model_name),
+            )
             ]
         )
 
