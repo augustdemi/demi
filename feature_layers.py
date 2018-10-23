@@ -64,8 +64,34 @@ class feature_layer:
             b = b.reshape(1, 2)
             self.model_intensity.layers[-1].set_weights([w, b])
 
+    def loadWeight_m0(self, vae_model_name, w, b, au_index=-1):
 
-    # only for test_test. 로드한 weight으로 pred값 도출. 배치로 한방에 predict하기 위해 로버트 모델을 쓴것.
-    def testWithSavedModel(self, x):
-        pred = self.model_intensity.predict(x, batch_size=len(x))
-        return pred
+        trained_model = VAE((160, 240, 1), self.batch_size, self.TOTAL_AU).model_train
+        print(">>>>>>>>> model loaded from ", vae_model_name)
+        trained_model.load_weights(vae_model_name + '.h5')
+        #### get weight
+        layer_dict_whole_vae = dict([(layer.name, layer) for layer in trained_model.layers])
+        w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
+        w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
+        print('check the last layer of model_train: ', trained_model.layers[-1].name)
+        w_softmaxpdf_1 = []
+        print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1)
+        import numpy as np
+        # whene w and b is not None = w and b is from MAML
+        w_arr = w
+        b_arr = b
+        for i in range(7):
+            w_arr = np.hstack((w_arr, w))
+            b_arr = np.vstack((b_arr, b))
+        w_softmaxpdf_1 = [w_arr, b_arr]
+        print("[vae_model] w shape from MAML : ", w_softmaxpdf_1[0].shape)
+        print("[vae_model] b shape from MAML : ", w_softmaxpdf_1[1].shape)
+        print("[vae_model]loaded weight from MAML : ", w_softmaxpdf_1[1])
+
+        #### set weight for 3 layers
+        layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
+        layer_dict_3layers['intermediate'].set_weights(w_intermediate)
+        layer_dict_3layers['z_mean'].set_weights(w_z_mean)
+        print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
+
+        self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
