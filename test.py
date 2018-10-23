@@ -168,7 +168,10 @@ def test_vae_each_subject(sbjt_idx):  # In case when test the model with the who
     data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
     test_features = data['test_features']
     y_hat = three_layers.model_final_latent_feat.predict(test_features)
-    lab = data['lab'][:, FLAGS.au_idx]
+    if FLAGS.au_idx < 8:
+        lab = data['lab'][:, FLAGS.au_idx]
+    else:
+        lab = data['lab']
     y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
     return y_hat, y_lab
 
