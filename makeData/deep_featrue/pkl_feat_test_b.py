@@ -60,7 +60,7 @@ for subject in subjects:
     all_feat_data = {}  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
     for line in lines:
         line = line.split(',')
-        all_feat_data.update({line[1]: line[2:]})  # key = frame, value = feature vector
+        all_feat_data.update({line[1]: [[float(k) for k in line[2:]]]})  # key = frame, value = feature vector
 
     for path in test_file_paths:
         try:
@@ -68,7 +68,7 @@ for subject in subjects:
             test_features.append(all_feat_data[frame])
         except:
             print('CHECK DATA FOR frame: ', frame, ' from ', path)
-    print('len of test_features:', test_features)
+    print('len of test_features:', len(test_features))
 
     out = open(save_path + subject + ".pkl", 'wb')
     pickle.dump({'test_file_names': test_features, 'lab': label_per_subject}, out, protocol=2)
