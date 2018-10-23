@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 kshot_path = "/home/ml1323/project/robert_data/DISFA/kshot_path/test_b/"
-feat_path = "/home/ml1323/project/robert_data/DISFA/kshot_path/test_b/"
+feat_path = "/home/ml1323/project/robert_data/DISFA/deep_feature200/"
 save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path/testset/"
 if not os.path.exists(save_path): os.makedirs(save_path)
 
@@ -53,7 +53,7 @@ for subject in subjects:
 
     test_features = []
     # 모든 feature 파일이 존재하는 경로
-    feature_file_path = os.path.join(feat_path, subject, 'file_path.csv')
+    feature_file_path = feat_path + '/' + subject + '.csv'
     print('=============feature_file_path: ', feature_file_path)
     f = open(feature_file_path, 'r')
     lines = f.readlines()
