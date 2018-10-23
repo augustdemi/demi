@@ -139,7 +139,6 @@ def _pcc(y_hat, y_lab):
             return res
     return _process(y_hat, y_lab, fun)
 
-
 def print_summary(y_hat, y_lab, log_dir=None, verbose=1, mode='max'):
     assert(y_hat.shape==y_lab.shape)
 

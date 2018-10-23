@@ -30,9 +30,13 @@ class summary_vac(Callback):
             X.append(x)
             Y.append(y)
 
+        #        print("1111")
+        #        print(Y)
 
         # transpose and concatonate datasets
         Y = list(map(list, zip(*Y)))
+        #        print("22222")
+        #        print(Y)
         Y = [np.vstack(i) for i in Y]
 
         X = list(map(list, zip(*X)))
@@ -43,10 +47,24 @@ class summary_vac(Callback):
 
 
     def on_epoch_end(self, epoch, logs={}):
-        REC, Z = self.predictor(self.X, batch_size=self.batch_size)
+        REC, Z, Y_hat = self.predictor(self.X, batch_size=self.batch_size)
         print()
         print('mean---->',Z.mean())
         print('var----->',Z.var())
+
+        # ==============================================
+        path = self.log_dir + "/latent.pkl"
+
+        #       print("================ sum vac ===============")
+        #       print(self.Y[1])
+        #       print(Y_hat)
+        import pickle
+        z_out = open(path, 'wb')
+        pickle.dump({'z': Z, 'y': self.Y[1], 'y_pred': Y_hat}, z_out, protocol=2)
+
+        # ==============================================
+
+
 
         OUT = []
         for img, rec in zip(self.X[0], REC):

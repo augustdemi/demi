@@ -159,8 +159,11 @@ def test_all(w, b, trained_model_dir):  # In case when test the model with the w
 def test_vae_each_subject(sbjt_idx):  # In case when test the model with the whole rest frames
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
-    three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
+    # three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
+    three_layers.model_intensity.load_weights(FLAGS.vae_model + '.h5')
+    three_layers.model_intensity.layers[-1].get_weights()
     # if FLAGS.global_model:
+
     #     vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
     # else:
     #     vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_idx) + '.h5', None, None, FLAGS.iterative_au)

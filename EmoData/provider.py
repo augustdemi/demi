@@ -39,16 +39,7 @@ def flow_from_hdf5(
 
             data = f[key]
             batch = data[t0:t1]
-            #if(key == 'img'):
-            #    files = data[t0:t1]
-            #    batch = []
-            #    for file in files:
-            #        img = cv2.imread(file)
-            #        resized_img = cv2.resize(img, (160,240))
-            #        batch.append(resized_img)
-            #    batch = np.array(batch)
-            #else:
-            #    batch = data[t0:t1]
+
             if padding != None and batch.shape[0] < batch_size:
                 if padding == 'same':
                     batch = data[-batch_size:]
