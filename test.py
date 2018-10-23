@@ -257,7 +257,6 @@ def main():
     inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
     metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
-    pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
     model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
     model.summ_op = tf.summary.merge_all()
