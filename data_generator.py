@@ -33,12 +33,13 @@ class DataGenerator(object):
             self.metatrain_character_folders = subject_folders[
                                                FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         else:
+            self.metatrain_character_folders = []
             for au in os.listdir(data_folder):
                 subjects = os.listdir(os.path.join(data_folder, au))
                 subjects.sort()
                 subject_folders = [os.path.join(data_folder, au, subject) for subject in subjects]
-                self.metatrain_character_folders = subject_folders[
-                                                   FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+                self.metatrain_character_folders.extend(subject_folders[
+                                                        FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size])
         if FLAGS.test_set:  # In test, runs only one test task for the entered subject
             self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
         else:
