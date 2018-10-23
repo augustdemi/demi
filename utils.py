@@ -105,6 +105,7 @@ def get_kshot_from_img_path(path, seed, nb_samples=None, validate=False):
 def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=False):
     subject = kshot_path.split('/')[-1]
     print("============================================")
+    print('=============kshot_path: ', kshot_path)
     print(">>>>>>>>>>>>>subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     labels = ['off', 'on']  # off = 0, on =1
