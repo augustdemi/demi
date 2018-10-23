@@ -122,12 +122,16 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
             line = line.split(',')
             all_feat_data.update({line[1]: line[2:]})  # key = frame, value = feature vector
 
+
         # on/off 이미지를 구분해 놓은 csv파일로부터 라벨별 이미지 경로 읽어와( au, subject별 on 혹은 off 이미지)
         img_path_list = open(kshot_path + '/' + label + '/file_path.csv').readline().split(',')
         frame_n_feature_per_label = []
-        for path in img_path_list:
-            frame = path.split('/')[-1].split('.')[0].split('_')[0]
-            frame_n_feature_per_label.append((frame, all_feat_data[frame]))
+        if len(img_path_list) > 0:
+            for path in img_path_list:
+                frame = path.split('/')[-1].split('.')[0].split('_')[0]
+                frame_n_feature_per_label.append((frame, all_feat_data[frame]))
+        else:
+            print('NO DATA FOR LABEL: ', label)
         frames_n_features.append(frame_n_feature_per_label)
 
     print('frames_n_features: ', len(frames_n_features[0]), len(frames_n_features[1]))
