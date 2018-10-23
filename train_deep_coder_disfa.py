@@ -58,15 +58,15 @@ latent_dim3 = 300
 w_1 = args.warming / 50
 
 if args.kshot > 0:
-    TR = ED.provider.flow_from_folder_kshot(args.training_data, batch_size, padding='same',
-                                            sbjt_start_idx=args.start_idx,
-                                            meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
+    TR = ED.provider_disfa.flow_from_folder_kshot(args.training_data, batch_size, padding='same',
+                                                  sbjt_start_idx=args.start_idx,
+                                                  meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
 elif args.balance and au_index < TOTAL_AU:
-    TR = ED.provider.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
+    TR = ED.provider_disfa.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
-    TR = ED.provider.flow_from_hdf5(args.training_data, batch_size, padding='same')
+    TR = ED.provider_disfa.flow_from_hdf5(args.training_data, batch_size, padding='same')
 
-TE = ED.provider.flow_from_hdf5(args.test_data, batch_size, padding='same')
+TE = ED.provider_disfa.flow_from_hdf5(args.test_data, batch_size, padding='same')
 
 
 pp = ED.image_pipeline.FACE_pipeline(

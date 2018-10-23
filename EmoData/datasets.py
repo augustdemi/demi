@@ -1,6 +1,6 @@
 import numpy as np
 import glob
-from .provider import flow_from_hdf5, flow_from_np_array
+from .provider_disfa import flow_from_hdf5, flow_from_np_array
 
 def _make_one_hot(dat, nb_classes):
     tmp = np.zeros([dat.shape[0],nb_classes])

@@ -12,7 +12,7 @@ def categorical_crossentropy(y_true, y_pred):
     skip = tf.reduce_min(tf.to_int32(skip), 1)[:, None]
     skip = tf.to_float(skip)
 
-    loss = K.losses.categorical_crossentropy(y_true, y_pred)
-
-
+    loss = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
+    print("skip: ", skip)
+    # loss = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     return loss * skip

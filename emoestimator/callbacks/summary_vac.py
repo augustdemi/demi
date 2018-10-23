@@ -30,7 +30,7 @@ class summary_vac(Callback):
             X.append(x)
             Y.append(y)
 
-        # print("1111")
+        #        print("1111")
         #        print(Y)
 
         # transpose and concatonate datasets
@@ -62,7 +62,7 @@ class summary_vac(Callback):
         z_out = open(path, 'wb')
         pickle.dump({'z': Z, 'y': self.Y[1], 'y_pred': Y_hat}, z_out, protocol=2)
 
-        # ==============================================
+        #==============================================
 
 
 

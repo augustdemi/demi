@@ -57,8 +57,6 @@ class summary_multi_output(Callback):
         self.nb_inputs = len(X)
 
         print(self.title)
-        print(X)
-        print(Y)
 
         X, Y = self.dat[0]
         out = print_summary(y[0], y[0], verbose=0)
@@ -93,10 +91,10 @@ class summary_multi_output(Callback):
                     Y_hat[i]=Y_hat[i].argmax(2)
             for i, [y_hat, y_lab] in enumerate(zip(Y_hat, Y)):
                 print(i)
-                print(" >>>>>>>> y hat ")
-                print(y_hat)
-                print(" >>>>>>>> y lab ")
-                print(y_lab)
+                # print(" >>>>>>>> y hat ")
+                # print(y_hat)
+                # print(" >>>>>>>> y lab ")
+                # print(y_lab)
                 out = print_summary(
                     y_hat, y_lab,
                     verbose=1,
