@@ -115,11 +115,6 @@ class DataGenerator(object):
         batch_size = 10
         three_layers = feature_layer(batch_size, FLAGS.num_au)
         three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
-        print('###########################################################')
-        three_layers.model_final_latent_feat.summary()
-        print('###########################################################')
-        print('loaded softmax weight of model_intensity: ',
-              three_layers.model_final_latent_feat.layers[-1].get_weights()[1])
 
         inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)
         inputb_latent_feat = three_layers.model_final_latent_feat.predict(inputb_features)
