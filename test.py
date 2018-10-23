@@ -442,8 +442,9 @@ def main():
                     FLAGS.meta_batch_size) + '.ubs_' + str(
                     FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                     FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
-            w_arr, b_arr = _load_weight_m0(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
-            # w_arr, b_arr = _load_weight(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+            if not FLAGS.robert:
+                w_arr, b_arr = _load_weight_m0(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+                # w_arr, b_arr = _load_weight(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
 
 
             for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
