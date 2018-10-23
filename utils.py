@@ -148,9 +148,6 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
     print('num_samples_to_select: ', num_samples_to_select)
 
     def sampler(frames_n_features, n_samples):
-        print("-------------------------------")
-        print("validate: ", validate)
-        print("label: ", label)
         if validate:
             random.seed(1)
         else:
@@ -160,9 +157,15 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
 
     # 각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     off_random_frames_n_features = sampler(frames_n_features[0], num_samples_to_select[0])
+    print("-------------------------------")
+    print("validate: ", validate)
+    print("label: ", label[0])
     print('num of off_images: ', len(off_random_frames_n_features))
     print('off_frames: ', [elt[0] for elt in off_random_frames_n_features])
     on_random_frames_n_features = sampler(frames_n_features[1], num_samples_to_select[1])
+    print("-------------------------------")
+    print("validate: ", validate)
+    print("label: ", label[1])
     print('num of on_images: ', len(on_random_frames_n_features))
     print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
     return [elt[1] for elt in off_random_frames_n_features], [elt[1] for elt in on_random_frames_n_features]
