@@ -35,8 +35,8 @@ class DataGenerator(object):
         else:
             self.metatrain_character_folders = []
             all_aus = os.listdir(data_folder)
-            num_subjects = FLAGS.meta_batch_size / len(all_aus)
-            print('FOR M0 - num_subjects in one au: ', num_subjects)
+            num_subjects = int(FLAGS.meta_batch_size / len(all_aus))
+            print('FOR M0 - num_subjects in one au: ', FLAGS.meta_batch_size / len(all_aus))
             for au in all_aus:
                 subjects = os.listdir(os.path.join(data_folder, au))
                 subjects.sort()
