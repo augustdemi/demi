@@ -65,6 +65,7 @@ flags.DEFINE_string('keep_train_dir', None,
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 8, 'number of AUs used to make AE')
+flags.DEFINE_integer('num_au_to_test', 8, 'number of AUs to test')
 flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
@@ -81,6 +82,10 @@ flags.DEFINE_string('feature_path', "", 'path for feature vector')
 def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
+    print("!!!!!!!!!!!!!!!!!!")
+    print(w.shape)
+    print("!!!!!!!!!!!!!!!!!!")
+
     three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
