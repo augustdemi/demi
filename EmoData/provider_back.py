@@ -211,7 +211,7 @@ def flow_from_folder(path_to_folder,
     return res_gen
 
 
-def flow_from_folder_kshot(path_to_folder,
+def flow_from_folder_kshot(path_to_folder, kshot_seed,
                            batch_size=64,
                            padding=None,
                            sbjt_start_idx=0,
@@ -235,7 +235,8 @@ def flow_from_folder_kshot(path_to_folder,
     # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
     for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
         # random.shuffle(sampled_character_folders)
-        off_imgs, on_imgs = get_images(sub_folder, range(2), 0, nb_samples=update_batch_size * 2, validate=False)
+        off_imgs, on_imgs = get_images(sub_folder, range(2), kshot_seed, nb_samples=update_batch_size * 2,
+                                       validate=False)
         # Split data into a/b
         half_off_img = int(len(off_imgs) / 2)
         half_on_img = int(len(on_imgs) / 2)
@@ -332,4 +333,115 @@ def flow_from_folder_kshot(path_to_folder,
     for key in f:
         res_gen[key] = _make_generator(f[key], key)
 
+    return res_gen
+
+
+def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
+                         batch_size=64,
+                         padding=None,
+                         sbjt_start_idx=0,
+                         meta_batch_size=13,
+                         update_batch_size=30
+                         ):
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    from utils import get_kshot_feature
+    import cv2
+
+    subjects = os.listdir(path_to_folder)
+    subjects.sort()
+    subject_folders = [os.path.join(path_to_folder, subject) for subject in subjects]
+    folders = subject_folders[sbjt_start_idx:sbjt_start_idx + meta_batch_size]
+
+    inputa_features = []
+    inputb_features = []
+    labelas = []
+    labelbs = []
+    # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
+    for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
+        # random.shuffle(sampled_character_folders)
+        off_feat, on_feat = get_kshot_feature(sub_folder, feature_path, kshot_seed,
+                                              nb_samples=update_batch_size * 2, validate=False)
+        # Split data into a/b
+        half_off_img = int(len(off_feat) / 2)
+        half_on_img = int(len(on_feat) / 2)
+        inputa_this_subj = []
+        inputb_this_subj = []
+        for i in range(half_off_img):
+            inputa_this_subj.append([float(k) for k in off_feat[2 * i]])
+            inputb_this_subj.append([float(k) for k in off_feat[2 * i + 1]])
+        for i in range(half_on_img):
+            inputa_this_subj.append([float(k) for k in on_feat[2 * i]])
+            inputb_this_subj.append([float(k) for k in on_feat[2 * i + 1]])
+        labela_this_subj = [[1, 0]] * half_off_img
+        labela_this_subj.extend([[0, 1]] * half_on_img)
+        labelb_this_subj = [[1, 0]] * half_off_img
+        labelb_this_subj.extend([[0, 1]] * half_on_img)
+
+        inputa_features.extend(inputa_this_subj)
+        inputb_features.extend(inputb_this_subj)
+        labelas.extend(labela_this_subj)
+        labelbs.extend(labelb_this_subj)
+
+    print(">>>> inputa_files: ", inputa_features)
+    print("--------------------------------------------")
+    print(">>>> inputb_files: ", inputb_features)
+    print(">>> labelas: ", labelas)
+    #################################################################################
+
+    inputa_features.extend(inputb_features)
+    labelas.extend(labelbs)
+    labelas = np.array(labelas)
+    labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
+
+    sub = []
+    subjects = subjects[sbjt_start_idx:sbjt_start_idx + meta_batch_size]
+    for i in range(len(subjects)): sub.extend([subjects[i]] * update_batch_size * 4)
+    print(sub)
+    print(">>> img shape: ", np.array(inputa_features).shape)
+    print(">>> label shape: ", labelas.shape)
+    print(">>> sub shape: ", np.array(sub).shape)
+    np.random.seed(1)
+    np.random.shuffle(inputa_features)
+    np.random.seed(1)
+    np.random.shuffle(labelas)
+    np.random.seed(1)
+    np.random.shuffle(sub)
+
+    f = {'feat': np.array(inputa_features), 'lab': labelas, 'sub': np.array(sub)}
+
+    nb_samples = len(inputa_features)
+    nb_batches = math.ceil(nb_samples / batch_size)
+    print('-----------------------------------')
+    print('nb_samples: ', nb_samples)
+    print('nb_batches: ', nb_batches)
+    print('-----------------------------------')
+
+    def _make_generator(data, key):
+
+        t0, t1 = 0, batch_size
+
+        while True:
+
+            t1 = min(nb_samples, t1)
+            if t0 >= nb_samples:
+                t0, t1 = 0, batch_size
+            batch = data[t0:t1]
+
+            if padding != None and batch.shape[0] < batch_size:
+                if padding == 'same':
+                    batch = data[-batch_size:]
+                else:
+                    tmp = padding * np.ones([batch_size, *batch.shape[1:]])
+                    tmp[:batch.shape[0]] = batch
+                    batch = tmp
+            t0 += batch_size
+            t1 += batch_size
+            yield batch
+
+    res_gen = {}
+    res_gen['nb_samples'] = nb_samples
+    res_gen['nb_batches'] = nb_batches
+    for key in f:
+        res_gen[key] = _make_generator(f[key], key)
     return res_gen
