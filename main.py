@@ -159,8 +159,8 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
                 save_path = "./logs/result/train/" + trained_model_dir + "/"
                 if FLAGS.train_test:
-                    retrained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
-                        FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
+                    retrained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
+                        FLAGS.train_update_batch_size) + '.numstep' + str(
                         FLAGS.num_updates) + '.updatelr' + str(
                         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
                     save_path += retrained_model_dir
@@ -205,12 +205,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             print("===============> Final out weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
             if FLAGS.train_test:
-                retrained_model_dir = '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
-                    FLAGS.meta_batch_size) + '.ubs_' + str(FLAGS.train_update_batch_size) + '.numstep' + str(
-                    FLAGS.num_updates) + '.updatelr' + str(
-                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-
-                save_path = FLAGS.logdir + '/' + trained_model_dir + retrained_model_dir
+                save_path = FLAGS.logdir + '/' + trained_model_dir
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
                 saver.save(sess, save_path + '/model' + str(itr))
@@ -291,10 +286,6 @@ def main():
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-    if FLAGS.train_test:
-        trained_model_dir = FLAGS.keep_train_dir
-    elif FLAGS.local_subj > 0:
-        trained_model_dir = FLAGS.keep_train_dir
 
     print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
 
@@ -318,15 +309,11 @@ def main():
     if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
         if FLAGS.train_test:
-            tmp_trained_model_dir = trained_model_dir + '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
-                FLAGS.meta_batch_size) + '.ubs_' + str(
+            trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + tmp_trained_model_dir)
-            print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + tmp_trained_model_dir)
-        else:
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
-            print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
+        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+        print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
 
         w = None
         b = None
