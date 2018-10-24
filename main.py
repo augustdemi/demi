@@ -318,10 +318,7 @@ def main():
     # train_train or train_test
     if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
-        if FLAGS.train_train:
-            model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
-            print(">>>>> trained_model_dir of m0: ", FLAGS.keep_train_dir)
-        elif FLAGS.train_test:
+        if FLAGS.train_test:
             tmp_trained_model_dir = trained_model_dir + '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
                 FLAGS.meta_batch_size) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
@@ -351,8 +348,13 @@ def main():
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
             print('resume_itr: ', resume_itr)
-    elif FLAGS.train_test:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
-        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+
+    elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
+        if FLAGS.train_train:
+            model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
+            print(">>>>> trained_model_dir of m0: ", FLAGS.keep_train_dir)
+        else:
+            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
         if FLAGS.test_iter > 0:
             files = os.listdir(model_file[:model_file.index('model')])
             if 'model' + str(FLAGS.test_iter) + '.index' in files:
@@ -364,11 +366,7 @@ def main():
         w = sess.run('model/w1:0').tolist()
         b = sess.run('model/b1:0').tolist()
         print("updated weights from ckpt: ", np.array(w), np.array(b))
-        ind1 = model_file.index('model')
-        if FLAGS.train_test:
-            resume_itr = 0
-        else:
-            resume_itr = int(model_file[ind1 + 5:])
+        resume_itr = 0
         print('resume_itr: ', resume_itr)
 
     print("=====================================================================================")
