@@ -69,7 +69,7 @@ flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
-flags.DEFINE_bool('global_model', True, 'model is trained with all train/test tasks')
+flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
 flags.DEFINE_bool('robert', False, 'model is trained with all train/test tasks')
 flags.DEFINE_bool('iterative_au', False,
                   'if vae_model is needed to be iteratively load per each au. In this case, vae_model should be dir, not file')
@@ -165,7 +165,7 @@ def test_vae_each_subject(sbjt_idx):  # In case when test the model with the who
     # else:  # 한 au를 이용하여 vae모델이 finetune된경우 레이어 갯수가 같으므로 그냥 디폴트 function으로 load
     #     three_layers.model_intensity.load_weight(FLAGS.vae_model + '.h5')
 
-    # if FLAGS.global_model:
+    # if FLAGS.all_sub_model:
     #     vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
     # else:
     #     vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_idx) + '.h5', None, None, FLAGS.iterative_au)
@@ -436,7 +436,7 @@ def main():
         y_hat = []
         y_lab = []
 
-        if FLAGS.global_model:  # 모델이 모든 subjects를 이용해 train된 경우
+        if FLAGS.all_sub_model:  # 모델이 모든 subjects를 이용해 train된 경우
             if FLAGS.test_test:  # 모델이 모든 train or test tasks로 학습된거기때문에 항상 0부터 meta_batch_size까지 이용해서 구해진거가됨
                 trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(0) + ':' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(
