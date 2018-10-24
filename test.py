@@ -305,11 +305,7 @@ def main():
         return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
     print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
-    save_path = "./logs/result/test_test/" + trained_model_dir
-    if FLAGS.test_train:
-        save_path = "./logs/result/test_train/" + trained_model_dir
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
+    save_path = "./logs/result/"
     y_hat = []
     y_lab = []
 
