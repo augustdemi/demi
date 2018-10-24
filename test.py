@@ -81,8 +81,7 @@ flags.DEFINE_string('feature_path', "", 'path for feature vector')
 def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
-    # three_layers.loadWeight_m0(FLAGS.vae_model, w, b, au_index=FLAGS.au_idx)
-    three_layers.loadWeight(FLAGS.vae_model, w, b, au_index=FLAGS.au_idx)
+    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
