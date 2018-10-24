@@ -426,106 +426,55 @@ def main():
         w_arr, b_arr = _load_weight_local(trained_model_dir, sbjt_start_idx)
         return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
-    if FLAGS.global_test:  # subject별로 테스트 값을 concatenate 하여 테스트: 모델이 각 subject별로 생성되었을때만 오게됨
-        print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
-        save_path = "./logs/result/test_test/" + trained_model_dir
-        if FLAGS.test_train:
-            save_path = "./logs/result/test_train/" + trained_model_dir
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        y_hat = []
-        y_lab = []
+    print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
+    save_path = "./logs/result/test_test/" + trained_model_dir
+    if FLAGS.test_train:
+        save_path = "./logs/result/test_train/" + trained_model_dir
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    y_hat = []
+    y_lab = []
 
-        if FLAGS.all_sub_model:  # 모델이 모든 subjects를 이용해 train된 경우
-            if FLAGS.test_test:  # 모델이 모든 train or test tasks로 학습된거기때문에 항상 0부터 meta_batch_size까지 이용해서 구해진거가됨
-                trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(0) + ':' + str(
-                    FLAGS.meta_batch_size) + '.ubs_' + str(
-                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-            else:
-                trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
-                    FLAGS.meta_batch_size) + '.ubs_' + str(
-                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-            if not FLAGS.robert:
-                w_arr, b_arr = _load_weight_m0(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
-                # w_arr, b_arr = _load_weight(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
-
-
-            for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-                if FLAGS.robert:
-                    result = test_vae_each_subject(i)
-                else:
-                    result = test_each_subject(w_arr, b_arr, i)
-                y_hat.append(result[0])
-                y_lab.append(result[1])
-                print("y_hat shape:", result[0].shape)
-                print("y_lab shape:", result[1].shape)
-                print(">> y_hat_all shape:", np.vstack(y_hat).shape)
-                print(">> y_lab_all shape:", np.vstack(y_lab).shape)
-            print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
-        else:  # 모델이 각 subject 별로 train된 경우: vae와 MAML의 train_test두 경우에만 존재 가능 + local weight test의 경우
-            for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-                if FLAGS.local:
-                    result = _per_subject_model_from_global(i)
-                else:
-                    result = _per_subject_model(i)  # weight load를 subject별로 다르게 주게 됨
-                y_hat.append(result[0])
-                y_lab.append(result[1])
-                print("y_hat shape:", result[0].shape)
-                print("y_lab shape:", result[1].shape)
-                print(">> y_hat_all shape:", np.vstack(y_hat).shape)
-                print(">> y_lab_all shape:", np.vstack(y_lab).shape)
-            print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
-
-    # 각 subject별로 테스트할뿐 concatenate하지 않음
-    else:
-        print("<<<<<<<<<<<< NOT CONCATENATE >>>>>>>>>>>>>>")
-        if FLAGS.robert:
-            test_all()
-        if FLAGS.test_test:
-            trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
+    if FLAGS.all_sub_model:  # 모델이 모든 subjects를 이용해 train된 경우
+        if FLAGS.test_test:  # 모델이 모든 train or test tasks로 학습된거기때문에 항상 0부터 meta_batch_size까지 이용해서 구해진거가됨
+            trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(0) + ':' + str(
                 FLAGS.meta_batch_size) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-        w_arr = None
-        b_arr = None
-        for au in all_au:
-            model_file = None
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
-            print(">>>> model_file from ", au, ": ", model_file)
-            if (model_file == None):
-                print(
-                    "############################################################################################")
-                print("####################################################################### None for ", au)
-                print(
-                    "############################################################################################")
-            else:
-                if FLAGS.test_iter > 0:
-                    files = os.listdir(model_file[:model_file.index('model')])
-                    if 'model' + str(FLAGS.test_iter) + '.index' in files:
-                        model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                        print(">>>> model_file2: ", model_file)
-                    else:
-                        print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
-                print("Restoring model weights from " + model_file)
-                saver.restore(sess, model_file)
-                w = sess.run('model/w1:0')
-                b = sess.run('model/b1:0')
-                if w_arr is None:
-                    w_arr = w
-                    b_arr = b
-                else:
-                    w_arr = np.hstack((w_arr, w))
-                    b_arr = np.vstack((b_arr, b))
-                print("updated weights from ckpt: ", w, b)
-                print('----------------------------------------------------------')
+        else:
+            trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
+                FLAGS.meta_batch_size) + '.ubs_' + str(
+                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+        if not FLAGS.robert:
+            w_arr, b_arr = _load_weight_m0(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+            # w_arr, b_arr = _load_weight(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
 
-        if FLAGS.init_weight and (model_file == None):
-            w_arr = None
-            b_arr = None
-            print(">>>>>>>>>> test robert's model ")
-        test_all(w_arr, b_arr, trained_model_dir)
+        for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+            if FLAGS.robert:
+                result = test_vae_each_subject(i)
+            else:
+                result = test_each_subject(w_arr, b_arr, i)
+            y_hat.append(result[0])
+            y_lab.append(result[1])
+            print("y_hat shape:", result[0].shape)
+            print("y_lab shape:", result[1].shape)
+            print(">> y_hat_all shape:", np.vstack(y_hat).shape)
+            print(">> y_lab_all shape:", np.vstack(y_lab).shape)
+        print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
+    else:  # 모델이 각 subject 별로 train된 경우: vae와 MAML의 train_test두 경우에만 존재 가능 + local weight test의 경우
+        for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+            if FLAGS.local:
+                result = _per_subject_model_from_global(i)
+            else:
+                result = _per_subject_model(i)  # weight load를 subject별로 다르게 주게 됨
+            y_hat.append(result[0])
+            y_lab.append(result[1])
+            print("y_hat shape:", result[0].shape)
+            print("y_lab shape:", result[1].shape)
+            print(">> y_hat_all shape:", np.vstack(y_hat).shape)
+            print(">> y_lab_all shape:", np.vstack(y_lab).shape)
+        print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
 
     end_time = datetime.now()
     elapse = end_time - start_time
