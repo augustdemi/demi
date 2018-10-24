@@ -70,7 +70,7 @@ flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert 
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_bool('global_test', False, 'get test evaluation throughout all test tasks')
 flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
-flags.DEFINE_bool('robert', False, 'model is trained with all train/test tasks')
+flags.DEFINE_string('model', '', 'model name')
 flags.DEFINE_bool('iterative_au', False,
                   'if vae_model is needed to be iteratively load per each au. In this case, vae_model should be dir, not file')
 flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
@@ -101,74 +101,21 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     return y_hat, y_lab
 
 
-def test_all(w, b, trained_model_dir):  # In case when test the model with the whole rest frames
-    from vae_model import VAE
-    import EmoData as ED
-    import cv2
-    import pickle
-    batch_size = 10
-    vae_model = VAE((160, 240, 1), batch_size, 12)
-    vae_model.loadWeight(FLAGS.vae_model, w, b)
-
-    pp = ED.image_pipeline.FACE_pipeline(
-        histogram_normalization=True,
-        grayscale=True,
-        resize=True,
-        rotation_range=3,
-        width_shift_range=0.03,
-        height_shift_range=0.03,
-        zoom_range=0.03,
-        random_flip=True,
-    )
-
-    def get_y_hat(file_names):
-        nb_samples = len(file_names)
-        t0, t1 = 0, batch_size
-        yhat = []
-        while True:
-            t1 = min(nb_samples, t1)
-            file_names_batch = file_names[t0:t1]
-            imgs = [cv2.imread(filename) for filename in file_names_batch]
-            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-            pred = vae_model.testWithSavedModel(img_arr)
-            yhat.extend(pred)
-            if t1 == nb_samples: break
-            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
-            t1 += batch_size
-        return np.array(yhat)
-
-    test_subjects = os.listdir(FLAGS.testset_dir)
-    test_subjects.sort()
-    test_subjects = test_subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.num_test_tasks]
-    print("test_subjects: ", test_subjects)
-
-    for test_subject in test_subjects:
-        print("============> subject: ", test_subject)
-        data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-        test_file_names = data['test_file_names']
-        y_hat = get_y_hat(test_file_names)
-        save_path = "./logs/result/test_test/" + trained_model_dir
-        if FLAGS.test_train:
-            save_path = "./logs/result/test_train/" + trained_model_dir
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        print_summary(y_hat, data['lab'],
-                      log_dir=save_path + "/" + test_subject.split(".")[0] + ".txt")
-
-
 def test_vae_each_subject(sbjt_idx):  # In case when test the model with the whole rest frames
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
-    three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
-    # if FLAGS.au_idx == 8:  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
-    #     three_layers.loadWeight(FLAGS.vae_model, au_index=FLAGS.au_idx)
-    # else:  # 한 au를 이용하여 vae모델이 finetune된경우 레이어 갯수가 같으므로 그냥 디폴트 function으로 load
-    #     three_layers.model_intensity.load_weight(FLAGS.vae_model + '.h5')
+    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=8)
+    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx)
 
-    # if FLAGS.all_sub_model:
-    #     vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
-    # else:
-    #     vae_model.loadWeight(FLAGS.vae_model + '/sub' + str(sbjt_idx) + '.h5', None, None, FLAGS.iterative_au)
+    if FLAGS.model is 's1':  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
+        three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=8)
+    else:
+        if FLAGS.all_sub_model:
+            three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx)
+        else:
+            three_layers.loadWeight(FLAGS.vae_model + '_subject' + str(sbjt_idx) + '_kshot' + str(
+                FLAGS.train_update_batch_size) + '_iter50.h5', FLAGS.au_idx)
+
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
     test_subject = test_subjects[sbjt_idx]
@@ -177,75 +124,13 @@ def test_vae_each_subject(sbjt_idx):  # In case when test the model with the who
     data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
     test_features = data['test_features']
     y_hat = three_layers.model_intensity.predict(test_features)
-    if FLAGS.au_idx < 8:
-        lab = data['lab'][:, FLAGS.au_idx]
-        y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
-    else:
+
+    if FLAGS.model is 's1':
         y_lab = data['lab']
-    return y_hat, y_lab
-
-
-
-def test_vae_global_model():
-    from vae_model import VAE
-    import EmoData as ED
-    import cv2
-    import pickle
-    batch_size = 10
-
-    vae_model = VAE((160, 240, 1), batch_size, FLAGS.num_au)
-    vae_model.loadWeight(FLAGS.vae_model, None, None, FLAGS.iterative_au)
-
-    pp = ED.image_pipeline.FACE_pipeline(
-        histogram_normalization=True,
-        grayscale=True,
-        resize=True,
-        rotation_range=3,
-        width_shift_range=0.03,
-        height_shift_range=0.03,
-        zoom_range=0.03,
-        random_flip=True,
-    )
-
-    def get_y_hat(file_names):
-        nb_samples = len(file_names)
-        t0, t1 = 0, batch_size
-        yhat = []
-        while True:
-            t1 = min(nb_samples, t1)
-            file_names_batch = file_names[t0:t1]
-            imgs = [cv2.imread(filename) for filename in file_names_batch]
-            img_arr, pts, pts_raw = pp.batch_transform(imgs, preprocessing=True, augmentation=False)
-            pred = vae_model.testWithSavedModel(img_arr)
-            yhat.extend(pred)
-            if t1 == nb_samples: break
-            t0 += batch_size  # 작업한 배치 사이즈만큼 t0와 t1늘림
-            t1 += batch_size
-        return np.array(yhat)
-
-    test_subjects = os.listdir(FLAGS.testset_dir)
-    test_subjects.sort()
-
-    test_subjects = test_subjects[0:FLAGS.num_test_tasks]
-
-    print("test_subjects: ", test_subjects)
-
-    y_hat_all = []
-    y_lab_all = []
-    for test_subject in test_subjects:
-        print("============> subject: ", test_subject)
-        data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-        test_file_names = data['test_file_names']
-        y_hat = get_y_hat(test_file_names)
+    else:
         lab = data['lab'][:, FLAGS.au_idx]
         y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
-        y_hat_all.append(y_hat)
-        y_lab_all.append(y_lab)
-        print("y_hat shape:", y_hat.shape)
-        print("y_lab shape:", y_lab.shape)
-        print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
-        print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
-    print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/test.txt")
+    return y_hat, y_lab
 
 
 def main():
@@ -289,9 +174,7 @@ def main():
     if FLAGS.train_update_lr == -1:
         FLAGS.train_update_lr = FLAGS.update_lr
 
-    trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
-        FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+
     if FLAGS.train_test or FLAGS.train_test_inc:
         trained_model_dir = FLAGS.keep_train_dir
 
@@ -410,10 +293,10 @@ def main():
         return w_arr, b_arr
 
     def _per_subject_model(sbjt_start_idx):
-        if FLAGS.robert:
+        if FLAGS.model.startswith('s'):
             return test_vae_each_subject(sbjt_start_idx)
         else:
-            trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(sbjt_start_idx) + ':1' + '.ubs_' + str(
+            trained_model_dir = '/sbjt' + str(sbjt_start_idx) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
             w_arr, b_arr = _load_weight(trained_model_dir)
@@ -436,22 +319,18 @@ def main():
     y_lab = []
 
     if FLAGS.all_sub_model:  # 모델이 모든 subjects를 이용해 train된 경우
-        if FLAGS.test_test:  # 모델이 모든 train or test tasks로 학습된거기때문에 항상 0부터 meta_batch_size까지 이용해서 구해진거가됨
-            trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(0) + ':' + str(
-                FLAGS.meta_batch_size) + '.ubs_' + str(
-                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-        else:
-            trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
-                FLAGS.meta_batch_size) + '.ubs_' + str(
-                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-        if not FLAGS.robert:
-            w_arr, b_arr = _load_weight_m0(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
-            # w_arr, b_arr = _load_weight(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+        print('---------------- all sub model ----------------')
 
+        ### get path to load weight for 'm' models
+        trained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
+            FLAGS.meta_batch_size) + '.ubs_' + str(
+            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+        w_arr, b_arr = _load_weight(FLAGS.logdir + trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+
+        ### test per each subject and concatenate
         for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-            if FLAGS.robert:
+            if FLAGS.model.startswith('s'):
                 result = test_vae_each_subject(i)
             else:
                 result = test_each_subject(w_arr, b_arr, i)
