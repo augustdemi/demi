@@ -344,7 +344,7 @@ def main():
             saver.restore(sess, model_file)
             w = sess.run('model/w1:0').tolist()
             b = sess.run('model/b1:0').tolist()
-            print("updated weights from ckpt: ", np.array(w), np.array(b))
+            print("updated weights from ckpt: ", np.array(b))
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
             print('resume_itr: ', resume_itr)
@@ -365,7 +365,7 @@ def main():
         saver.restore(sess, model_file)
         w = sess.run('model/w1:0').tolist()
         b = sess.run('model/b1:0').tolist()
-        print("updated weights from ckpt: ", np.array(w), np.array(b))
+        print("updated weights from ckpt: ", np.array(b))
         resume_itr = 0
         print('resume_itr: ', resume_itr)
 
