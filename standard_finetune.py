@@ -27,7 +27,6 @@ parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at wh
 parser.add_argument("-g", "--gpu", type=str, default='0,1,2,3', help="files created from GP")
 parser.add_argument("-rm", "--restored_model", type=str, default='', help="already trianed model to restore")
 parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
-parser.add_argument("-f", "--fine_tune", type=bool, default=False, help="if want to fine tune, gives True")
 parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate")
 parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make the dataset balanced or not")
 parser.add_argument("-kshot", "--kshot", type=int, default=0, help="test kshot learning")
@@ -96,8 +95,6 @@ def pred_loss(y_true, y_pred):
 
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
-sum_mult_out_dir += '/fine_tune'
-sum_vac_disfa_dir += '/fine_tune'
 
 three_layers = feature_layer(batch_size, 1)
 three_layers.loadWeight(args.restored_model, au_index=au_index)
