@@ -350,11 +350,11 @@ def main():
             print('resume_itr: ', resume_itr)
 
     elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
-        if FLAGS.train_train:
-            model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
-            print(">>>>> trained_model_dir of m0: ", FLAGS.keep_train_dir)
-        else:
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
+        resume_itr = 0
+        print('resume_itr: ', resume_itr)
+        model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
+        print(">>>>> base_model_dir: ", FLAGS.keep_train_dir)
+
         if FLAGS.test_iter > 0:
             files = os.listdir(model_file[:model_file.index('model')])
             if 'model' + str(FLAGS.test_iter) + '.index' in files:
@@ -363,12 +363,7 @@ def main():
 
         print("2. Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
-        w = sess.run('model/w1:0').tolist()
-        b = sess.run('model/b1:0').tolist()
-        print("updated weights from ckpt: ", np.array(b))
-        resume_itr = 0
-        print('resume_itr: ', resume_itr)
-
+        print("updated weights from ckpt: ", sess.run('model/b1:0'))
     print("=====================================================================================")
 
     if FLAGS.train:
