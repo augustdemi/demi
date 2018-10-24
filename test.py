@@ -41,7 +41,7 @@ flags.DEFINE_bool('train', True, 'True to train, False to test.')
 flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest model)')
 flags.DEFINE_integer('num_test_pts', 1, 'number of iteration to increase the test points')
 flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, False for the validation set.')
-flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
+flags.DEFINE_integer('subject_idx', 0, 'subject index to test')
 flags.DEFINE_integer('train_update_batch_size', -1,
                      'number of examples used for gradient update during training (use if you want to test with a different number).')
 flags.DEFINE_float('train_update_lr', -1,
@@ -174,11 +174,6 @@ def main():
     if FLAGS.train_update_lr == -1:
         FLAGS.train_update_lr = FLAGS.update_lr
 
-
-    if FLAGS.train_test or FLAGS.train_test_inc:
-        trained_model_dir = FLAGS.keep_train_dir
-
-    print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
 
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
