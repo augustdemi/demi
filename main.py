@@ -350,6 +350,10 @@ def main():
         print("2. Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
         print("updated weights from ckpt: ", sess.run('model/b1:0'))
+        if FLAGS.train_test:
+            trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
+                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
     print("=====================================================================================")
 
     if FLAGS.train:
