@@ -21,7 +21,6 @@ parser.add_argument("-tr", "--training_data", type=str, default='/home/mihee/dev
 parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
                     help="path to test data set")
 parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
-parser.add_argument("-dec", "--decoder", type=bool, default=True, help="train decoder layer or not")
 parser.add_argument("-au", "--au_index", type=int, default=8, help="au index")
 parser.add_argument("-num_au", "--num_au", type=int, default=8, help="number of au to make the model previously.")
 parser.add_argument("-e", "--init_epoch", type=int, default=0, help="Epoch at which to start training")
