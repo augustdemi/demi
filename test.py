@@ -291,7 +291,7 @@ def main():
 
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
     if FLAGS.train_test or FLAGS.train_test_inc:
         trained_model_dir = FLAGS.keep_train_dir
 
@@ -446,7 +446,7 @@ def main():
                 trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(
                     FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
             if not FLAGS.robert:
                 w_arr, b_arr = _load_weight_m0(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
                 # w_arr, b_arr = _load_weight(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문

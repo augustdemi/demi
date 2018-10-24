@@ -75,6 +75,7 @@ flags.DEFINE_float('train_update_lr', -1,
                    'value of inner gradient step step during training. (use if you want to test with a different value)')  # 0.1 for omniglot
 
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
+flags.DEFINE_bool('train_train', False, 're-train model with the train')
 flags.DEFINE_bool('train_test', False, 're-train model with the test set')
 flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
 flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
@@ -296,20 +297,13 @@ def main():
 
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.initweight' + str(FLAGS.init_weight)
+        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
     if FLAGS.train_test:
         trained_model_dir = FLAGS.keep_train_dir
     elif FLAGS.local_subj > 0:
         trained_model_dir = FLAGS.keep_train_dir
 
     print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
-
-    # if FLAGS.stop_grad:
-    #     trained_model_dir += 'stopgrad'
-    # if FLAGS.baseline:
-    #     trained_model_dir += FLAGS.baseline
-    # else:
-    #     print('Norm setting not recognized.')
 
 
     resume_itr = 0
@@ -335,8 +329,10 @@ def main():
     # train_train or train_test
     if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
-
-        if FLAGS.train_test:
+        if FLAGS.train_train:
+            model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
+            print(">>>>> trained_model_dir of m0: ", FLAGS.keep_train_dir)
+        elif FLAGS.train_test:
             tmp_trained_model_dir = trained_model_dir + '/' + 'sbjt' + str(FLAGS.sbjt_start_idx) + ':' + str(
                 FLAGS.meta_batch_size) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
