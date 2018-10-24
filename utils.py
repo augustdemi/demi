@@ -105,8 +105,8 @@ def get_kshot_from_img_path(path, seed, nb_samples=None, validate=False):
 def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=False):
     subject = kshot_path.split('/')[-1]
     print("============================================")
-    print('=============kshot_path: ', kshot_path)
-    print(">>>>>>>>>>>>>subject: ", subject)
+    print('kshot_path: ', kshot_path)
+    print("subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     labels = ['off', 'on']  # off = 0, on =1
 
@@ -115,7 +115,7 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
     for label in labels:
         # 모든 feature 파일이 존재하는 경로
         feature_file_path = feat_path + '/' + subject + '.csv'
-        print('=============feature_file_path: ', feature_file_path)
+        print('feature_file_path: ', feature_file_path)
         f = open(feature_file_path, 'r')
         lines = f.readlines()
         all_feat_data = {}  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
@@ -135,7 +135,7 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
             print('CHECK DATA FOR LABEL: ', label, ' - ', img_path_list)
         frames_n_features.append(frame_n_feature_per_label)
 
-    print('frames_n_features: ', len(frames_n_features[0]), len(frames_n_features[1]))
+    print('total off / on: ', len(frames_n_features[0]), len(frames_n_features[1]))
     # make the balance
     num_samples_to_select = [nb_samples, nb_samples]
     if len(frames_n_features[0]) < nb_samples:

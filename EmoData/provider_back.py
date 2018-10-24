@@ -357,6 +357,7 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
     inputb_features = []
     labelas = []
     labelbs = []
+    print('subject_folders: ', subject_folders)
     # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
     for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
         # random.shuffle(sampled_character_folders)
@@ -383,10 +384,6 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
         labelas.extend(labela_this_subj)
         labelbs.extend(labelb_this_subj)
 
-    print(">>>> inputa_files: ", inputa_features)
-    print("--------------------------------------------")
-    print(">>>> inputb_files: ", inputb_features)
-    print(">>> labelas: ", labelas)
     #################################################################################
 
     inputa_features.extend(inputb_features)
