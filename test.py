@@ -209,7 +209,6 @@ def main():
                         print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
                 print("Restoring model weights from " + model_file)
                 print('---------------------------------------------')
-                print(sess.run('model/w1:0'))
                 print(sess.run('model/b1:0'))
                 print(sess.run('model/w1:0').shape)
                 print(sess.run('model/b1:0').shape)
@@ -247,7 +246,7 @@ def main():
             saver.restore(sess, model_file)
             w = sess.run('model/w1:0')
             b = sess.run('model/b1:0')
-            print("updated weights from ckpt: ", w, b)
+            print("updated weights from ckpt: ", b)
             print('----------------------------------------------------------')
         return w, b
 
@@ -267,7 +266,6 @@ def main():
             print(">>>> model_file2: ", model_file)
             print("Restoring model weights from " + model_file)
             print('---------------------------------------------')
-            print(sess.run('model/w1:0'))
             print(sess.run('model/b1:0'))
             print(sess.run('model/w1:0').shape)
             print(sess.run('model/b1:0').shape)
@@ -282,7 +280,7 @@ def main():
             else:
                 w_arr = np.hstack((w_arr, w))
                 b_arr = np.vstack((b_arr, b))
-            print("updated weights from ckpt: ", w, b)
+            print("updated weights from ckpt: ", b)
             print('----------------------------------------------------------')
         return w_arr, b_arr
 
