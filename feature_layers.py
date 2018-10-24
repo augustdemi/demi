@@ -30,7 +30,7 @@ class feature_layer:
     # 이미 만들어진 vae로 부터 3개 레이어에 대한 weight만 취해옴
     def loadWeight(self, vae_model_name, au_index, num_au_for_rm=1, w=None, b=None):
         if num_au_for_rm > 1:
-            trained_model = VAE((160, 240, 1), self.batch_size, self.TOTAL_AU).model_train
+            trained_model = VAE((160, 240, 1), self.batch_size, num_au_for_rm).model_train
             print(">>>>>>>>> model loaded from ", vae_model_name)
             trained_model.load_weights(vae_model_name + '.h5')
             #### get weight
