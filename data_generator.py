@@ -123,7 +123,7 @@ class DataGenerator(object):
         batch_size = 10
         three_layers = feature_layer(batch_size, FLAGS.num_au)
         if FLAGS.model.startswith('s4'):
-            three_layers.loadWeight(FLAGS.vae_model + '_subject0.h5', FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
+            three_layers.loadWeight(FLAGS.vae_model + '_subject0', FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
         else:
             three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
         inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)
