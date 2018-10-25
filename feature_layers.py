@@ -56,11 +56,14 @@ class feature_layer:
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
             else:
                 print(">>>>>>>>>>> going to choose this index in VAE:", au_index)
-                w = w_softmaxpdf_1[0][:, au_index]
-                b = w_softmaxpdf_1[1][au_index]
-                w = w.reshape(self.latent_dim3, 1, 2)
-                b = b.reshape(1, 2)
-                self.model_intensity.layers[-1].set_weights([w, b])
+                try:
+                    w = w_softmaxpdf_1[0][:, au_index]
+                    b = w_softmaxpdf_1[1][au_index]
+                    w = w.reshape(self.latent_dim3, 1, 2)
+                    b = b.reshape(1, 2)
+                    self.model_intensity.layers[-1].set_weights([w, b])
+                except IndexError as err:
+                    print("###########################IndexError:", err)
         else:
             self.model_intensity.load_weights(vae_model_name + '.h5')
             # whene w and b is not None = w and b is from MAML
