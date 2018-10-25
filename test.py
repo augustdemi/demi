@@ -113,7 +113,7 @@ def test_vae_each_subject(sbjt_idx):  # In case when test the model with the who
         if FLAGS.all_sub_model:
             three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx)
         else:
-            three_layers.loadWeight(FLAGS.vae_model + '_subject' + str(sbjt_idx) + '.h5', FLAGS.au_idx)
+            three_layers.loadWeight(FLAGS.vae_model + '_subject' + str(sbjt_idx), FLAGS.au_idx)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
