@@ -106,8 +106,6 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
 def test_vae_each_subject(sbjt_idx):  # In case when test the model with the whole rest frames
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
-    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=8)
-    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx)
 
     if FLAGS.model is 's1':  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
         three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=8)
