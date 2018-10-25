@@ -95,6 +95,7 @@ flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert 
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_string('feature_path', "", 'path for feature vector')
 flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
+flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -350,7 +351,7 @@ def main():
         print("2. Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
         print("updated weights from ckpt: ", sess.run('model/b1:0'))
-        if FLAGS.train_test:
+        if not FLAGS.all_sub_model:
             trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
                 FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
