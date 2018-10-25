@@ -228,7 +228,7 @@ def main():
                 else:
                     w_arr = np.hstack((w_arr, w))
                     b_arr = np.vstack((b_arr, b))
-                print("updated weights from ckpt: ", w, b)
+                print("updated weights from ckpt: ", b)
                 print('----------------------------------------------------------')
         return w_arr, b_arr
 

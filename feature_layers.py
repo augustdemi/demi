@@ -51,8 +51,6 @@ class feature_layer:
             layer_dict_3layers['intermediate'].set_weights(w_intermediate)
             layer_dict_3layers['z_mean'].set_weights(w_z_mean)
             print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
-            trained_model.summary()
-            self.model_intensity.summary()
 
             if w_softmaxpdf_1[1].shape[0] == self.num_au:
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
