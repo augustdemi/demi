@@ -107,7 +107,7 @@ def test_vae_each_subject(sbjt_idx):  # In case when test the model with the who
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
 
-    if FLAGS.model is 's1':  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
+    if FLAGS.model.startswith('s1'):  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
         three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=8)
     else:
         if FLAGS.all_sub_model:
@@ -124,7 +124,7 @@ def test_vae_each_subject(sbjt_idx):  # In case when test the model with the who
     test_features = data['test_features']
     y_hat = three_layers.model_intensity.predict(test_features)
 
-    if FLAGS.model is 's1':
+    if FLAGS.model.startswith('s1'):
         y_lab = data['lab']
     else:
         lab = data['lab'][:, FLAGS.au_idx]
