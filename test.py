@@ -252,40 +252,6 @@ def main():
             print('----------------------------------------------------------')
         return w, b
 
-
-    def _load_weight_local(trained_model_dir, sbjt_idx):
-        all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-        if FLAGS.au_idx < TOTAL_NUM_AU: all_au = [all_au[FLAGS.au_idx]]
-        w_arr = None
-        b_arr = None
-        for au in all_au:
-            model_file = None
-            print('--------- model file dir: ', FLAGS.logdir + '/' + au + '/' + trained_model_dir)
-            model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
-            print(">>>> model_file from ", au, ": ", model_file)
-
-            model_file = model_file[:model_file.index('subject')] + 'subject' + str(sbjt_idx)
-            print(">>>> model_file2: ", model_file)
-            print("Restoring model weights from " + model_file)
-            print('---------------------------------------------')
-            print(sess.run('model/b1:0'))
-            print(sess.run('model/w1:0').shape)
-            print(sess.run('model/b1:0').shape)
-            print('---------------------------------------------')
-
-            saver.restore(sess, model_file)
-            w = sess.run('model/w1:0')
-            b = sess.run('model/b1:0')
-            if w_arr is None:
-                w_arr = w
-                b_arr = b
-            else:
-                w_arr = np.hstack((w_arr, w))
-                b_arr = np.vstack((b_arr, b))
-            print("updated weights from ckpt: ", b)
-            print('----------------------------------------------------------')
-        return w_arr, b_arr
-
     def _per_subject_model(sbjt_start_idx):
         if FLAGS.model.startswith('s'):
             return test_vae_each_subject(sbjt_start_idx)
@@ -296,18 +262,11 @@ def main():
             w_arr, b_arr = _load_weight(trained_model_dir)
             return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
-    def _per_subject_model_from_global(sbjt_start_idx):
-        trained_model_dir = FLAGS.keep_train_dir + '/' + 'sbjt' + str(0) + ':13' + '.ubs_' + str(
-            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '/local/'
-        w_arr, b_arr = _load_weight_local(trained_model_dir, sbjt_start_idx)
-        return test_each_subject(w_arr, b_arr, sbjt_start_idx)
 
     print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
     save_path = "./logs/result/"
     y_hat = []
     y_lab = []
-
     if FLAGS.all_sub_model:  # 모델이 모든 subjects를 이용해 train된 경우
         print('---------------- all sub model ----------------')
 
@@ -333,10 +292,7 @@ def main():
         print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
     else:  # 모델이 각 subject 별로 train된 경우: vae와 MAML의 train_test두 경우에만 존재 가능 + local weight test의 경우
         for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-            if FLAGS.local:
-                result = _per_subject_model_from_global(i)
-            else:
-                result = _per_subject_model(i)  # weight load를 subject별로 다르게 주게 됨
+            result = _per_subject_model(i)  # weight load를 subject별로 다르게 주게 됨
             y_hat.append(result[0])
             y_lab.append(result[1])
             print("y_hat shape:", result[0].shape)
