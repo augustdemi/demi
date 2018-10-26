@@ -204,7 +204,7 @@ def main():
             for au in all_au:
                 if FLAGS.all_sub_model:  # s2, s3
                     three_layers.loadWeight(FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_kshot' + str(
-                        FLAGS.update_batch_size) + '_iter100_subject' + str(sbjt_start_idx), au)
+                        FLAGS.update_batch_size) + '_iter100', au)
                 else:  # only s4
                     three_layers.loadWeight(FLAGS.vae_model_to_test + '/s4_' + au + '_kshot' + str(
                         FLAGS.update_batch_size) + '_iter50_subject' + str(sbjt_start_idx), au)
