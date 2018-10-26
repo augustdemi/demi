@@ -215,12 +215,12 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
                  model.labela: metatrain_input_tensors['labela'].eval(),
                  model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: 0}
     print('Done initializing, starting training.')
-    input_tensors = [model.metatrain_op, model.all_fast_weights, model.total_losses2]
+    input_tensors = [model.metatrain_op, model.all_w, model.all_b, model.total_losses2]
 
     result = sess.run(input_tensors, feed_dict)
 
     # save local weight as a global weight
-    all_fast_weights = result[1]
+
     loss = np.array(result[2])
     print('loss per update: ', loss)
     print('num of update: ', len(loss))
@@ -230,16 +230,17 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
             print("check this iteration: ", i, loss[i - 1], loss[i])
             early_stop_iter = i - 1
             break
-    local_weights = sess.run(all_fast_weights)
-    print('shape of local_weights:', local_weights.shape)
-    for i in range(len(local_weights)):
-        print(local_weights[i][1][0])  # index: update_batch_size, w or b, meta_batch_size
-    local_w = local_weights[early_stop_iter][0]
-    local_b = local_weights[early_stop_iter][1]
+    all_w = sess.run(result[1])
+    all_b = sess.run(result[2])
+    print('shape of local_weights:', all_w.shape)
+    for i in range(len(all_b)):
+        print(all_b[i][0])  # index: update_batch_size, meta_batch_size
+    local_w = all_w[early_stop_iter][0]
+    local_b = all_b[early_stop_iter][0]
     print("========================================================================================")
     print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
-    model.weights['w1'].load(local_w[0], sess)
-    model.weights['b1'].load(local_b[0], sess)
+    model.weights['w1'].load(local_w, sess)
+    model.weights['b1'].load(local_b, sess)
     print('>>>>>> Updated Local weights ', sess.run('model/b1:0'))
     print("-----------------------------------------------------------------")
     save_path = FLAGS.logdir + '/' + trained_model_dir
