@@ -94,10 +94,12 @@ class MAML:
 
                 for j in range(num_updates - 1):
                     loss = self.loss_func(self.forward(inputa, fast_weights, reuse=True), labela)
+                    # compute gradients based on the previous fast weights
                     grads = tf.gradients(loss, list(fast_weights.values()))
                     if FLAGS.stop_grad:
                         grads = [tf.stop_gradient(grad) for grad in grads]
                     gradients = dict(zip(fast_weights.keys(), grads))
+                    # fast_weights are updated
                     fast_weights = dict(zip(fast_weights.keys(),
                                             [fast_weights[key] - self.update_lr * gradients[key] for key in
                                              fast_weights.keys()]))
