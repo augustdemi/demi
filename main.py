@@ -206,6 +206,35 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
+def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors):
+    print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
+
+    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
+                 model.inputb: metatrain_input_tensors['inputb'].eval(),
+                 model.labela: metatrain_input_tensors['labela'].eval(),
+                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: 0}
+    print('Done initializing, starting training.')
+    input_tensors = [model.metatrain_op, model.fast_weights]
+
+    result = sess.run(input_tensors, feed_dict)
+
+    # save local weight as a global weight
+    local_w = result[1][0]
+    local_b = result[1][1]
+    print("========================================================================================")
+    print('>>>>>> Global weights: ', sess.run('model/b1:0'))
+    model.weights['w1'].load(local_w[0], sess)
+    model.weights['b1'].load(local_b[0], sess)
+    print('>>>>>> Local weights ', sess.run('model/b1:0'))
+    print("-----------------------------------------------------------------")
+    save_path = FLAGS.logdir + '/' + trained_model_dir
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    saver.save(sess, save_path + '/model' + str(FLAGS.update_batch_size))
+
+
+
+
 
 def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
@@ -326,7 +355,10 @@ def main():
     print("=====================================================================================")
 
     if FLAGS.train:
-            train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
+        train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
+    else:
+        inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
+
     end_time = datetime.now()
     elapse = end_time - start_time
     print("=======================================================")
