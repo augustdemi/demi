@@ -69,9 +69,9 @@ class feature_layer:
             # whene w and b is not None = w and b is from MAML
             if w is not None and b is not None:
                 w_softmaxpdf_1 = [w, b]
-                print("[vae_model]loaded weight from MAML : ", w_softmaxpdf_1[1])
+                print("[vae_model] loaded weight from MAML : ", w_softmaxpdf_1[1])
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
-        print("[vae_model]loaded weight from VAE : ", self.model_intensity.layers[-1].get_weights()[1])
+        print("[vae_model] final loaded weight : ", self.model_intensity.layers[-1].get_weights()[1])
 
 
 

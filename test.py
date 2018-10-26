@@ -91,7 +91,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
 
     test_subject = test_subjects[sbjt_start_idx]
 
-    print("============> subject: ", test_subject)
+    print("====================> subject: ", test_subject)
     data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
     test_features = data['test_features']
     y_hat = three_layers.model_intensity.predict(test_features)
@@ -177,9 +177,7 @@ def main():
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
 
-    print("========================================================================================")
     print('initial weights: ', sess.run('model/b1:0'))
-
     print("========================================================================================")
 
     ################## Test ##################
@@ -190,9 +188,9 @@ def main():
         b_arr = None
         for au in all_au:
             model_file = None
-            print('--------- model file dir: ', FLAGS.logdir + '/' + au + '/' + trained_model_dir)
+            print('model file dir: ', FLAGS.logdir + '/' + au + '/' + trained_model_dir)
             model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + au + '/' + trained_model_dir)
-            print(">>>> model_file from ", au, ": ", model_file)
+            print("model_file from ", au, ": ", model_file)
             if (model_file == None):
                 print(
                     "############################################################################################")
@@ -204,27 +202,23 @@ def main():
                     files = os.listdir(model_file[:model_file.index('model')])
                     if 'model' + str(FLAGS.test_iter) + '.index' in files:
                         model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                        print(">>>> model_file2: ", model_file)
+                        print("model_file by test_iter > 0: ", model_file)
                     else:
                         print(" >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", files)
                 print("Restoring model weights from " + model_file)
-                print('---------------------------------------------')
-                print(sess.run('model/b1:0'))
-                print(sess.run('model/w1:0').shape)
-                print(sess.run('model/b1:0').shape)
-                print('---------------------------------------------')
 
                 saver.restore(sess, model_file)
                 w = sess.run('model/w1:0')
                 b = sess.run('model/b1:0')
+                print("updated weights from ckpt: ", b)
+                print('----------------------------------------------------------')
                 if w_arr is None:
                     w_arr = w
                     b_arr = b
                 else:
                     w_arr = np.hstack((w_arr, w))
                     b_arr = np.vstack((b_arr, b))
-                print("updated weights from ckpt: ", b)
-                print('----------------------------------------------------------')
+
         return w_arr, b_arr
 
     def _load_weight_m0(trained_model_dir):
@@ -297,7 +291,8 @@ def main():
             print("y_lab shape:", result[1].shape)
             print(">> y_hat_all shape:", np.vstack(y_hat).shape)
             print(">> y_lab_all shape:", np.vstack(y_lab).shape)
-        print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
+        print_summary(np.vstack(y_hat), np.vstack(y_lab),
+                      log_dir=save_path + "/test" + str(i) + "_" + str(FLAGS.au_idx) + ".txt")
 
     end_time = datetime.now()
     elapse = end_time - start_time
