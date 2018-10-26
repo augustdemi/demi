@@ -356,10 +356,9 @@ def main():
     print("=====================================================================================")
 
     if not FLAGS.meta_update:
-        inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
+        inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
     else:
         train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
-
     end_time = datetime.now()
     elapse = end_time - start_time
     print("=======================================================")
