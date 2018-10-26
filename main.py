@@ -215,18 +215,27 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
                  model.labela: metatrain_input_tensors['labela'].eval(),
                  model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: 0}
     print('Done initializing, starting training.')
-    input_tensors = [model.metatrain_op, model.fast_weights, model.total_losses2]
+    input_tensors = [model.metatrain_op, model.all_fast_weights, model.total_losses2]
 
     result = sess.run(input_tensors, feed_dict)
 
     # save local weight as a global weight
-
-    loss = np.array(result[-1])
+    all_fast_weights = result[1]
+    loss = np.array(result[2])
     print('loss per update: ', loss)
     print('num of update: ', len(loss))
+    early_stop_iter = FLAGS.update_batch_size
+    for i in range(1, len(loss)):
+        if loss[i] > loss[i - 1]:
+            print("check this iteration: ", i, loss[i - 1], loss[i])
+            early_stop_iter = i - 1
+            break
+    local_weights = all_fast_weights[early_stop_iter]
 
-    local_w = result[1][0]
-    local_b = result[1][1]
+    for i in range(len(local_weights)):
+        print(local_weights[i]['b1'])
+    local_w = local_weights['w1']
+    local_b = local_weights['b1']
     print("========================================================================================")
     print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
     model.weights['w1'].load(local_w[0], sess)
