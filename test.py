@@ -75,6 +75,7 @@ flags.DEFINE_string('model', '', 'model name')
 flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
 flags.DEFINE_bool('local', False, 'save path from local weight')
 flags.DEFINE_string('feature_path', "", 'path for feature vector')
+flags.DEFINE_string('vae_model_to_test', '', 'vae model dir from robert code')
 
 
 def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
@@ -197,7 +198,7 @@ def main():
         # 모든 au 를 이용하여 한 모델을 만든경우 그 한 모델만 로드하면됨.
         if FLAGS.model.startswith('s1'):
             three_layers = feature_layer(batch_size, TOTAL_NUM_AU)
-            three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=TOTAL_NUM_AU)
+            three_layers.loadWeight(FLAGS.vae_model_to_test, FLAGS.au_idx, num_au_for_rm=TOTAL_NUM_AU)
         # 각 au별로 다른 모델인 경우 au별 weight을 쌓아줘야함
         else:
             three_layers = feature_layer(batch_size, 1)
@@ -207,9 +208,9 @@ def main():
             b_arr = None
             for au in all_au:
                 if FLAGS.all_sub_model:  # s2, s3
-                    three_layers.loadWeight(FLAGS.vae_model, au)
+                    three_layers.loadWeight(FLAGS.vae_model_to_test, au)
                 else:  # only s4
-                    three_layers.loadWeight(FLAGS.vae_model + '/s4_' + au + '_kshot' + str(
+                    three_layers.loadWeight(FLAGS.vae_model_to_test + '/s4_' + au + '_kshot' + str(
                         FLAGS.update_batch_size) + '_iter50_subject' + str(sbjt_start_idx), au)
                 w = three_layers.model_intensity.layers[-1].get_weights()[0]
                 b = three_layers.model_intensity.layers[-1].get_weights()[1]
