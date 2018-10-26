@@ -94,6 +94,7 @@ flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_string('feature_path', "", 'path for feature vector')
 flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
 flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
+flags.DEFINE_bool('meta_update', True, 'meta_update')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -354,10 +355,10 @@ def main():
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
     print("=====================================================================================")
 
-    if FLAGS.train:
-        train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
-    else:
+    if not FLAGS.meta_update:
         inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
+    else:
+        train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
 
     end_time = datetime.now()
     elapse = end_time - start_time
