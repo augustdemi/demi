@@ -215,7 +215,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
                  model.labela: metatrain_input_tensors['labela'].eval(),
                  model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: 0}
     print('Done initializing, starting training.')
-    input_tensors = [model.metatrain_op, model.fast_weights]
+    input_tensors = [model.metatrain_op, model.fast_weights, model.total_losses2]
 
     result = sess.run(input_tensors, feed_dict)
 
@@ -223,11 +223,12 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
     local_w = result[1][0]
     local_b = result[1][1]
     print("========================================================================================")
-    print('>>>>>> Global weights: ', sess.run('model/b1:0'))
+    print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
     model.weights['w1'].load(local_w[0], sess)
     model.weights['b1'].load(local_b[0], sess)
-    print('>>>>>> Local weights ', sess.run('model/b1:0'))
+    print('>>>>>> Updated Local weights ', sess.run('model/b1:0'))
     print("-----------------------------------------------------------------")
+    print('loss per update: ', np.array(result[-1][0]))
     save_path = FLAGS.logdir + '/' + trained_model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
