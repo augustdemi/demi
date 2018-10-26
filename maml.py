@@ -71,7 +71,7 @@ class MAML:
                 labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])])
                 labelb = tf.cast(labelb, tf.float32)
                 labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
-                task_outputbs, task_lossesb, task_labelbs = [], [], []
+                all_fast_weights, task_outputbs, task_lossesb, task_labelbs = [], [], [], []
 
                 if self.classification:
                     task_accuraciesb = []
@@ -91,6 +91,7 @@ class MAML:
                 task_outputbs.append(output)
                 task_labelbs.append(labelb)
                 task_lossesb.append(self.loss_func(output, labelb))
+                all_fast_weights.append(fast_weights)
 
                 for j in range(num_updates - 1):
                     loss = self.loss_func(self.forward(inputa, fast_weights, reuse=True), labela)
@@ -100,22 +101,14 @@ class MAML:
                         grads = [tf.stop_gradient(grad) for grad in grads]
                     gradients = dict(zip(fast_weights.keys(), grads))
                     # fast_weights are updated
-                    prev_fast_weights = fast_weights
                     fast_weights = dict(zip(fast_weights.keys(),
                                             [fast_weights[key] - self.update_lr * gradients[key] for key in
                                              fast_weights.keys()]))
                     output = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
                     task_outputbs.append(output)
                     task_labelbs.append(labelb)
-                    if not FLAGS.meta_update:
-                        sess = tf.InteractiveSession()
-                        tf.global_variables_initializer().run()
-                        prev_lossb = sess.run(task_lossesb[-1])
-                        this_lossb = sess.run(self.loss_func(output, labelb))
-                        print(j)
-                        print(this_lossb, prev_lossb)
-                        if this_lossb > prev_lossb: break
                     task_lossesb.append(self.loss_func(output, labelb))
+                    all_fast_weights.append(fast_weights)
 
                 task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1),
                                                              tf.argmax(labela, 1))
@@ -124,16 +117,18 @@ class MAML:
                                                                         tf.argmax(labelb, 1)))
 
                 task_output = [task_outputa, task_outputbs, labela, task_labelbs, task_lossa, task_lossesb,
-                               task_accuracya, task_accuraciesb, [fast_weights['w1'], fast_weights['b1']]]
+                               task_accuracya, task_accuraciesb, all_fast_weights,
+                               [fast_weights['w1'], fast_weights['b1']]]
                 return task_output
 
             out_dtype = [tf.float32, [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates, tf.float32,
-                         [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates, [tf.float32, tf.float32]]
+                         [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates, [tf.float32] * num_updates,
+                         [tf.float32, tf.float32]]
 
             result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb),
                                dtype=out_dtype, parallel_iterations=FLAGS.meta_batch_size)
             # In result, outa has shape (1,2,1,2) = (num.of.task, 2*k, num.of.au, one-hot label)
-            outputas, outputbs, res_labela, res_labelbs, lossesa, lossesb, accuraciesa, accuraciesb, fast_weights = result
+            outputas, outputbs, res_labela, res_labelbs, lossesa, lossesb, accuraciesa, accuraciesb, all_fast_weights, fast_weights = result
 
         ## Performance & Optimization
         if 'train' in prefix:
@@ -142,7 +137,7 @@ class MAML:
             self.total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j
                                                   in range(num_updates)]
             # after the map_fn
-            self.outputas, self.outputbs, self.fast_weights = outputas, outputbs, fast_weights
+            self.outputas, self.outputbs, self.all_fast_weights, self.fast_weights = outputas, outputbs, all_fast_weights, fast_weights
             if self.classification:
                 self.total_accuracy1 = total_accuracy1 = tf.reduce_sum(accuraciesa) / tf.to_float(FLAGS.meta_batch_size)
                 self.total_accuracies2 = total_accuracies2 = [
