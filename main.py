@@ -174,27 +174,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
             summary(result, "TR")
             summary(result_val, "TE")
 
-            # save weight norm
-            local_w = result[1][0]
-            local_b = result[1][1]
-            global_w = sess.run('model/w1:0')
-            global_b = sess.run('model/b1:0')
-
-            w_arr = [global_w]
-            b_arr = [global_b]
-            for i in range(FLAGS.meta_batch_size):
-                w_arr.append(local_w[i])
-                b_arr.append(local_b[i])
-            save_path = FLAGS.logdir + '/' + trained_model_dir + '/weight'
-            if not os.path.exists(save_path):
-                os.makedirs(save_path)
-            if FLAGS.train_test:
-                out = open(save_path + "/test_" + str(itr) + ".pkl", 'wb')
-            else:
-                out = open(save_path + "/train_" + str(itr) + ".pkl", 'wb')
-            pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
-            out.close()
-
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
