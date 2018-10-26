@@ -77,8 +77,6 @@ flags.DEFINE_float('train_update_lr', -1,
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 flags.DEFINE_bool('train_train', False, 're-train model with the train')
 flags.DEFINE_bool('train_test', False, 're-train model with the test set')
-flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
-flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
 
 # for train, train_test
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
@@ -238,9 +236,6 @@ def main():
         # always use meta batch size of 1 when testing.
         FLAGS.meta_batch_size = 1
 
-    if FLAGS.test_train or FLAGS.test_test:
-        temp_kshot = FLAGS.update_batch_size
-        FLAGS.update_batch_size = 1
     data_generator = DataGenerator()
 
     dim_output = data_generator.num_classes
@@ -268,8 +263,6 @@ def main():
 
     sess = tf.InteractiveSession()
 
-    if FLAGS.test_train or FLAGS.test_test:
-        FLAGS.update_batch_size = temp_kshot
 
     if not FLAGS.train:
         # change to original meta batch size when loading model.

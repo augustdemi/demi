@@ -50,8 +50,6 @@ flags.DEFINE_float('train_update_lr', -1,
 flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
 flags.DEFINE_bool('train_test', False, 're-train model with the test set')
 flags.DEFINE_bool('train_test_inc', False, 're-train model increasingly')
-flags.DEFINE_bool('test_test', False, 'test the test set with test-model')
-flags.DEFINE_bool('test_train', False, 'test the test set with train-model')
 # for train, train_test
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 # for test_test, test_train
@@ -113,10 +111,9 @@ def main():
         orig_meta_batch_size = FLAGS.meta_batch_size
         # always use meta batch size of 1 when testing.
         FLAGS.meta_batch_size = 1
-
-    if FLAGS.test_train or FLAGS.test_test:
         temp_kshot = FLAGS.update_batch_size
         FLAGS.update_batch_size = 1
+
     data_generator = DataGenerator()
 
     dim_output = data_generator.num_classes
@@ -133,17 +130,11 @@ def main():
 
     sess = tf.InteractiveSession()
 
-    if FLAGS.test_train or FLAGS.test_test:
-        FLAGS.update_batch_size = temp_kshot
 
     if not FLAGS.train:
         # change to original meta batch size when loading model.
+        FLAGS.update_batch_size = temp_kshot
         FLAGS.meta_batch_size = orig_meta_batch_size
-
-    if FLAGS.train_update_batch_size == -1:
-        FLAGS.train_update_batch_size = FLAGS.update_batch_size
-    if FLAGS.train_update_lr == -1:
-        FLAGS.train_update_lr = FLAGS.update_lr
 
 
     tf.global_variables_initializer().run()
@@ -208,7 +199,8 @@ def main():
             b_arr = None
             for au in all_au:
                 if FLAGS.all_sub_model:  # s2, s3
-                    three_layers.loadWeight(FLAGS.vae_model_to_test, au)
+                    three_layers.loadWeight(FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_kshot' + str(
+                        FLAGS.update_batch_size) + '_iter100_subject' + str(sbjt_start_idx), au)
                 else:  # only s4
                     three_layers.loadWeight(FLAGS.vae_model_to_test + '/s4_' + au + '_kshot' + str(
                         FLAGS.update_batch_size) + '_iter50_subject' + str(sbjt_start_idx), au)
