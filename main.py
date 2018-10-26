@@ -223,8 +223,8 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
 
     loss = np.array(result[3])
     print('loss per update: ', loss)
-    print('num of update: ', len(loss))
-    early_stop_iter = FLAGS.update_batch_size
+    print('>>> num of update: ', len(loss))
+    early_stop_iter = FLAGS.update_batch_size - 1
     for i in range(1, len(loss)):
         if loss[i] > loss[i - 1]:
             print("check this iteration: ", i, loss[i - 1], loss[i])
@@ -232,7 +232,8 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
             break
     all_w = result[1]
     all_b = result[2]
-    print('shape of local_weights:', np.array(all_w).shape)
+    print('>>> shape of local_weights:', np.array(all_w).shape)
+    print('>>> early stop at : ', early_stop_iter)
     for i in range(len(all_b)):
         print(all_b[i][0])  # index: update_batch_size, meta_batch_size
     local_w = all_w[early_stop_iter][0]
