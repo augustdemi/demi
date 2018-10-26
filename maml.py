@@ -91,7 +91,7 @@ class MAML:
                 task_outputbs.append(output)
                 task_labelbs.append(labelb)
                 task_lossesb.append(self.loss_func(output, labelb))
-                all_fast_weights.append(fast_weights)
+                all_fast_weights.append([fast_weights['w1'], fast_weights['b1']])
 
                 for j in range(num_updates - 1):
                     loss = self.loss_func(self.forward(inputa, fast_weights, reuse=True), labela)
