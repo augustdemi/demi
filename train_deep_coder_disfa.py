@@ -218,8 +218,8 @@ early_stopping = EarlyStopping(monitor='softmaxpdf_1_loss', patience=3, verbose=
 model_train.fit_generator(
         generator = GEN_TR,
     samples_per_epoch=960,  # number of samples to process before going to the next epoch.
-        validation_data=GEN_TE, # integer, total number of iterations on the data.
-        nb_val_samples = 5000, # number of samples to use from validation generator at the end of every epoch.
+    validation_split=0.2,
+    nb_val_samples=5000,  # number of samples to use from validation generator at the end of every epoch.
     initial_epoch=args.init_epoch,
         nb_epoch = nb_iter,
         max_q_size = 4,
