@@ -221,7 +221,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
 
     # save local weight as a global weight
 
-    loss = np.array(result[2])
+    loss = np.array(result[3])
     print('loss per update: ', loss)
     print('num of update: ', len(loss))
     early_stop_iter = FLAGS.update_batch_size
