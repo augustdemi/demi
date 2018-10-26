@@ -107,7 +107,7 @@ def main():
     TOTAL_NUM_AU = 8
     all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
-    if FLAGS.train == False:
+    if not FLAGS.train:
         orig_meta_batch_size = FLAGS.meta_batch_size
         # always use meta batch size of 1 when testing.
         FLAGS.meta_batch_size = 1
