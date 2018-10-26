@@ -110,7 +110,9 @@ class MAML:
                     this_lossb = self.loss_func(output, labelb)
                     if not FLAGS.meta_update:
                         prev_lossb = task_lossesb[-1]
-                        if this_lossb > prev_lossb: break
+                        print(j)
+                        print(this_lossb.values(), prev_lossb.values())
+                        if this_lossb.values() > prev_lossb.values(): break
                     task_lossesb.append(this_lossb)
 
                 task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1),
