@@ -230,12 +230,12 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
             print("check this iteration: ", i, loss[i - 1], loss[i])
             early_stop_iter = i - 1
             break
-    local_weights = sess.run(all_fast_weights[early_stop_iter])
-
+    local_weights = sess.run(all_fast_weights)
+    print('shape of local_weights:', local_weights.shape)
     for i in range(len(local_weights)):
-        print(local_weights[i]['b1'][0])
-    local_w = local_weights['w1']
-    local_b = local_weights['b1']
+        print(local_weights[i][1][0])  # index: update_batch_size, w or b, meta_batch_size
+    local_w = local_weights[early_stop_iter][0]
+    local_b = local_weights[early_stop_iter][1]
     print("========================================================================================")
     print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
     model.weights['w1'].load(local_w[0], sess)
