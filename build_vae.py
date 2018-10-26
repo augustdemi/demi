@@ -17,8 +17,6 @@ class VAE:
 
         from numpy import prod
         from keras.layers import Dropout
-        print("shape before flatten: ", shape)
-        print("shape after flatten: ", emb.get_shape())
         n_feat = prod(shape)
 
         emb = Dropout(0.5)(emb)
@@ -27,12 +25,13 @@ class VAE:
         intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(latent_feat)  # into 500
         z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
         z_log_sigma = Dense(latent_dim3)(intermediate)
-        print('==============================')
-        print('emb', emb.shape)
-        print('latent_feat', latent_feat.shape)
-        print('intermediate', intermediate.shape)
-        print('z_mean', z_mean.shape)
-        print('z_log_sigma', z_log_sigma.shape)
+
+        # print('==============================')
+        # print('emb', emb.shape)
+        # print('latent_feat', latent_feat.shape)
+        # print('intermediate', intermediate.shape)
+        # print('z_mean', z_mean.shape)
+        # print('z_log_sigma', z_log_sigma.shape)
         def sampling(args):  ########### input param의 평균과 분산에 noise(target_mean, sd 기준)가 섞인 샘플링 값을줌
             z_mean, z_log_sigma = args
             epsilon = []
