@@ -103,35 +103,6 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     return y_hat, y_lab
 
 
-def test_vae_each_subject(sbjt_idx):  # In case when test the model with the whole rest frames
-    batch_size = 10
-    three_layers = feature_layer(batch_size, FLAGS.num_au)
-
-    if FLAGS.model.startswith('s1'):  # 모든 au 를 이용하여 vae모델을 train한 경우 s1으로부터 로드해서 3개 layer에 weight값 줘야
-        three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=8)
-    else:
-        if FLAGS.all_sub_model:
-            three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx)
-        else:
-            three_layers.loadWeight(FLAGS.vae_model + '_subject' + str(sbjt_idx), FLAGS.au_idx)
-
-    test_subjects = os.listdir(FLAGS.testset_dir)
-    test_subjects.sort()
-    test_subject = test_subjects[sbjt_idx]
-
-    print("============> subject: ", test_subject)
-    data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-    test_features = data['test_features']
-    y_hat = three_layers.model_intensity.predict(test_features)
-
-    if FLAGS.model.startswith('s1'):
-        y_lab = data['lab']
-    else:
-        lab = data['lab'][:, FLAGS.au_idx]
-        y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
-    return y_hat, y_lab
-
-
 def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
     TOTAL_NUM_AU = 8
@@ -181,7 +152,7 @@ def main():
     print("========================================================================================")
 
     ################## Test ##################
-    def _load_weight(trained_model_dir):
+    def _load_weight_m(trained_model_dir):
         all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
         if FLAGS.au_idx < TOTAL_NUM_AU: all_au = [all_au[FLAGS.au_idx]]
         w_arr = None
@@ -221,6 +192,38 @@ def main():
 
         return w_arr, b_arr
 
+    def _load_weight_s(sbjt_start_idx):
+        batch_size = 10
+        # 모든 au 를 이용하여 한 모델을 만든경우 그 한 모델만 로드하면됨.
+        if FLAGS.model.startswith('s1'):
+            three_layers = feature_layer(batch_size, TOTAL_NUM_AU)
+            three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=TOTAL_NUM_AU)
+        # 각 au별로 다른 모델인 경우 au별 weight을 쌓아줘야함
+        else:
+            three_layers = feature_layer(batch_size, 1)
+            all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
+            if FLAGS.au_idx < TOTAL_NUM_AU: all_au = [all_au[FLAGS.au_idx]]
+            w_arr = None
+            b_arr = None
+            for au in all_au:
+                if FLAGS.all_sub_model:
+                    three_layers.loadWeight(FLAGS.vae_model, au)
+                else:
+                    three_layers.loadWeight(FLAGS.vae_model + '_subject' + str(sbjt_start_idx), au)
+                w = three_layers.model_intensity.layers[-1].get_weights()[0]
+                b = three_layers.model_intensity.layers[-1].get_weights()[1]
+                print('----------------------------------------------------------')
+                if w_arr is None:
+                    w_arr = w
+                    b_arr = b
+                else:
+                    w_arr = np.hstack((w_arr, w))
+                    b_arr = np.vstack((b_arr, b))
+
+        return w_arr, b_arr
+
+
+
     def _load_weight_m0(trained_model_dir):
         model_file = None
         print('--------- model file dir: ', FLAGS.logdir + '/all_aus/' + trained_model_dir)
@@ -244,16 +247,6 @@ def main():
             print('----------------------------------------------------------')
         return w, b
 
-    def _per_subject_model(sbjt_start_idx):
-        if FLAGS.model.startswith('s'):
-            return test_vae_each_subject(sbjt_start_idx)
-        else:
-            trained_model_dir = '/sbjt' + str(sbjt_start_idx) + '.ubs_' + str(
-                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-            w_arr, b_arr = _load_weight(trained_model_dir)
-            return test_each_subject(w_arr, b_arr, sbjt_start_idx)
-
 
     print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
     save_path = "./logs/result/"
@@ -262,19 +255,18 @@ def main():
     if FLAGS.all_sub_model:  # 모델이 모든 subjects를 이용해 train된 경우
         print('---------------- all sub model ----------------')
 
-        ### get path to load weight for 'm' models
-        trained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
-            FLAGS.meta_batch_size) + '.ubs_' + str(
-            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-        w_arr, b_arr = _load_weight(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
-
         ### test per each subject and concatenate
         for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
             if FLAGS.model.startswith('s'):
-                result = test_vae_each_subject(i)
+                w_arr, b_arr = _load_weight_s(i)
             else:
-                result = test_each_subject(w_arr, b_arr, i)
+                ### get path to load weight for 'm' models
+                trained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
+                    FLAGS.meta_batch_size) + '.ubs_' + str(
+                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                w_arr, b_arr = _load_weight_m(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+            result = test_each_subject(w_arr, b_arr, i)
             y_hat.append(result[0])
             y_lab.append(result[1])
             print("y_hat shape:", result[0].shape)
@@ -283,8 +275,15 @@ def main():
             print(">> y_lab_all shape:", np.vstack(y_lab).shape)
         print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
     else:  # 모델이 각 subject 별로 train된 경우: vae와 MAML의 train_test두 경우에만 존재 가능 + local weight test의 경우
-        for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
-            result = _per_subject_model(i)  # weight load를 subject별로 다르게 주게 됨
+        for subj_idx in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+            if FLAGS.model.startswith('s'):
+                w_arr, b_arr = _load_weight_s(subj_idx)
+            else:
+                trained_model_dir = '/sbjt' + str(subj_idx) + '.ubs_' + str(
+                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+                w_arr, b_arr = _load_weight_m(trained_model_dir)
+            result = test_each_subject(w_arr, b_arr, subj_idx)
             y_hat.append(result[0])
             y_lab.append(result[1])
             print("y_hat shape:", result[0].shape)
