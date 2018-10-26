@@ -171,7 +171,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 recent_y_labb = np.array(maml_result[-1][1][FLAGS.num_updates - 1])
                 y_labb = np.vstack(recent_y_labb)
                 print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
-                print("====================================================================================")
+                print("================================================================================")
             summary(result, "TR")
             summary(result_val, "TE")
 
@@ -190,7 +190,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                     print(">>>>>>>>>>>>>> local save !! : ", itr)
                     local_w = result[1][0]
                     local_b = result[1][1]
-                    print("========================================================================================")
+                    print("================================================================================")
                     print('>>>>>> Global weights: ', sess.run('model/b1:0'))
                     local_model_dir = save_path + '/local'
                     for i in range(FLAGS.meta_batch_size):
@@ -233,17 +233,16 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
     all_w = result[1]
     all_b = result[2]
     print('>>> shape of local_weights:', np.array(all_w).shape)
-    print('>>> early stop at : ', early_stop_iter)
+    print('!!!!!!!!!! early stop at : ', early_stop_iter)
     # for i in range(len(all_b)):
     #     print(i, all_b[i][0])  # index: update_batch_size, meta_batch_size
     local_w = all_w[early_stop_iter][0]
     local_b = all_b[early_stop_iter][0]
-    print("========================================================================================")
+    print("================================================================================")
     print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
     model.weights['w1'].load(local_w, sess)
     model.weights['b1'].load(local_b, sess)
     print('>>>>>> Updated Local weights ', sess.run('model/b1:0'))
-    print("-----------------------------------------------------------------")
     save_path = FLAGS.logdir + '/' + trained_model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -267,8 +266,6 @@ def main():
     dim_input = data_generator.dim_input
 
     if FLAGS.train:  # only construct training model if needed
-        print("===================================1")
-
         inputa, inputb, labela, labelb = data_generator.make_data_tensor()
         metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
@@ -278,7 +275,6 @@ def main():
     # pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
     if FLAGS.train:
-        print("===================================3")
         model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     else:
         model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
@@ -310,9 +306,9 @@ def main():
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
 
-    print("========================================================================================")
+    print("================================================================================")
     print('initial weights: ', sess.run('model/b1:0'))
-    print("========================================================================================")
+    print("================================================================================")
 
 
 
@@ -369,7 +365,7 @@ def main():
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-    print("=====================================================================================")
+    print("================================================================================")
 
     if not FLAGS.meta_update:
         inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
@@ -377,9 +373,9 @@ def main():
         train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
     end_time = datetime.now()
     elapse = end_time - start_time
-    print("=======================================================")
+    print("================================================================================")
     print(">>>>>> elapse time: " + str(elapse))
-    print("=======================================================")
+    print("================================================================================")
 
 
 if __name__ == "__main__":
