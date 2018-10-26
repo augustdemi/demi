@@ -206,10 +206,11 @@ def main():
             w_arr = None
             b_arr = None
             for au in all_au:
-                if FLAGS.all_sub_model:
+                if FLAGS.all_sub_model:  # s2, s3
                     three_layers.loadWeight(FLAGS.vae_model, au)
-                else:
-                    three_layers.loadWeight(FLAGS.vae_model + '_subject' + str(sbjt_start_idx), au)
+                else:  # only s4
+                    three_layers.loadWeight(FLAGS.vae_model + '/s4_' + au + '_kshot' + str(
+                        FLAGS.update_batch_size) + '_iter50_subject' + str(sbjt_start_idx), au)
                 w = three_layers.model_intensity.layers[-1].get_weights()[0]
                 b = three_layers.model_intensity.layers[-1].get_weights()[1]
                 print('----------------------------------------------------------')
