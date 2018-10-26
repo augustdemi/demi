@@ -108,7 +108,7 @@ class MAML:
                     task_outputbs.append(output)
                     task_labelbs.append(labelb)
                     task_lossesb.append(self.loss_func(output, labelb))
-                    all_fast_weights.append(fast_weights)
+                    all_fast_weights.append([fast_weights['w1'], fast_weights['b1']])
 
                 task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1),
                                                              tf.argmax(labela, 1))
@@ -122,7 +122,8 @@ class MAML:
                 return task_output
 
             out_dtype = [tf.float32, [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates, tf.float32,
-                         [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates, [tf.float32] * num_updates,
+                         [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates,
+                         [tf.float32, tf.float32] * num_updates,
                          [tf.float32, tf.float32]]
 
             result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb),
