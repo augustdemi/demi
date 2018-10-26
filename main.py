@@ -228,7 +228,11 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
     model.weights['b1'].load(local_b[0], sess)
     print('>>>>>> Updated Local weights ', sess.run('model/b1:0'))
     print("-----------------------------------------------------------------")
-    print('loss per update: ', np.array(result[-1]))
+    loss = np.array(result[-1])
+    print('loss per update: ', loss)
+    for i in range(1, len(loss)):
+        if loss[i] > loss[i - 1]:
+            print("check this iteration: ", i, loss[i - 1], loss[i])
     save_path = FLAGS.logdir + '/' + trained_model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
