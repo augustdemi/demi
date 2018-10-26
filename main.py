@@ -235,7 +235,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
     print('>>> shape of local_weights:', np.array(all_w).shape)
     print('>>> early stop at : ', early_stop_iter)
     for i in range(len(all_b)):
-        print(all_b[i][0])  # index: update_batch_size, meta_batch_size
+        print(i, all_b[i][0])  # index: update_batch_size, meta_batch_size
     local_w = all_w[early_stop_iter][0]
     local_b = all_b[early_stop_iter][0]
     print("========================================================================================")
