@@ -123,7 +123,7 @@ class MAML:
 
             out_dtype = [tf.float32, [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates, tf.float32,
                          [tf.float32] * num_updates, tf.float32, [tf.float32] * num_updates,
-                         [tf.float32, tf.float32] * num_updates,
+                         [tf.float32] * num_updates,
                          [tf.float32, tf.float32]]
 
             result = tf.map_fn(task_metalearn, elems=(self.inputa, self.inputb, self.labela, self.labelb),
