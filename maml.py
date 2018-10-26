@@ -108,9 +108,8 @@ class MAML:
                     task_outputbs.append(output)
                     task_labelbs.append(labelb)
                     if not FLAGS.meta_update:
-                        init = tf.global_variables_initializer()
-                        with tf.Session() as sess:
-                            sess.run(init)
+                        sess = tf.InteractiveSession()
+                        tf.global_variables_initializer().run()
                         prev_lossb = sess.run(task_lossesb[-1])
                         this_lossb = sess.run(self.loss_func(output, labelb))
                         print(j)
