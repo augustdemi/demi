@@ -124,7 +124,8 @@ class DataGenerator(object):
         three_layers = feature_layer(batch_size, FLAGS.num_au)
         if not FLAGS.train:
             if FLAGS.model.startswith('s4'):
-                three_layers.loadWeight(os.listdir(FLAGS.vae_model)[0].split('.')[0], FLAGS.au_idx,
+                three_layers.loadWeight(os.path.join(FLAGS.vae_model, os.listdir(FLAGS.vae_model)[0].split('.')[0]),
+                                        FLAGS.au_idx,
                                         num_au_for_rm=FLAGS.num_au)
         else:
             three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
