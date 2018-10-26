@@ -230,10 +230,10 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
             print("check this iteration: ", i, loss[i - 1], loss[i])
             early_stop_iter = i - 1
             break
-    local_weights = all_fast_weights[early_stop_iter]
+    local_weights = sess.run(all_fast_weights[early_stop_iter])
 
     for i in range(len(local_weights)):
-        print(local_weights[i]['b1'])
+        print(local_weights[i]['b1'][0])
     local_w = local_weights['w1']
     local_b = local_weights['b1']
     print("========================================================================================")
