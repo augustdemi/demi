@@ -107,13 +107,16 @@ class MAML:
                     output = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
                     task_outputbs.append(output)
                     task_labelbs.append(labelb)
-                    this_lossb = self.loss_func(output, labelb)
                     if not FLAGS.meta_update:
-                        prev_lossb = task_lossesb[-1]
+                        init = tf.global_variables_initializer()
+                        with tf.Session() as sess:
+                            sess.run(init)
+                        prev_lossb = sess.run(task_lossesb[-1])
+                        this_lossb = sess.run(self.loss_func(output, labelb))
                         print(j)
-                        print(this_lossb.values(), prev_lossb.values())
-                        if this_lossb.values() > prev_lossb.values(): break
-                    task_lossesb.append(this_lossb)
+                        print(this_lossb, prev_lossb)
+                        if this_lossb > prev_lossb: break
+                    task_lossesb.append(self.loss_func(output, labelb))
 
                 task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1),
                                                              tf.argmax(labela, 1))
