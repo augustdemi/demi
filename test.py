@@ -293,7 +293,7 @@ def main():
             print(">> y_hat_all shape:", np.vstack(y_hat).shape)
             print(">> y_lab_all shape:", np.vstack(y_lab).shape)
         print_summary(np.vstack(y_hat), np.vstack(y_lab),
-                      log_dir=save_path + "/test" + str(i) + "_" + str(FLAGS.au_idx) + ".txt")
+                      log_dir=save_path + "/test.txt")
 
     end_time = datetime.now()
     elapse = end_time - start_time
