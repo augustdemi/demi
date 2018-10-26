@@ -257,7 +257,7 @@ def main():
                 ### get path to load weight for 'm' models
                 trained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
                     FLAGS.meta_batch_size) + '.ubs_' + str(
-                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                     FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
                 w_arr, b_arr = _load_weight_m(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
             result = test_each_subject(w_arr, b_arr, i)
@@ -274,7 +274,7 @@ def main():
                 w_arr, b_arr = _load_weight_s(subj_idx)
             else:
                 trained_model_dir = '/sbjt' + str(subj_idx) + '.ubs_' + str(
-                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                    FLAGS.update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                     FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
                 w_arr, b_arr = _load_weight_m(trained_model_dir)
             result = test_each_subject(w_arr, b_arr, subj_idx)
