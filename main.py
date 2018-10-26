@@ -151,14 +151,10 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 print(print_str)
                 y_hata = np.vstack(np.array(maml_result[-2][0]))  # length = num_of_task * N * K
                 y_laba = np.vstack(np.array(maml_result[-2][1]))
-                save_path = "./logs/result/" + str(FLAGS.update_batch_size) + "shot/" + 'weight' + str(
-                    FLAGS.init_weight) + '.sbjt_' + str(FLAGS.sbjt_start_idx) + ':' + str(
-                    FLAGS.meta_batch_size) + '.updatelr' + str(FLAGS.train_update_lr) + '.metalr' + str(
-                    FLAGS.meta_lr) + '.numstep' + str(FLAGS.num_updates) + "/train"
+
+                save_path = "./logs/result/train/" + trained_model_dir + "/" + str(FLAGS.au_idx) + "/"
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
-
-                save_path = "./logs/result/train/" + trained_model_dir + "/"
                 if FLAGS.train_test:
                     retrained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
                         FLAGS.train_update_batch_size) + '.numstep' + str(
