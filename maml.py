@@ -100,13 +100,18 @@ class MAML:
                         grads = [tf.stop_gradient(grad) for grad in grads]
                     gradients = dict(zip(fast_weights.keys(), grads))
                     # fast_weights are updated
+                    prev_fast_weights = fast_weights
                     fast_weights = dict(zip(fast_weights.keys(),
                                             [fast_weights[key] - self.update_lr * gradients[key] for key in
                                              fast_weights.keys()]))
                     output = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
                     task_outputbs.append(output)
                     task_labelbs.append(labelb)
-                    task_lossesb.append(self.loss_func(output, labelb))
+                    this_lossb = self.loss_func(output, labelb)
+                    if not FLAGS.meta_update:
+                        prev_lossb = task_lossesb[-1]
+                        if this_lossb > prev_lossb: break
+                    task_lossesb.append(this_lossb)
 
                 task_accuracya = tf.contrib.metrics.accuracy(tf.argmax(tf.nn.softmax(task_outputa), 1),
                                                              tf.argmax(labela, 1))
