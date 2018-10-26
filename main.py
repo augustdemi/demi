@@ -224,7 +224,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
     loss = np.array(result[3])
     print('loss per update: ', loss)
     print('>>> num of update: ', len(loss))
-    early_stop_iter = FLAGS.update_batch_size - 1
+    early_stop_iter = FLAGS.num_updates - 1
     for i in range(1, early_stop_iter):
         if loss[i] > loss[i - 1]:
             print("check this iteration: ", i, loss[i - 1], loss[i])
