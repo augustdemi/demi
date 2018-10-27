@@ -97,7 +97,7 @@ sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
 three_layers = feature_layer(batch_size, 1)
-three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au)
+three_layers.loadWeightS(args.restored_model, au_index, num_au_for_rm=args.num_au)
 model_intensity = three_layers.model_intensity
 
 

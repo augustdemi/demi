@@ -73,6 +73,37 @@ class feature_layer:
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
         print("[vae_model] final loaded weight : ", self.model_intensity.layers[-1].get_weights()[1])
 
+    def loadWeightS(self, vae_model_name, au_index, num_au_for_rm=1, w=None, b=None):
+        if num_au_for_rm > 1:
+            trained_model = VAE((160, 240, 1), self.batch_size, num_au_for_rm).model_train
+            print(">>>>>>>>> model loaded from ", vae_model_name)
+            trained_model.load_weights(vae_model_name + '.h5')
+            #### get weight
+            layer_dict_whole_vae = dict([(layer.name, layer) for layer in trained_model.layers])
+            w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
+            w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
+            print('check the last layer of model_train: ', trained_model.layers[-1].name)
+            w_softmaxpdf_1 = trained_model.layers[-1].get_weights()
+            # print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1[1])
+
+            # whene w and b is not None = w and b is from MAML
+            if w is not None and b is not None:
+                w_softmaxpdf_1 = [w, b]
+                print("[vae_model]loaded weight from MAML : ", w_softmaxpdf_1[1])
+
+            #### set weight for 3 layers
+            layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
+            layer_dict_3layers['intermediate'].set_weights(w_intermediate)
+            layer_dict_3layers['z_mean'].set_weights(w_z_mean)
+            print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
+        else:
+            self.model_intensity.load_weights(vae_model_name + '.h5')
+            # whene w and b is not None = w and b is from MAML
+            if w is not None and b is not None:
+                w_softmaxpdf_1 = [w, b]
+                print("[vae_model] loaded weight from MAML : ", w_softmaxpdf_1[1])
+                self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
+        print("[vae_model] final loaded weight : ", self.model_intensity.layers[-1].get_weights()[1])
 
 
     def loadWeight_m0(self, vae_model_name, w, b, au_index=-1):
