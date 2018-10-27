@@ -226,12 +226,12 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
 
         loss = result[1]
         if itr > 1:
-            if loss > losses[-1]:
-                print("loss inc at iteration: ", itr, losses[-1], loss)
+            reduced_loss = losses[-1] - loss
+            print("reduced loss : ", reduced_loss)
+            if reduced_loss <= 0:
                 print('!!!!!!!!!! early stop at : ', itr)
                 break
-            else:
-                print("reduced loss : ", losses[-1] - loss)
+
         losses.append(loss)
         print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
 
