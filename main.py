@@ -226,12 +226,11 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
 
         loss = result[1]
         if itr > 1:
-            if losses[-1] > loss:
+            if loss > losses[-1]:
                 print("loss inc at iteration: ", itr, losses[-1], loss)
                 print('!!!!!!!!!! early stop at : ', itr)
                 break
         losses.append(loss)
-        print("================================================================================")
         print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
 
     save_path = FLAGS.logdir + '/' + trained_model_dir
