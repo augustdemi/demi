@@ -207,49 +207,39 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors):
+def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
 
     feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
                  model.inputb: metatrain_input_tensors['inputb'].eval(),
                  model.labela: metatrain_input_tensors['labela'].eval(),
-                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: 0}
+                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
     print('Done initializing, starting training.')
-    input_tensors = [model.metatrain_op, model.all_w, model.all_b, model.total_losses2]
 
-    result = sess.run(input_tensors, feed_dict)
+    losses = []
+    for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
 
-    # save local weight as a global weight
+        input_tensors = [model.pretrain_op, model.total_loss1]
 
-    loss = np.array(result[3])
-    # print('loss per update: ', loss)
-    print('>>> num of update: ', len(loss))
-    early_stop_iter = FLAGS.num_updates - 1
-    for i in range(1, FLAGS.num_updates):
-        if loss[i] > loss[i - 1]:
-            print("loss inc at iteration: ", i, loss[i - 1], loss[i])
-            early_stop_iter = i - 1
+        result = sess.run(input_tensors, feed_dict)
+        # save local weight as a global weight
+
+        loss = result[1]
+        print('loss per update: ', loss)
+        print('>>> num of update: ', len(loss))
+        if losses[-1] > loss:
+            print("loss inc at iteration: ", itr, losses[-1], loss)
+            print('!!!!!!!!!! early stop at : ', itr)
             break
-    all_w = result[1]
-    all_b = result[2]
-    print('>>> shape of local_weights:', np.array(all_w).shape)
-    print('!!!!!!!!!! early stop at : ', early_stop_iter)
-    # for i in range(len(all_b)):
-    #     print(i, all_b[i][0])  # index: update_batch_size, meta_batch_size
-    local_w = all_w[early_stop_iter][0]
-    local_b = all_b[early_stop_iter][0]
-    print("================================================================================")
-    print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
-    model.weights['w1'].load(local_w, sess)
-    model.weights['b1'].load(local_b, sess)
-    print('>>>>>> Updated Local weights ', sess.run('model/b1:0'))
+        losses.append(result[1])
+
+        print("================================================================================")
+        print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
+
     save_path = FLAGS.logdir + '/' + trained_model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     saver.save(sess, save_path + '/model' + str(FLAGS.update_batch_size))
-
-
-
 
 
 def main():
@@ -368,7 +358,7 @@ def main():
     print("================================================================================")
 
     if not FLAGS.meta_update:
-        inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors)
+        inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
     else:
         train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
     end_time = datetime.now()
