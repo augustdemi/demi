@@ -243,7 +243,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
     save_path = FLAGS.logdir + '/' + trained_model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    saver.save(sess, save_path + '/model' + str(FLAGS.update_batch_size))
+    saver.save(sess, save_path + '/model' + str(itr))
 
 
 def main():
