@@ -95,6 +95,7 @@ flags.DEFINE_string('feature_path', "", 'path for feature vector')
 flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
 flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
 flags.DEFINE_bool('meta_update', True, 'meta_update')
+flags.DEFINE_string('model', "", 'model name')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
