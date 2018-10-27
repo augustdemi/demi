@@ -141,6 +141,9 @@ def main():
         FLAGS.update_batch_size = temp_kshot
         FLAGS.meta_batch_size = orig_meta_batch_size
 
+    if FLAGS.model.startswith('m2'):
+        FLAGS.num_updates = temp_num_updates
+
     if FLAGS.train_update_batch_size == -1:
         FLAGS.train_update_batch_size = FLAGS.update_batch_size
     if FLAGS.train_update_lr == -1:
@@ -257,8 +260,6 @@ def main():
         return w, b
 
     print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
-
-    FLAGS.num_updates = temp_num_updates
     save_path = "./logs/result/"
     y_hat = []
     y_lab = []
