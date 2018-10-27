@@ -217,6 +217,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
     print('Done initializing, starting training.')
 
     losses = []
+    prev_weight = []
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
 
         input_tensors = [model.pretrain_op, model.total_loss1]
@@ -234,7 +235,11 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
 
         losses.append(loss)
         print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
+        prev_weight = [sess.run('model/w1:0'), sess.run('model/b1:0')]
 
+    model.weights['w1'].load(prev_weight[0], sess)
+    model.weights['b1'].load(prev_weight[1], sess)
+    print('>>>>>> saved Global weights: ', sess.run('model/b1:0'))
     save_path = FLAGS.logdir + '/' + trained_model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
