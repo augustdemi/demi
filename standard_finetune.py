@@ -135,7 +135,7 @@ model_intensity.fit_generator(
     nb_epoch=nb_iter,
     max_q_size=4,
     callbacks=[
-        early_stopping,
+        # early_stopping,
         EE.callbacks.summary_multi_output(
             gen_list=(generator(TR), generator(TE)),
             predictor=model_intensity.predict,  # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
