@@ -113,6 +113,11 @@ def main():
         FLAGS.meta_batch_size = 1
         temp_kshot = FLAGS.update_batch_size
         FLAGS.update_batch_size = 1
+    if FLAGS.model.startswith('m2'):
+        temp_num_updates = FLAGS.num_updates
+        FLAGS.num_updates = 1
+
+
 
     data_generator = DataGenerator()
 
@@ -251,8 +256,9 @@ def main():
             print('----------------------------------------------------------')
         return w, b
 
-
     print("<<<<<<<<<<<< CONCATENATE >>>>>>>>>>>>>>")
+
+    FLAGS.num_updates = temp_num_updates
     save_path = "./logs/result/"
     y_hat = []
     y_lab = []
