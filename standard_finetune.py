@@ -122,12 +122,9 @@ model_intensity.compile(
 model_intensity.summary()
 print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[1])
 
-# model_train.compile(K.optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0), loss=loss)
-# model_train.compile(K.optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, schedule_decay=0.004),
-#                     loss=loss)
 from keras.callbacks import EarlyStopping
 
-early_stopping = EarlyStopping(monitor='softmaxpdf_1_loss', patience=3, verbose=1)
+early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=1)
 
 model_intensity.fit_generator(
     generator=GEN_TR,
@@ -138,7 +135,7 @@ model_intensity.fit_generator(
     nb_epoch=nb_iter,
     max_q_size=4,
     callbacks=[
-        # early_stopping,
+        early_stopping,
         EE.callbacks.summary_multi_output(
             gen_list=(generator(TR), generator(TE)),
             predictor=model_intensity.predict,  # predicted lable만을 예측, 이때는 augmented 되지 않은 train data를 이용하기 위해 분리?
