@@ -72,7 +72,6 @@ class MAML:
                 labelb = tf.cast(labelb, tf.float32)
                 labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
                 task_outputbs, task_lossesb, task_labelbs = [], [], []
-                all_w, all_b = [], []
 
                 if self.classification:
                     task_accuraciesb = []
