@@ -213,14 +213,13 @@ def main():
                 if FLAGS.model.startswith('s3'):
                     load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_kshot' + str(
                         FLAGS.update_batch_size) + '_iter100'
-                    three_layers.loadWeight(load_model_path, au)
                 elif FLAGS.model.startswith('s4'):
                     load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + au + '_kshot' + str(
                         FLAGS.update_batch_size) + '_iter50_subject' + str(sbjt_start_idx)
-                    three_layers.loadWeight(load_model_path, au)
                 else:
-                    load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_iter100'
-                    three_layers.loadWeight(load_model_path, au)
+                    load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_kshot' + str(
+                        FLAGS.update_batch_size) + '_iter200'
+                three_layers.loadWeight(load_model_path, au)
                 print('=============== Model S loaded from ', load_model_path)
                 w = three_layers.model_intensity.layers[-1].get_weights()[0]
                 b = three_layers.model_intensity.layers[-1].get_weights()[1]
