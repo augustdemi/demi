@@ -218,6 +218,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
 
     losses = []
     prev_weight = []
+    final_iteration = FLAGS.metatrain_iterations
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
 
         input_tensors = [model.pretrain_op, model.total_loss1]
@@ -229,10 +230,10 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
         if itr > 1:
             reduced_loss = losses[-1] - loss
             print("reduced loss : ", reduced_loss)
-            if reduced_loss <= 0:
-                print('!!!!!!!!!! early stop at : ', itr)
-                break
-
+            # if reduced_loss <= 0:
+            #     print('!!!!!!!!!! early stop at : ', itr)
+            #     final_iteration = itr
+            #     break
         losses.append(loss)
         print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
         prev_weight = [sess.run('model/w1:0'), sess.run('model/b1:0')]
@@ -243,7 +244,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
     save_path = FLAGS.logdir + '/' + trained_model_dir
     if not os.path.exists(save_path):
         os.makedirs(save_path)
-    saver.save(sess, save_path + '/model' + str(itr))
+    saver.save(sess, save_path + '/model' + str(final_iteration))
 
 
 def main():
