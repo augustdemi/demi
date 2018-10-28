@@ -228,6 +228,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
         # save local weight as a global weight
 
         loss = result[1]
+        print(loss)
         if itr > 1:
             reduced_loss = losses[-1] - loss
             print("reduced loss : ", reduced_loss)
