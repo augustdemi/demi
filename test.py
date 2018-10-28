@@ -214,7 +214,8 @@ def main():
                     load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_kshot' + str(
                         FLAGS.update_batch_size) + '_iter100'
                 elif FLAGS.model.startswith('s4'):
-                    load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + au + '_kshot' + str(
+                    load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + au + '_subject' + str(
+                        sbjt_start_idx) + '_kshot' + str(
                         FLAGS.update_batch_size) + '_iter50_subject' + str(sbjt_start_idx)
                 else:
                     load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_kshot' + str(
