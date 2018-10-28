@@ -120,6 +120,7 @@ model_intensity.compile(
 )
 
 model_intensity.summary()
+print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[0])
 print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[1])
 
 from keras.callbacks import EarlyStopping
