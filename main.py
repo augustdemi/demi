@@ -361,10 +361,21 @@ def main():
         print("2. Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
         print("updated weights from ckpt: ", sess.run('model/b1:0'))
+    elif FLAGS.model.startswith('s4'):
+        from feature_layers import feature_layer
+        three_layers = feature_layer(10, 1)
+        three_layers.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
+        w = three_layers.model_intensity.layers[-1].get_weights()[0]
+        b = three_layers.model_intensity.layers[-1].get_weights()[1]
+        print('b: ', b)
+        op = sess.graph.get_operations()
+        [m.values() for m in op][1]
+
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
             FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+
     print("================================================================================")
 
     if not FLAGS.meta_update:
