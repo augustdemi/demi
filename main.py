@@ -218,7 +218,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
     print('Done initializing, starting training.')
 
     losses = []
-    prev_weight = []
+    prev_weight = [sess.run('model/w1:0'), sess.run('model/b1:0')]
     final_iteration = FLAGS.metatrain_iterations
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
 
