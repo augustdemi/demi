@@ -370,11 +370,15 @@ def main():
         w = three_layers.model_intensity.layers[-1].get_weights()[0]
         b = three_layers.model_intensity.layers[-1].get_weights()[1]
         print('b: ', b)
-        op = sess.graph.get_operations()
-        [print(m.values()) for m in op][1]
-        tensor_names = [t.name for op in tf.get_default_graph().get_operations() for t in op.values()]
-        print('------------------------------------------')
-        print(tensor_names)
+        print("before: ", sess.run('model/b1:0'))
+        tf.assign(
+            'model/b1:0',
+            b,
+            validate_shape=None,
+            use_locking=None,
+            name=None
+        )
+        print("after: ", sess.run('model/b1:0'))
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
