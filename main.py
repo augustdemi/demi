@@ -375,7 +375,7 @@ def main():
             v = tf.get_variable("b1", [1, 2], initializer=tf.constant_initializer(np.array(b[0])))
             # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
         print(v.name)
-        # sess.run(tf.global_variables_initializer())
+        sess.run(tf.global_variables_initializer())
         # tf.assign(
         #     'model/b1:0',
         #     b,
@@ -384,7 +384,6 @@ def main():
         #     name=None
         # )
         print("after: ", sess.run('model/b1:0'))
-        print("after: ", sess.run('model/b1'))
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
