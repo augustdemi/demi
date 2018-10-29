@@ -371,11 +371,13 @@ def main():
         b = three_layers.model_intensity.layers[-1].get_weights()[1]
         print('b: ', np.array(b[0]))
         print("before: ", sess.run('model/b1:0'))
-        with tf.variable_scope("model", reuse=True):
+        with tf.variable_scope("model", reuse=True) as scope:
+            scope.reuse_variables()
             v = tf.get_variable("b1", [1, 2], initializer=tf.constant_initializer(np.array(b[0])))
+            print('within scope:', v.eval())
             # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
-        print(v.name)
-        sess.run(tf.global_variables_initializer())
+        print('out of  scope:', v.eval())
+        # sess.run(tf.global_variables_initializer())
         # tf.assign(
         #     'model/b1:0',
         #     b,
