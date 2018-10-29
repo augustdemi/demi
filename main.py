@@ -372,7 +372,7 @@ def main():
         print('b: ', np.array(b[0]))
         print("before: ", sess.run('model/b1:0'))
         with tf.variable_scope("model", reuse=True):
-            v = tf.get_variable("b1", [1, 2], initializer=np.array(b[0]))
+            v = tf.get_variable("b1", [1, 2], initializer=tf.constant_initializer(np.array(b[0])))
             # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
         print(v.name)
         # sess.run(tf.global_variables_initializer())
