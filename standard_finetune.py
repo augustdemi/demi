@@ -54,6 +54,7 @@ batch_size = 32  # dont change it!
 log_dir_model = './model'
 
 if args.kshot > 0:
+    batch_size = 2 * args.kshot
     TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
                                                padding='same',
                                                sbjt_start_idx=args.start_idx,
@@ -108,16 +109,18 @@ for i in range(len(model_intensity.layers)):
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
+#
+# model_intensity.compile(
+#     optimizer=K.optimizers.Adadelta(
+#         lr=args.lr,
+#         rho=0.95,
+#         epsilon=1e-08,
+#         decay=0.0
+#     ),
+#     loss=pred_loss
+# )
 
-model_intensity.compile(
-    optimizer=K.optimizers.Adadelta(
-        lr=args.lr,
-        rho=0.95,
-        epsilon=1e-08,
-        decay=0.0
-    ),
-    loss=pred_loss
-)
+model_intensity.compile(K.optimizers.Adam(lr=args.lr), loss=pred_loss)
 
 model_intensity.summary()
 print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[0])
@@ -129,7 +132,7 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=1)
 
 model_intensity.fit_generator(
     generator=GEN_TR,
-    samples_per_epoch=960,  # number of samples to process before going to the next epoch.
+    samples_per_epoch=batch_size,  # number of samples to process before going to the next epoch.
     # validation_data=GEN_TE,  # integer, total number of iterations on the data.
     nb_val_samples=5000,  # number of samples to use from validation generator at the end of every epoch.
     initial_epoch=args.init_epoch,
