@@ -222,7 +222,7 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
 
     # save local weight as a global weight
 
-    loss = np.array(result[3])
+    loss = np.array(result[2])
     # print('loss per update: ', loss)
     print('>>> num of update: ', len(loss))
     # early_stop_iter = FLAGS.num_updates - 1
@@ -231,12 +231,12 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
     #         print("loss inc at iteration: ", i, loss[i - 1], loss[i])
     #         early_stop_iter = i - 1
     #         break
-    all_w = result[1]
-    all_b = result[2]
+    all_w = result[0]
+    all_b = result[1]
     print('>>> shape of local_weights:', np.array(all_w).shape)
     # print('!!!!!!!!!! early stop at : ', early_stop_iter)
     print("b:", all_b)
-    print("loss:", model.total_losses2)
+    print("loss:", loss)
 
     # for i in range(len(all_b)):
     #     print(i, all_b[i][0])  # index: update_batch_size, meta_batch_size
