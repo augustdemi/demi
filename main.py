@@ -372,9 +372,9 @@ def main():
         print('b: ', np.array(b[0]))
         print("before: ", sess.run('model/b1:0'))
         with tf.variable_scope("model", reuse=True):
-            v = tf.get_variable("b1", [1, 2])
+            v = tf.get_variable("b1", [1, 2], initializer=np.array(b[0]))
             # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
-        assert v.name == "model/b1"
+        print(v.name)
         # sess.run(tf.global_variables_initializer())
         # tf.assign(
         #     'model/b1:0',
@@ -383,6 +383,7 @@ def main():
         #     use_locking=None,
         #     name=None
         # )
+        print("after: ", sess.run('model/b1:0'))
         print("after: ", sess.run('model/b1'))
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
