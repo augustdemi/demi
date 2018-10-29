@@ -130,7 +130,7 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=1)
 model_intensity.fit_generator(
     generator=GEN_TR,
     samples_per_epoch=960,  # number of samples to process before going to the next epoch.
-    validation_data=GEN_TE,  # integer, total number of iterations on the data.
+    # validation_data=GEN_TE,  # integer, total number of iterations on the data.
     nb_val_samples=5000,  # number of samples to use from validation generator at the end of every epoch.
     initial_epoch=args.init_epoch,
     nb_epoch=nb_iter,
