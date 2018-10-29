@@ -371,13 +371,15 @@ def main():
         b = three_layers.model_intensity.layers[-1].get_weights()[1]
         print('b: ', b)
         print("before: ", sess.run('model/b1:0'))
-        tf.assign(
-            'model/b1:0',
-            b,
-            validate_shape=None,
-            use_locking=None,
-            name=None
-        )
+        tf.get_variable("model/b1:0", b)
+        sess.run(tf.global_variables_initializer())
+        # tf.assign(
+        #     'model/b1:0',
+        #     b,
+        #     validate_shape=None,
+        #     use_locking=None,
+        #     name=None
+        # )
         print("after: ", sess.run('model/b1:0'))
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
