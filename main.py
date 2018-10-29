@@ -371,7 +371,9 @@ def main():
         b = three_layers.model_intensity.layers[-1].get_weights()[1]
         print('b: ', np.array(b[0]))
         print("before: ", sess.run('model/b1:0'))
-        tf.get_variable("model/b1:0", initializer=np.array(b[0]))
+        with tf.variable_scope("model"):
+            v = tf.get_variable("b1:0", initializer=np.array(b[0]))
+        assert v.name == "model/b1:0"
         sess.run(tf.global_variables_initializer())
         # tf.assign(
         #     'model/b1:0',
