@@ -374,10 +374,12 @@ def main():
         with tf.variable_scope("model", reuse=True) as scope:
             scope.reuse_variables()
             v = tf.get_variable("b1", initializer=tf.constant(np.array(b[0])))
+            v.initializer.run()
             print('within scope:', v.eval())
+
             # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
         print('out of  scope:', v.eval())
-        sess.run(tf.global_variables_initializer())
+        # sess.run(tf.global_variables_initializer())
         # tf.assign(
         #     'model/b1:0',
         #     b,
