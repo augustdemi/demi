@@ -369,14 +369,14 @@ def main():
         three_layers.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
         w = three_layers.model_intensity.layers[-1].get_weights()[0]
         b = three_layers.model_intensity.layers[-1].get_weights()[1]
-        print('b: ', np.array(b[0]))
+        print('b1: ', np.array(b[0]))
         print("before: ", sess.run('model/b1:0'))
         with tf.variable_scope("model", reuse=True) as scope:
             scope.reuse_variables()
+            print('b2: ', np.array(b[0]))
             v = tf.get_variable("b1", initializer=tf.constant(np.array(b[0])))
             v.initializer.run()
             print('within scope:', v.eval())
-
             # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
         print('out of  scope:', v.eval())
         # sess.run(tf.global_variables_initializer())
