@@ -369,31 +369,18 @@ def main():
         three_layers.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
         w = three_layers.model_intensity.layers[-1].get_weights()[0]
         b = three_layers.model_intensity.layers[-1].get_weights()[1]
-        print('b1: ', np.array(b[0]))
+        print('b1: ', b)
+        print('b1: ', w)
         print("before: ", sess.run('model/b1:0'))
+        print("before: ", sess.run('model/w1:0'))
         with tf.variable_scope("model", reuse=True) as scope:
             scope.reuse_variables()
-            print('b2: ', np.array(b[0]))
-            v = tf.get_variable("b1", [1, 2])
-            # v = tf.get_variable("b1", initializer=tf.constant(np.array(b[0])))
-            update = v.assign(np.array(b))  # do not forget to initialize tf variables.
-            # "update" above is just a tf op, you need to run the op to update W.
-            sess.run(update)
-            # v.assign(np.array(b[0])).eval()
-            # v.initializer.run()
-            # sess.run(v)
-            print('within scope:', v.eval())
-            # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
-        print('out of  scope:', v.eval())
-        # sess.run(tf.global_variables_initializer())
-        # tf.assign(
-        #     'model/b1:0',
-        #     b,
-        #     validate_shape=None,
-        #     use_locking=None,
-        #     name=None
-        # )
+            b1 = tf.get_variable("b1", [1, 2]).assign(np.array(b))
+            w1 = tf.get_variable("w1", [300, 1, 2]).assign(np.array(w))
+            sess.run(b1)
+            sess.run(w1)
         print("after: ", sess.run('model/b1:0'))
+        print("after: ", sess.run('model/w1:0'))
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
