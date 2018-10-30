@@ -374,10 +374,14 @@ def main():
         with tf.variable_scope("model", reuse=True) as scope:
             scope.reuse_variables()
             print('b2: ', np.array(b[0]))
-            v = tf.get_variable("b1", initializer=tf.constant(np.array(b[0])))
+            v = tf.get_variable("b1", [1, 2])
+            # v = tf.get_variable("b1", initializer=tf.constant(np.array(b[0])))
+            update = v.assign(np.array(b[0]))  # do not forget to initialize tf variables.
+            # "update" above is just a tf op, you need to run the op to update W.
+            sess.run(update)
             # v.assign(np.array(b[0])).eval()
             # v.initializer.run()
-            sess.run(v)
+            # sess.run(v)
             print('within scope:', v.eval())
             # v = tf.get_variable("b1:0", initializer=np.array(b[0]))
         print('out of  scope:', v.eval())
