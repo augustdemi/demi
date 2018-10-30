@@ -376,7 +376,7 @@ def main():
             print('b2: ', np.array(b[0]))
             v = tf.get_variable("b1", [1, 2])
             # v = tf.get_variable("b1", initializer=tf.constant(np.array(b[0])))
-            update = v.assign(np.array(b[0]))  # do not forget to initialize tf variables.
+            update = v.assign(np.array(b))  # do not forget to initialize tf variables.
             # "update" above is just a tf op, you need to run the op to update W.
             sess.run(update)
             # v.assign(np.array(b[0])).eval()
