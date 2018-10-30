@@ -369,10 +369,9 @@ def main():
         three_layers.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
         w = three_layers.model_intensity.layers[-1].get_weights()[0]
         b = three_layers.model_intensity.layers[-1].get_weights()[1]
-        print('b1: ', b)
-        print('b1: ', w)
-        print("before: ", sess.run('model/b1:0'))
-        print("before: ", sess.run('model/w1:0'))
+        print('s2 b: ', b)
+        print('s2 w: ', w)
+        print('-----------------------------------------------------------------')
         with tf.variable_scope("model", reuse=True) as scope:
             scope.reuse_variables()
             b1 = tf.get_variable("b1", [1, 2]).assign(np.array(b))
