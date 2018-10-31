@@ -148,8 +148,8 @@ class MAML:
                     tf.reduce_sum(accuraciesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
                 self.result1 = [outputas, res_labela]
                 self.result2 = [outputbs, res_labelbs]
-            # self.pretrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_loss1)
-            self.pretrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(total_loss1)
+            self.pretrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_loss1)
+            # self.pretrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(total_loss1)
 
             if FLAGS.metatrain_iterations > 0:
                 optimizer = tf.train.AdamOptimizer(self.meta_lr)
