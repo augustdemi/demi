@@ -192,8 +192,9 @@ class MAML:
         return score
 
     def getWeightVar(self):
+        dtype = tf.float32
         tf.set_random_seed(FLAGS.weight_seed)
-        w1 = tf.get_variable("w1", [self.weight_dim, 1, 2])
-        b1 = tf.get_variable("b1", [1, 2])
+        w1 = tf.get_variable("w1", [self.weight_dim, 1, 2], tf.contrib.layers.xavier_initializer(dtype=dtype))
+        b1 = tf.get_variable("b1", [1, 2], tf.zeros([1, 2]))
         weight_tensor = {"w1": w1, "b1": b1}
         return weight_tensor
