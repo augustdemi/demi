@@ -98,7 +98,7 @@ sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
 three_layers = feature_layer(batch_size, 1)
-three_layers.loadWeightS(args.restored_model, au_index, num_au_for_rm=args.num_au)
+three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au)
 model_intensity = three_layers.model_intensity
 
 
@@ -109,18 +109,18 @@ for i in range(len(model_intensity.layers)):
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
-#
-# model_intensity.compile(
-#     optimizer=K.optimizers.Adadelta(
-#         lr=args.lr,
-#         rho=0.95,
-#         epsilon=1e-08,
-#         decay=0.0
-#     ),
-#     loss=pred_loss
-# )
 
-model_intensity.compile(K.optimizers.Adam(lr=args.lr), loss=pred_loss)
+model_intensity.compile(
+    optimizer=K.optimizers.Adadelta(
+        lr=args.lr,
+        rho=0.95,
+        epsilon=1e-08,
+        decay=0.0
+    ),
+    loss=pred_loss
+)
+
+# model_intensity.compile(K.optimizers.Adam(lr=args.lr), loss=pred_loss)
 
 model_intensity.summary()
 print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[0])
@@ -132,7 +132,8 @@ early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=1)
 
 model_intensity.fit_generator(
     generator=GEN_TR,
-    samples_per_epoch=batch_size,  # number of samples to process before going to the next epoch.
+    samples_per_epoch=960,  # number of samples to process before going to the next epoch.
+    # samples_per_epoch=batch_size,  # number of samples to process before going to the next epoch.
     # validation_data=GEN_TE,  # integer, total number of iterations on the data.
     nb_val_samples=5000,  # number of samples to use from validation generator at the end of every epoch.
     initial_epoch=args.init_epoch,
