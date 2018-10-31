@@ -97,6 +97,7 @@ flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test t
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
+flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -224,23 +225,13 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
     # save local weight as a global weight
 
     loss = np.array(result[2])
-    # print('loss per update: ', loss)
     print('>>> num of update: ', len(loss))
-    # early_stop_iter = FLAGS.num_updates - 1
-    # for i in range(1, FLAGS.num_updates):
-    #     if loss[i] > loss[i - 1]:
-    #         print("loss inc at iteration: ", i, loss[i - 1], loss[i])
-    #         early_stop_iter = i - 1
-    #         break
     all_w = result[0]
     all_b = result[1]
     print('>>> shape of local_weights:', np.array(all_w).shape)
-    # print('!!!!!!!!!! early stop at : ', early_stop_iter)
     print("b:", all_b)
     print("loss:", loss)
 
-    # for i in range(len(all_b)):
-    #     print(i, all_b[i][0])  # index: update_batch_size, meta_batch_size
     local_w = all_w[FLAGS.num_updates - 1][0]
     local_b = all_b[FLAGS.num_updates - 1][0]
     print("================================================================================")
@@ -252,6 +243,44 @@ def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors,
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     saver.save(sess, save_path + '/model' + str(FLAGS.num_updates))
+
+
+def inner_update_opti(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr):
+    print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
+
+    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
+                 model.inputb: metatrain_input_tensors['inputb'].eval(),
+                 model.labela: metatrain_input_tensors['labela'].eval(),
+                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
+    print('Done initializing, starting training.')
+
+    losses = []
+    prev_weight = [sess.run('model/w1:0'), sess.run('model/b1:0')]
+    final_iteration = FLAGS.metatrain_iterations
+    for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
+        input_tensors = [model.pretrain_op, model.total_loss1]
+        result = sess.run(input_tensors, feed_dict)
+        # save local weight as a global weight
+        loss = result[1]
+        print(loss)
+        if itr > 1:
+            reduced_loss = losses[-1] - loss
+            print("reduced loss : ", reduced_loss)
+        losses.append(loss)
+        print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
+        prev_weight = [sess.run('model/w1:0'), sess.run('model/b1:0')]
+
+    model.weights['w1'].load(prev_weight[0], sess)
+    model.weights['b1'].load(prev_weight[1], sess)
+    print('>>>>>> saved Global weights: ', sess.run('model/b1:0'))
+    save_path = FLAGS.logdir + '/' + trained_model_dir
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    saver.save(sess, save_path + '/model' + str(final_iteration))
+
+
+
+
 
 
 def main():
@@ -388,7 +417,10 @@ def main():
     print("================================================================================")
 
     if not FLAGS.meta_update:
-        inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
+        if FLAGS.opti:
+            inner_update_opti(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
+        else:
+            inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
     else:
         train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
     end_time = datetime.now()
