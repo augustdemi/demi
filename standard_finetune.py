@@ -110,17 +110,17 @@ for i in range(len(model_intensity.layers)):
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
 
-# model_intensity.compile(
-#     optimizer=K.optimizers.Adadelta(
-#         lr=args.lr,
-#         rho=0.95,
-#         epsilon=1e-08,
-#         decay=0.0
-#     ),
-#     loss=pred_loss
-# )
+model_intensity.compile(
+    optimizer=K.optimizers.Adadelta(
+        lr=args.lr,
+        rho=0.95,
+        epsilon=1e-08,
+        decay=0.0
+    ),
+    loss=pred_loss
+)
 
-model_intensity.compile(K.optimizers.Adam(lr=args.lr), loss=pred_loss)
+# model_intensity.compile(K.optimizers.Adam(lr=args.lr), loss=pred_loss)
 
 model_intensity.summary()
 print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[0])
