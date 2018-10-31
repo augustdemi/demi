@@ -197,6 +197,6 @@ class MAML:
         tf.set_random_seed(FLAGS.weight_seed)
         w1 = tf.get_variable("w1", [self.weight_dim, 1, 2],
                              initializer=tf.contrib.layers.xavier_initializer(dtype=dtype))
-        b1 = tf.get_variable("b1", [1, 2], initializer=tf.zeros([1, 2]))
+        b1 = tf.get_variable("b1", [1, 2], initializer=tf.zeros_initializer())
         weight_tensor = {"w1": w1, "b1": b1}
         return weight_tensor
