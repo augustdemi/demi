@@ -379,7 +379,7 @@ def main():
             w_arr = w
             b_arr = b
             save_path = "/home/ml1323/project/robert_code/logs/"
-            out = open(save_path + "/home/ml1323/project/robert_code/logs/" + FLAGS.temp_w_save + ".pkl", 'wb')
+            out = open(save_path + FLAGS.temp_w_save + ".pkl", 'wb')
             pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
             out.close()
 
