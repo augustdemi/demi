@@ -190,14 +190,17 @@ class MAML:
 
         # matrix multiplication with dropout
         z = tf.reduce_sum(var_w * var_x, 1) + var_b
+        # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
         score = tf.nn.softmax(z)
         return score
 
     def getWeightVar(self):
-        dtype = tf.float32
         tf.set_random_seed(FLAGS.weight_seed)
-        w1 = tf.get_variable("w1", [self.weight_dim, 1, 2],
-                             initializer=tf.contrib.layers.xavier_initializer(dtype=dtype))
-        b1 = tf.get_variable("b1", [1, 2], initializer=tf.zeros_initializer())
+        w1 = tf.Variable(tf.truncated_normal([self.weight_dim, 1, 2], name="w1", stddev=0.01))
+        b1 = tf.Variable(tf.zeros([1, 2]), name="b1")
+        # dtype = tf.float32
+        # w1 = tf.get_variable("w1", [self.weight_dim, 1, 2],
+        #                      initializer=tf.contrib.layers.xavier_initializer(dtype=dtype))
+        # b1 = tf.get_variable("b1", [1, 2], initializer=tf.zeros_initializer())
         weight_tensor = {"w1": w1, "b1": b1}
         return weight_tensor
