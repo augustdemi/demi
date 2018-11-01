@@ -102,7 +102,7 @@ three_layers = feature_layer(batch_size, 1)
 import pickle
 
 save_path = "/home/ml1323/project/robert_code/logs/"
-aus = ['au1' 'au2' 'au4' 'au6' 'au9' 'au12' 'au25' 'au26']
+aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 data = pickle.load(open(save_path + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
 w = np.array(data['w'])
 b = np.array(data['b'])
