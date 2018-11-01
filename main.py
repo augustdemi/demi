@@ -98,6 +98,7 @@ flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
+flags.DEFINE_string('temp_w_save', '', 'do inner gradient with optimzier,not simple gradient')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
@@ -374,6 +375,14 @@ def main():
             print("updated weights from ckpt: ", np.array(b))
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
+
+            w_arr = w
+            b_arr = b
+            save_path = "/home/ml1323/project/robert_code/logs/"
+            out = open(save_path + "/home/ml1323/project/robert_code/logs/" + FLAGS.temp_w_save + ".pkl", 'wb')
+            pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
+            out.close()
+
             print('resume_itr: ', resume_itr)
 
     elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
@@ -391,6 +400,7 @@ def main():
         print("2. Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
         print("updated weights from ckpt: ", sess.run('model/b1:0'))
+
     elif FLAGS.model.startswith('s4'):
         from feature_layers import feature_layer
         three_layers = feature_layer(10, 1)
