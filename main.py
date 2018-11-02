@@ -189,6 +189,9 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                     os.makedirs(save_path)
                 saver.save(sess, save_path + '/model' + str(itr))
 
+                out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
+                pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
+                out.close()
                 # save local weight at the last iteration
                 if itr == FLAGS.metatrain_iterations:
                     print(">>>>>>>>>>>>>> local save !! : ", itr)
@@ -208,6 +211,9 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
             else:
                 # to train the model increasingly whenever new test is coming.
+                out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
+                pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
+                out.close()
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
@@ -375,14 +381,6 @@ def main():
             print("updated weights from ckpt: ", np.array(b))
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
-
-            w_arr = w
-            b_arr = b
-            save_path = "/home/ml1323/project/robert_code/logs/"
-            out = open(save_path + FLAGS.temp_w_save + ".pkl", 'wb')
-            pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
-            out.close()
-
             print('resume_itr: ', resume_itr)
 
     elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
