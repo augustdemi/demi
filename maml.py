@@ -195,11 +195,11 @@ class MAML:
 
     def getWeightVar(self):
         tf.set_random_seed(FLAGS.weight_seed)
-        w1 = tf.Variable(tf.truncated_normal([self.weight_dim, 1, 2], name="w1", stddev=0.01))
-        b1 = tf.Variable(tf.zeros([1, 2]), name="b1")
-        # dtype = tf.float32
-        # w1 = tf.get_variable("w1", [self.weight_dim, 1, 2],
-        #                      initializer=tf.contrib.layers.xavier_initializer(dtype=dtype))
-        # b1 = tf.get_variable("b1", [1, 2], initializer=tf.zeros_initializer())
+        # w1 = tf.Variable(tf.truncated_normal([self.weight_dim, 1, 2], name="w1", stddev=0.01))
+        # b1 = tf.Variable(tf.zeros([1, 2]), name="b1")
+        dtype = tf.float32
+        w1 = tf.get_variable("w1", [self.weight_dim, 1, 2],
+                             initializer=tf.contrib.layers.xavier_initializer(dtype=dtype))
+        b1 = tf.get_variable("b1", [1, 2], initializer=tf.zeros_initializer())
         weight_tensor = {"w1": w1, "b1": b1}
         return weight_tensor
