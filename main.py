@@ -98,8 +98,6 @@ flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
-flags.DEFINE_string('temp_w_save', '', 'do inner gradient with optimzier,not simple gradient')
-
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
