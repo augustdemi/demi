@@ -152,11 +152,10 @@ class MAML:
             # self.pretrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(total_loss1)
 
             if FLAGS.metatrain_iterations > 0:
-                optimizer = tf.train.AdamOptimizer(self.meta_lr)
-                # optimizer = tf.train.AdadeltaOptimizer(1.0)
-                self.gvs = gvs = optimizer.compute_gradients(self.total_losses2[FLAGS.num_updates - 1])
-
-                self.metatrain_op = optimizer.apply_gradients(gvs)
+                # optimizer = tf.train.AdamOptimizer(self.meta_lr)
+                # self.gvs = gvs = optimizer.compute_gradients(self.total_losses2[FLAGS.num_updates - 1])
+                # self.metatrain_op = optimizer.apply_gradients(gvs)
+                self.metatrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[FLAGS.num_updates - 1])
         else:
             self.metaval_total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
             self.metaval_total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size)
