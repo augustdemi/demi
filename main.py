@@ -347,7 +347,9 @@ def main():
     tf.train.start_queue_runners()
 
     print("================================================================================")
-    print('initial weights: ', sess.run('model/b1:0'))
+    print('initial weights norm: ', np.linalg.norm(sess.run('model/w1:0')))
+    print('initial last weights: ', sess.run('model/w1:0')[-1])
+    print('initial bias: ', sess.run('model/b1:0'))
     print("================================================================================")
 
 
