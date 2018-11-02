@@ -113,6 +113,10 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                  model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
 
     print('Done initializing, starting training.')
+    w = sess.run('model/w1:0')
+    print("======== weight norm:", np.linalg.norm(w))
+    print("======== last weight :", w[-1])
+    print("======== b :", sess.run('model/b1:0'))
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
         if itr <= 1000:
