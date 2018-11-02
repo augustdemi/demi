@@ -116,14 +116,10 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-        w = sess.run('model/w1:0')
-        print("======== weight norm:", np.linalg.norm(w))
-        print("======== last weight :", w[-1])
-        print("======== b :", sess.run('model/b1:0'))
         if itr <= 1000:
             SAVE_INTERVAL = 100
         elif itr <= 5000:
-            SAVE_INTERVAL = 500
+            SAVE_INTERVAL = 1000
         else:
             SAVE_INTERVAL = 5000
 
@@ -185,7 +181,10 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
-            print("===============> Final out weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
+            w = sess.run('model/w1:0')
+            print("======== weight norm:", np.linalg.norm(w))
+            print("======== last weight :", w[-1])
+            print("======== b :", sess.run('model/b1:0'))
             if FLAGS.train_test:
                 save_path = FLAGS.logdir + '/' + trained_model_dir
                 if not os.path.exists(save_path):
