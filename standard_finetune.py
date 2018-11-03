@@ -29,7 +29,7 @@ parser.add_argument("-rm", "--restored_model", type=str, default='', help="alrea
 parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
 parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate")
 parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make the dataset balanced or not")
-parser.add_argument("-kshot", "--kshot", type=int, default=0, help="test kshot learning")
+parser.add_argument("-kshot", "--kshot", type=float, default=0, help="test kshot learning")
 parser.add_argument("-mbs", "--meta_batch_size", type=int, default=13, help="num of task to use for kshot learning")
 parser.add_argument("-sidx", "--start_idx", type=int, default=0, help="start idx of task to use for kshot learning")
 parser.add_argument("-kshot_seed", "--kshot_seed", type=int, default=0, help="kshot seed")
