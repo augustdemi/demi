@@ -29,13 +29,14 @@ parser.add_argument("-rm", "--restored_model", type=str, default='', help="alrea
 parser.add_argument("-sm", "--saving_model", type=str, default='', help="model name to save")
 parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate")
 parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make the dataset balanced or not")
-parser.add_argument("-kshot", "--kshot", type=float, default=0, help="test kshot learning")
+parser.add_argument("-kshot", "--kshot", type=int, default=0, help="test kshot learning")
 parser.add_argument("-mbs", "--meta_batch_size", type=int, default=13, help="num of task to use for kshot learning")
 parser.add_argument("-sidx", "--start_idx", type=int, default=0, help="start idx of task to use for kshot learning")
 parser.add_argument("-kshot_seed", "--kshot_seed", type=int, default=0, help="kshot seed")
 parser.add_argument("-feat_path", "--feat_path", type=str, default='', help="extracted feature csv path")
 parser.add_argument("-logdir", "--logdir", type=str, default='', help="extracted feature csv path")
 parser.add_argument("-tmd", "--trained_model_dir", type=str, default='', help="extracted feature csv path")
+parser.add_argument("-test", "--test", type=bool, default=True, help="adapt to test data")
 
 args = parser.parse_args()
 
@@ -56,11 +57,19 @@ batch_size = 20  # dont change it!
 log_dir_model = './model'
 
 if args.kshot > 0:
-    batch_size = 4 * args.kshot
-    TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
-                                               padding='same',
-                                               sbjt_start_idx=args.start_idx,
-                                               meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
+    if args.test:
+        batch_size = 2 * args.kshot
+        TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
+                                                   padding='same',
+                                                   sbjt_start_idx=args.start_idx,
+                                                   meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
+    else:
+        batch_size = 4 * args.kshot
+        TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
+                                                   padding='same',
+                                                   sbjt_start_idx=args.start_idx,
+                                                   meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot,
+                                                   test=False)
 elif args.balance and au_index < TOTAL_AU:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
