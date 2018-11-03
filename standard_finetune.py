@@ -34,6 +34,8 @@ parser.add_argument("-mbs", "--meta_batch_size", type=int, default=13, help="num
 parser.add_argument("-sidx", "--start_idx", type=int, default=0, help="start idx of task to use for kshot learning")
 parser.add_argument("-kshot_seed", "--kshot_seed", type=int, default=0, help="kshot seed")
 parser.add_argument("-feat_path", "--feat_path", type=str, default='', help="extracted feature csv path")
+parser.add_argument("-logdir", "--logdir", type=str, default='', help="extracted feature csv path")
+parser.add_argument("-tmd", "--trained_model_dir", type=str, default='', help="extracted feature csv path")
 
 args = parser.parse_args()
 
@@ -103,7 +105,8 @@ import pickle
 
 save_path = "/home/ml1323/project/robert_code/logs/"
 aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-data = pickle.load(open(save_path + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
+# data = pickle.load(open(save_path + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
+data = pickle.load(open(args.logdir + '/' + args.trained_model_dir + "/soft_weights.pkl", "rb"), encoding='latin1')
 w = np.array(data['w'])
 b = np.array(data['b'])
 print('---------------- load from MAML')
