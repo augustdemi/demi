@@ -390,8 +390,8 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
     if not test:
         inputa_features.extend(inputb_features)
         labelas.extend(labelbs)
-        labelas = np.array(labelas)
-        labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
+    labelas = np.array(labelas)
+    labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
 
     sub = []
     subjects = subjects[sbjt_start_idx:sbjt_start_idx + meta_batch_size]
