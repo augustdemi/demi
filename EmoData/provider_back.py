@@ -341,7 +341,8 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
                          padding=None,
                          sbjt_start_idx=0,
                          meta_batch_size=13,
-                         update_batch_size=30
+                         update_batch_size=30,
+                         test=True
                          ):
     import sys
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -357,13 +358,12 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
     inputb_features = []
     labelas = []
     labelbs = []
-    print(">>>>>> per label samples :", update_batch_size * 2)
     print('subject_folders: ', subject_folders)
     # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
     for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
         # random.shuffle(sampled_character_folders)
         off_feat, on_feat = get_kshot_feature(sub_folder, feature_path, kshot_seed,
-                                              nb_samples=int(update_batch_size * 2), validate=False)
+                                              nb_samples=update_batch_size * 2, validate=False)
         # Split data into a/b
         half_off_img = int(len(off_feat) / 2)
         half_on_img = int(len(on_feat) / 2)
@@ -387,14 +387,15 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
 
     #################################################################################
 
-    inputa_features.extend(inputb_features)
-    labelas.extend(labelbs)
-    labelas = np.array(labelas)
-    labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
+    if not test:
+        inputa_features.extend(inputb_features)
+        labelas.extend(labelbs)
+        labelas = np.array(labelas)
+        labelas = np.reshape(labelas, (labelas.shape[0], 1, labelas.shape[1]))
 
     sub = []
     subjects = subjects[sbjt_start_idx:sbjt_start_idx + meta_batch_size]
-    for i in range(len(subjects)): sub.extend([subjects[i]] * int(update_batch_size * 4))
+    for i in range(len(subjects)): sub.extend([subjects[i]] * len(inputa_features))
     print(sub)
     print(">>> img shape: ", np.array(inputa_features).shape)
     print(">>> label shape: ", labelas.shape)
