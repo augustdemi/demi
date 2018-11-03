@@ -394,7 +394,7 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
 
     sub = []
     subjects = subjects[sbjt_start_idx:sbjt_start_idx + meta_batch_size]
-    for i in range(len(subjects)): sub.extend([subjects[i]] * update_batch_size * 4)
+    for i in range(len(subjects)): sub.extend([subjects[i]] * int(update_batch_size * 4))
     print(sub)
     print(">>> img shape: ", np.array(inputa_features).shape)
     print(">>> label shape: ", labelas.shape)
