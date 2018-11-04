@@ -122,7 +122,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         else:
             SAVE_INTERVAL = 5000
 
-        input_tensors = [model.metatrain_op]
+        input_tensors = [model.metatrain_op0, model.metatrain_op1, model.metatrain_op7]
 
         w = sess.run('model/w1:0')
         # print("======== weight norm:", np.linalg.norm(w))

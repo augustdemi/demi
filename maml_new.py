@@ -131,26 +131,7 @@ class MAML:
                 inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])  ##(NK,2000,1)로부터 AU별로 잘라냄
                 labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1, -1])  # (NK,1,N)로부터 AU별로 잘라냄
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])  # (NK,1,N)로부터 AU별로 잘라냄
-                self.au_idx = i
-                sess = tf.Session()
-                sess.run(tf.global_variables_initializer())
 
-                this_w = weights['w1'][:, self.au_idx, :]
-                this_b = weights['b1'][self.au_idx, :]
-                this_w = tf.reshape(this_w, [int(this_w.shape[0]), 1, int(this_w.shape[1])])
-                this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
-                this_weight = {'w1': this_w, 'b1': this_b}
-                w = this_weight['w1']
-                b = this_weight['b1']
-                bb = sess.run(b)
-                ww = sess.run(w)
-                print(bb.shape)
-                print(ww.shape)
-                print(sess.run(tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])).shape)
-                task_outputa = self.forward(tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1]),
-                                            this_weight)
-                print(sess.run(task_outputa).shape)
-                print('==============================')
 
                 fast_weight_w, fast_weight_b, lossesb = tf.map_fn(task_metalearn,
                                                                   elems=(inputa, inputb, labela, labelb),
@@ -205,8 +186,9 @@ class MAML:
         #     for i in range(8):
         #         tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[i])
 
-        self.metatrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[0])
-        self.metatrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[1])
+        self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[0])
+        self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[1])
+        self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[7])
 
     def forward_fc(self, inp, weights, reuse=False):
         var_w = weights['w1'][None, ::]
