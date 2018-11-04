@@ -36,8 +36,8 @@ class DataGenerator(object):
         else:
             self.metatrain_character_folders = []
             all_aus = os.listdir(data_folder)
-            num_subjects = int(FLAGS.meta_batch_size / len(all_aus))
-            print('FOR M0 - num_subjects in one au: ', FLAGS.meta_batch_size / len(all_aus))
+            num_subjects = FLAGS.meta_batch_size
+            print('FOR M0 - num_subjects in one au: ', num_subjects)
             for au in all_aus:
                 subjects = os.listdir(os.path.join(data_folder, au))
                 subjects.sort()
@@ -122,7 +122,7 @@ class DataGenerator(object):
         labelbs_tensor = tf.convert_to_tensor(labelbs)
         labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
         labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
+        labelas_tensor = tf.reshape(labelas_tensor, [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
+        labelbs_tensor = tf.reshape(labelbs_tensor, [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
