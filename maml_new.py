@@ -179,12 +179,12 @@ class MAML:
                               range(self.total_num_au)]
 
         # after the map_fn
+        # def optimize_all_au():
+        #     for i in range(8):
+        #         tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[i])
 
-        def optimize_all_au():
-            for i in range(8):
-                tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[i])
-
-        self.metatrain_op = optimize_all_au()
+        self.metatrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[0])
+        self.metatrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[1])
 
     def forward_fc(self, inp, weights, reuse=False):
         var_w = weights['w1'][None, ::]

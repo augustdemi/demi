@@ -124,19 +124,16 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
 
         input_tensors = [model.metatrain_op]
 
-        # when train the model again with the test set, local weight needs to be saved at the last iteration.
-        # if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
-        if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
-            input_tensors.extend([model.fast_weights])
+        w = sess.run('model/w1:0')
+        # print("======== weight norm:", np.linalg.norm(w))
+        # print("======== last weight :", w[-1])
+        print("======== b :", sess.run('model/b1:0'))
+        print("======== b :", sess.run('model/w1:0').shape)
 
         result = sess.run(input_tensors, feed_dict)
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
-            w = sess.run('model/w1:0')
-            print("======== weight norm:", np.linalg.norm(w))
-            print("======== last weight :", w[-1])
-            print("======== b :", sess.run('model/b1:0'))
             out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
             pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
             out.close()
