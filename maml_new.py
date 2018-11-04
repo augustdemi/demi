@@ -62,7 +62,7 @@ class MAML:
             lossesa, outputas, lossesb, outputbs = [], [], [], []
 
             num_updates = FLAGS.num_updates  # TODO max(self.test_num_updates, FLAGS.num_updates)
-            import pbd
+
 
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
@@ -79,7 +79,6 @@ class MAML:
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
                 task_outputa = self.forward(inputa, this_weight, reuse=reuse)
                 # ///////////////////////////////////////////////////////////////////////////
-                pdb.set_trace()
                 task_lossa1 = self.loss_func(task_outputa, labela)  # 2,1
                 pairwise_weight_avg = tf.reduce_sum(weights['w1'], 0) / self.total_num_au
                 task_lossa2 = tf.nn.l2_loss(this_weight['w1'] - pairwise_weight_avg)
@@ -129,6 +128,9 @@ class MAML:
                 labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1, -1])  # (NK,1,N)로부터 AU별로 잘라냄
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])  # (NK,1,N)로부터 AU별로 잘라냄
                 self.au_idx = i
+                sess = tf.Session()
+                a = sess.run(tf.inputa)
+                print(a)
                 fast_weight_w, fast_weight_b, lossesb = tf.map_fn(task_metalearn,
                                                                   elems=(inputa, inputb, labela, labelb),
                                                                   dtype=out_dtype_task_metalearn,
