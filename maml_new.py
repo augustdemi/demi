@@ -189,6 +189,7 @@ class MAML:
         self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[0])
         self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[1])
         self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[7])
+        self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1, self.metatrain_op7)
 
     def forward_fc(self, inp, weights, reuse=False):
         var_w = weights['w1'][None, ::]
