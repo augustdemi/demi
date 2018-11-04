@@ -77,7 +77,7 @@ class MAML:
                 labelb = tf.cast(labelb, tf.float32)
                 labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
 
-                this_weight = {'w1': weights['w1'][:, self.au_idx, :], 'b1': weights['b1'][:, self.au_idx, :]}
+                this_weight = {'w1': weights['w1'][:, self.au_idx, :], 'b1': weights['b1'][self.au_idx, :]}
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
                 task_outputa = self.forward(inputa, this_weight, reuse=reuse)
                 # ///////////////////////////////////////////////////////////////////////////
