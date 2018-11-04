@@ -129,8 +129,15 @@ class MAML:
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])  # (NK,1,N)로부터 AU별로 잘라냄
                 self.au_idx = i
                 sess = tf.Session()
-                a = sess.run(tf.inputa)
-                print(a)
+                this_weight = {'w1': weights['w1'][:, self.au_idx, :], 'b1': weights['b1'][self.au_idx, :]}
+                w = this_weight['w1']
+                b = this_weight['b1']
+                bb = sess.run(b)
+                ww = sess.run(ww)
+                print(bb.shape)
+                print(ww.shape)
+                print('==============================')
+
                 fast_weight_w, fast_weight_b, lossesb = tf.map_fn(task_metalearn,
                                                                   elems=(inputa, inputb, labela, labelb),
                                                                   dtype=out_dtype_task_metalearn,
