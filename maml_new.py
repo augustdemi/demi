@@ -75,7 +75,11 @@ class MAML:
                 labelb = tf.cast(labelb, tf.float32)
                 labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
 
-                this_weight = {'w1': weights['w1'][:, self.au_idx, :], 'b1': weights['b1'][self.au_idx, :]}
+                this_w = weights['w1'][:, self.au_idx, :]
+                this_b = weights['b1'][self.au_idx, :]
+                this_w = tf.reshape(this_w, [int(this_w.shape[0]), 1, int(this_w.shape[1])])
+                this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
+                this_weight = {'w1': this_w, 'b1': this_b}
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
                 task_outputa = self.forward(inputa, this_weight, reuse=reuse)
                 # ///////////////////////////////////////////////////////////////////////////
@@ -131,13 +135,19 @@ class MAML:
                 sess = tf.Session()
                 sess.run(tf.global_variables_initializer())
 
-                this_weight = {'w1': weights['w1'][:, self.au_idx, :], 'b1': weights['b1'][self.au_idx, :]}
+                this_w = weights['w1'][:, self.au_idx, :]
+                this_b = weights['b1'][self.au_idx, :]
+                this_w = tf.reshape(this_w, [int(this_w.shape[0]), 1, int(this_w.shape[1])])
+                this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
+                this_weight = {'w1': this_w, 'b1': this_b}
                 w = this_weight['w1']
                 b = this_weight['b1']
                 bb = sess.run(b)
                 ww = sess.run(w)
                 print(bb.shape)
                 print(ww.shape)
+                task_outputa = self.forward(inputa, this_weight)
+                print(sess.run(task_outputa).shape)
                 print('==============================')
 
                 fast_weight_w, fast_weight_b, lossesb = tf.map_fn(task_metalearn,
