@@ -113,10 +113,12 @@ class DataGenerator(object):
         #################################### make tensor ###############################
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
         inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
-                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.weight_dim])
+                                               [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
+                                                self.weight_dim])
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
         inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor,
-                                               [FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.weight_dim])
+                                               [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
+                                                self.weight_dim])
 
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
