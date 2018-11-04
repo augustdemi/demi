@@ -136,6 +136,21 @@ class MAML:
 
         ## Performance & Optimization
         if 'train' in prefix:
+            sess = tf.Session()
+            sess.run(tf.global_variables_initializer())
+            w = weights['w1']
+            b = weights['b1']
+            bb = sess.run(b)
+            ww = sess.run(w)
+            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
+            print(bb.shape)
+            print(ww.shape)
+            print(sess.run(self.inputa).shape)
+            task_outputa = self.forward(self.inputa, weights)
+            print(sess.run(task_outputa).shape)
+            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
             self.lossesa = lossesa
             self.total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
             self.total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j
