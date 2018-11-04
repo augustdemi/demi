@@ -135,7 +135,7 @@ class MAML:
                 w = this_weight['w1']
                 b = this_weight['b1']
                 bb = sess.run(b)
-                ww = sess.run(ww)
+                ww = sess.run(w)
                 print(bb.shape)
                 print(ww.shape)
                 print('==============================')
