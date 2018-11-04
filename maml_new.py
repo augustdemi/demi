@@ -146,7 +146,9 @@ class MAML:
                 ww = sess.run(w)
                 print(bb.shape)
                 print(ww.shape)
-                task_outputa = self.forward(inputa, this_weight)
+                print(sess.run(tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])).shape)
+                task_outputa = self.forward(tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1]),
+                                            this_weight)
                 print(sess.run(task_outputa).shape)
                 print('==============================')
 

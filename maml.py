@@ -146,8 +146,9 @@ class MAML:
 
             print(bb.shape)
             print(ww.shape)
-            print(sess.run(self.inputa).shape)
-            task_outputa = self.forward(self.inputa, weights)
+            print(sess.run(tf.reshape(self.inputa, [int(self.inputa.shape[0]), int(self.inputa.shape[1]), 1])).shape)
+            task_outputa = self.forward(
+                tf.reshape(self.inputa, [int(self.inputa.shape[0]), int(self.inputa.shape[1]), 1]), weights)
             print(sess.run(task_outputa).shape)
             print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
