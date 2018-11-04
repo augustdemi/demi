@@ -129,6 +129,8 @@ class MAML:
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])  # (NK,1,N)로부터 AU별로 잘라냄
                 self.au_idx = i
                 sess = tf.Session()
+                sess.run(tf.global_variables_initializer())
+
                 this_weight = {'w1': weights['w1'][:, self.au_idx, :], 'b1': weights['b1'][self.au_idx, :]}
                 w = this_weight['w1']
                 b = this_weight['b1']
