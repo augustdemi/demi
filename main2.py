@@ -122,6 +122,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         else:
             SAVE_INTERVAL = 5000
 
+        # input_tensors = [model.metatrain_op0]
         input_tensors = [model.train_op]
 
         w = sess.run('model/w1:0')

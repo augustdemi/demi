@@ -4,7 +4,7 @@ import os
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from utils import get_kshot_feature
+from utils import get_kshot_feature_w_all_labels
 from feature_layers import feature_layer
 
 FLAGS = flags.FLAGS
@@ -26,6 +26,8 @@ class DataGenerator(object):
         self.img_size = config.get('img_size', (160, 240))
         self.dim_input = np.prod(self.img_size)
         self.weight_dim = 300
+        self.total_num_au = 8
+
         data_folder = FLAGS.datadir
         if data_folder.split('/')[-1].startswith('au'):
             subjects = os.listdir(data_folder)
@@ -60,33 +62,39 @@ class DataGenerator(object):
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
-            off_imgs, on_imgs = get_kshot_feature(sub_folder, FLAGS.feature_path, FLAGS.kshot_seed,
+            off_imgs, on_imgs, off_labels, on_labels = get_kshot_feature_w_all_labels(sub_folder, FLAGS.feature_path, FLAGS.kshot_seed,
                                                   nb_samples=FLAGS.update_batch_size * 2, validate=False)
             # Split data into a/b
             half_off_img = int(len(off_imgs) / 2)
             half_on_img = int(len(on_imgs) / 2)
             inputa_this_subj = []
             inputb_this_subj = []
+            labela_this_subj = []
+            labelb_this_subj = []
             for i in range(half_off_img):
                 inputa_this_subj.append([float(k) for k in off_imgs[2 * i]])
                 inputb_this_subj.append([float(k) for k in off_imgs[2 * i + 1]])
+                labela_this_subj.append(off_labels[2 * i])
+                labelb_this_subj.append(off_labels[2 * i + 1])
             for i in range(half_on_img):
                 inputa_this_subj.append([float(k) for k in on_imgs[2 * i]])
                 inputb_this_subj.append([float(k) for k in on_imgs[2 * i + 1]])
-            labela_this_subj = [0] * half_off_img
-            labela_this_subj.extend([1] * half_on_img)
-            labelb_this_subj = [0] * half_off_img
-            labelb_this_subj.extend([1] * half_on_img)
+                labela_this_subj.append(on_labels[2 * i])
+                labelb_this_subj.append(on_labels[2 * i + 1])
+            # labela_this_subj = [0] * half_off_img
+            # labela_this_subj.extend([1] * half_on_img)
+            # labelb_this_subj = [0] * half_off_img
+            # labelb_this_subj.extend([1] * half_on_img)
 
-            np.random.seed(1)
-            np.random.shuffle(inputa_this_subj)
-            np.random.seed(1)
-            np.random.shuffle(labela_this_subj)
-
-            np.random.seed(2)
-            np.random.shuffle(inputb_this_subj)
-            np.random.seed(2)
-            np.random.shuffle(labelb_this_subj)
+            # np.random.seed(1)
+            # np.random.shuffle(inputa_this_subj)
+            # np.random.seed(1)
+            # np.random.shuffle(labela_this_subj)
+            #
+            # np.random.seed(2)
+            # np.random.shuffle(inputb_this_subj)
+            # np.random.seed(2)
+            # np.random.shuffle(labelb_this_subj)
 
             inputa_features.extend(inputa_this_subj)
             inputb_features.extend(inputb_this_subj)
@@ -113,18 +121,20 @@ class DataGenerator(object):
         #################################### make tensor ###############################
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
         inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
-                                               [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
-                                                self.weight_dim])
+                                               [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
+                                                self.weight_dim]) # (aus*subjects, 2K, latent_dim)
         inputb_latent_feat_tensor = tf.convert_to_tensor(inputb_latent_feat)
         inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor,
-                                               [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
+                                               [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
                                                 self.weight_dim])
 
+        labelas = np.array(labelas) # (aus*subjects*K*2 = num of task * 2K, au)
+        labelbs = np.array(labelbs)
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
-        labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)  ## (num_of_tast, 2NK, N)
-        labelas_tensor = tf.reshape(labelas_tensor, [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
-        labelbs_tensor = tf.reshape(labelbs_tensor, [8 * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, 2])
+        labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (aus*subjects*K*2 = num of task * 2K, au, 2)
+        labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)
+        labelas_tensor = tf.reshape(labelas_tensor, [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.total_num_au, 2]) # (aus*subjects, 2K, au, 2)
+        labelbs_tensor = tf.reshape(labelbs_tensor, [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.total_num_au, 2])
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
