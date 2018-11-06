@@ -385,6 +385,15 @@ def main():
             print("updated weights from ckpt: ", np.array(b))
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
+
+            w_arr = w
+            b_arr = b
+            save_path = "/home/ml1323/project/robert_code/logs/"
+            out = open(save_path + "/home/ml1323/project/robert_code/logs/" + FLAGS.temp_w_save + ".pkl", 'wb')
+            pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
+            out.close()
+
+
             print('resume_itr: ', resume_itr)
 
     elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
