@@ -27,7 +27,7 @@ class MAML:
         self.weight_dim = 300
         self.total_num_au = 8
         self.num_classes = 2
-        self.LAMBDA1 = 0
+        self.LAMBDA1 = 1 / 2
         self.au_idx = -1
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
