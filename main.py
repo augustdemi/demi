@@ -97,6 +97,7 @@ flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test t
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
+flags.DEFINE_string('temp_w_save', "", 'temp_w_save')
 flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
