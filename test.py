@@ -124,11 +124,11 @@ def main():
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
 
-    inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
-    metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+    metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     model = MAML(dim_input, dim_output)
-    model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
+    model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     model.summ_op = tf.summary.merge_all()
 
     saver = loader = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=20)
@@ -219,7 +219,7 @@ def main():
                         FLAGS.update_batch_size) + '_iter50'
                 else:
                     load_model_path = FLAGS.vae_model_to_test + '/' + FLAGS.model + '_' + au + '_kshot' + str(
-                        FLAGS.update_batch_size) + '_iter200'
+                        FLAGS.update_batch_size) + '_iter200_kshot10_iter10_nobatch_adam_noinit'
                 three_layers.loadWeight(load_model_path, au)
                 print('=============== Model S loaded from ', load_model_path)
                 w = three_layers.model_intensity.layers[-1].get_weights()[0]
@@ -238,8 +238,8 @@ def main():
 
     def _load_weight_m0(trained_model_dir):
         model_file = None
-        print('--------- model file dir: ', FLAGS.logdir + '/all_aus/' + trained_model_dir)
-        model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/all_aus/' + trained_model_dir)
+        print('--------- model file dir: ', FLAGS.logdir + trained_model_dir)
+        model_file = tf.train.latest_checkpoint(FLAGS.logdir + trained_model_dir)
         print(">>>> model_file from all_aus: ", model_file)
         if (model_file == None):
             print("####################################################################### None for all_aus")
@@ -265,18 +265,22 @@ def main():
     y_lab = []
     if FLAGS.all_sub_model:  # 모델이 모든 subjects를 이용해 train된 경우
         print('---------------- all sub model ----------------')
+        # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+        if FLAGS.model.startswith('m'):
+            trained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
+                FLAGS.meta_batch_size) + '.ubs_' + str(
+                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
+                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+            if FLAGS.model.startswith('m0'):
+                w_arr, b_arr = _load_weight_m0(trained_model_dir)
+            else:
+                w_arr, b_arr = _load_weight_m(trained_model_dir)  # au별로 모델이 다르게됨
 
         ### test per each subject and concatenate
         for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
             if FLAGS.model.startswith('s'):
                 w_arr, b_arr = _load_weight_s(i)
-            else:
-                ### get path to load weight for 'm' models
-                trained_model_dir = '/cls_' + str(FLAGS.num_classes) + '.mbs_' + str(
-                    FLAGS.meta_batch_size) + '.ubs_' + str(
-                    FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                    FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
-                w_arr, b_arr = _load_weight_m(trained_model_dir)  # weight load를 한번만 실행해도됨. subject별로 모델이 다르지 않기 때문
+
             result = test_each_subject(w_arr, b_arr, i)
             y_hat.append(result[0])
             y_lab.append(result[1])
