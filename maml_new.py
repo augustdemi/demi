@@ -139,47 +139,68 @@ class MAML:
                                                                   dtype=out_dtype_task_metalearn,
                                                                   parallel_iterations=FLAGS.meta_batch_size)
 
-                w_matrix.append(fast_weight_w)  # w_matrix = 8*14*(300*1)
-                b_matrix.append(fast_weight_b)  # b_matrix = 8*14*2
+                w_matrix.append(fast_weight_w)  # w_matrix = 8*14*(300*1*2)
+                b_matrix.append(fast_weight_b)  # b_matrix = 8*14*(1*2)
                 sum_loss_subjects = tf.reduce_sum(lossesb) / tf.to_float(FLAGS.meta_batch_size)  # lossesb = (14,NK,1)
                 ce_losses_of_inputb.append(sum_loss_subjects)  # 8*14
-            self.w_mat = w_matrix
-            self.b_mat = b_matrix
+            import numpy as np
+
+            self.w_mat = tf.stack(w_matrix) # w_matrix = 8*14*(300*1*2)
+            self.b_mat = tf.stack(b_matrix)# b_matrix = 8*14*(1*2)
             self.ce_losses = ce_losses_of_inputb
 
-        # def task_occur_result(inp, reuse=True):
-        #     inputb, labelb, au_idx, sub_idx = inp  # input = (NK,2000) label = (NK, N), N = num of class, this_w = 1*14(one au*subjects)
-        #     inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
-        #     labelb = tf.cast(labelb, tf.float32)
-        #     labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
-        #
-        #     task_outputa = self.forward(inputa, weights, reuse=reuse)
-        #     # ///////////////////////////////////////////////////////////////////////////
-        #     task_lossa1 = self.loss_func(task_outputa, labela)  # 2,1 // loss 1 추가되어야
-        #     # ///////////////////////////////////////////////////////////////////////////
-        #     task_output = [fast_weights['w1'], fast_weights['b1']]
-        #     return task_output
-        #
-        # out_dtype_task_occur_result = [tf.float32, tf.float32, tf.float32]
-        # # 매트릭스의 각 row = 각 au별로 au_global을 구해야함. 이때는 au_global간 크로스는 없지만, 매트릭스 전체가 모든 au마다 다쓰임
-        # # 로스를 포룹안에서 구하지 않고, 대신 이미주어져있는 inputb와 포룹으로 부터구한 매트릭스로 여기서부터 loss를 구하기시작
-        # sub_idx = tf.constant(list(range(FLAGS.meta_batch_size)), dtype=tf.int64)
-        # for i in range(8):
-        #     self.au_idx = i
-        #     inputb = tf.slice(self.inputb, [i*batch, 0, 0], [(i+1)*batch, -1, -1])  ##(NK,2000,1)로부터 AU별로 잘라냄
-        #     labelb = tf.slice(self.labelb, [i*batch, 0, 0], [(i+1)*batch, -1, -1])  #(NK,1,N)로부터 AU별로 잘라냄
-        #     au_idx =  tf.constant([i] * FLAGS.meta_batch_size, dtype=tf.int64)
-        #     result= tf.map_fn(task_occur_result, elems=(inputb, labelb, au_idx, sub_idx),
-        #                                              dtype=out_dtype_task_occur_result, parallel_iterations=FLAGS.meta_batch_size)
-        #     output = self.forward(inputb, w_matrix[i], reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
-        #     self.loss_func(output, labelb)
+            def task_co_occur_loss(inp, reuse=True):
+                inputb, labelb, this_au_subject_w, this_subject_ws, this_au_subject_b, this_subject_bs = inp # this_au_subject_weight = (300,1,2)  this_subject_weights=(8,300,1,2)
+                inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
+                # labelb = tf.cast(labelb, tf.float32)
+                # labelb = tf.reshape(labelb, [int(labelb.shape[0]), self.total_num_au, int(labelb.shape[1])])
+
+                this_au_subject_weight = {'w1': this_au_subject_w, 'b1':this_au_subject_b}
+
+                losses = []
+                for i in range(8):
+                    other_au_subject_weight = {'w1': this_subject_ws[i], 'b1': this_subject_bs[i]}
+                    pred_this_au = self.forward(inputb, this_au_subject_weight, reuse=reuse) # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
+                    pred_other_au = self.forward(inputb, other_au_subject_weight, reuse=reuse) # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
+
+
+                    label_this_au=labelb[:, self.au_idx,:] #(NK,2)
+                    label_other_au=labelb[:,i,:]
+                    label_this_au = tf.reshape(label_this_au, [int(label_this_au.shape[0]), 1, int(label_this_au.shape[1])])
+                    label_other_au = tf.reshape(label_other_au, [int(label_other_au.shape[0]), 1, int(label_other_au.shape[1])])
+
+                    loss = label_this_au * label_other_au - pred_this_au * pred_other_au # (num of samples=NK,1=num of au,2=N)
+                    losses.append(loss)
+
+                task_output = [losses]
+                return task_output
+
+            out_dtype_task_occur_result = [[tf.float32] * self.total_num_au]
+            # 매트릭스의 각 row = 각 au별로 au_global을 구해야함. 이때는 au_global간 크로스는 없지만, 매트릭스 전체가 모든 au마다 다쓰임
+            # 로스를 포룹안에서 구하지 않고, 대신 이미주어져있는 inputb와 포룹으로 부터구한 매트릭스로 여기서부터 loss를 구하기시작
+
+            all_co_occur_losses = []
+            for i in range(8):
+                self.au_idx = i
+                inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
+                labelb = tf.slice(self.labelb, [i * batch, 0, 0, 0], [batch, -1, -1, -1])
+                sub_idx = np.array(range(FLAGS.meta_batch_size))
+                this_au_weights = self.w_mat[i] # 14*(300*1*2)
+                transposed_w_mat= tf.transpose(self.w_mat, (1, 0, 2, 3, 4)) # 14*8*(300*1*2)
+                this_au_biases = self.b_mat[i] # 14*(300*1*2)
+                transposed_b_mat= tf.transpose(self.b_mat, (1, 0, 2, 3)) # 14*8*(300*1*2)
+                per_au_losses= tf.map_fn(task_co_occur_loss, elems=(inputb, labelb, this_au_weights, transposed_w_mat, this_au_biases, transposed_b_mat),
+                                                         dtype=out_dtype_task_occur_result, parallel_iterations=FLAGS.meta_batch_size)
+                all_co_occur_losses.append(per_au_losses)
+
 
 
         ## Performance & Optimization
-        self.lossesa = lossesa  # (meta_batch_size, NK, 1)
-        self.total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
         # ce_loss = 8*14
-        self.total_losses2 = [tf.reduce_sum(self.ce_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
+        self.total_losses1 = [tf.reduce_sum(self.ce_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
+                              range(self.total_num_au)]
+
+        self.total_losses2 = [tf.reduce_sum(all_co_occur_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
                               range(self.total_num_au)]
 
         # after the map_fn
@@ -187,14 +208,14 @@ class MAML:
         #     for i in range(8):
         #         tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[i])
 
-        self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[0])
-        self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[1])
-        self.metatrain_op2 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[2])
-        self.metatrain_op3 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[3])
-        self.metatrain_op4 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[4])
-        self.metatrain_op5 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[5])
-        self.metatrain_op6 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[6])
-        self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[7])
+        self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[0]+self.total_losses2[0])
+        self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[1]+self.total_losses2[1])
+        self.metatrain_op2 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[2]+self.total_losses2[2])
+        self.metatrain_op3 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[3]+self.total_losses2[3])
+        self.metatrain_op4 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[4]+self.total_losses2[4])
+        self.metatrain_op5 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[5]+self.total_losses2[5])
+        self.metatrain_op6 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[6]+self.total_losses2[6])
+        self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[7]+self.total_losses2[7])
         self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1,self.metatrain_op2, self.metatrain_op3,self.metatrain_op4,self.metatrain_op5,self.metatrain_op6, self.metatrain_op7)
 
     def forward_fc(self, inp, weights, reuse=False):
