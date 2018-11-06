@@ -137,7 +137,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
             print("= last weight :", w[-1])
             print("= b :", sess.run('model/b1:0'))
             print("= b :", sess.run('model/w1:0').shape)
-            out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
+            out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights" + str(itr) + ".pkl", 'wb')
             pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
             out.close()
             saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
