@@ -126,10 +126,11 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         input_tensors = [model.train_op]
 
         w = sess.run('model/w1:0')
-        # print("======== weight norm:", np.linalg.norm(w))
-        # print("======== last weight :", w[-1])
-        print("======== b :", sess.run('model/b1:0'))
-        print("======== b :", sess.run('model/w1:0').shape)
+        print("================================================")
+        print("= weight norm:", np.linalg.norm(w))
+        print("= last weight :", w[-1])
+        print("= b :", sess.run('model/b1:0'))
+        print("= b :", sess.run('model/w1:0').shape)
 
         result = sess.run(input_tensors, feed_dict)
 
