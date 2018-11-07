@@ -40,6 +40,7 @@ parser.add_argument("-test", "--test", type=bool, default=True, help="adapt to t
 
 args = parser.parse_args()
 
+args.test = False
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 # lins input
 TOTAL_AU = 8
@@ -58,13 +59,16 @@ log_dir_model = './model'
 
 if args.kshot > 0:
     if args.test:
+        print("============== Test ==================")
+
         batch_size = 2 * args.kshot
         TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
                                                    padding='same',
                                                    sbjt_start_idx=args.start_idx,
                                                    meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
     else:
-        batch_size = 4 * args.kshot
+        print("============== Train ==================")
+        batch_size = 4 * args.kshot * args.meta_batch_size
         TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
                                                    padding='same',
                                                    sbjt_start_idx=args.start_idx,
@@ -112,17 +116,21 @@ three_layers = feature_layer(batch_size, 1)
 
 import pickle
 
-save_path = "/home/ml1323/project/robert_code/logs/"
-aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-# data = pickle.load(open(save_path + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
-data = pickle.load(open(args.logdir + '/' + args.trained_model_dir + "/soft_weights.pkl", "rb"), encoding='latin1')
-w = np.array(data['w'])
-b = np.array(data['b'])
-print('---------------- load from MAML')
-print(w.shape)
-print(w)
-print('--------------------------------')
-three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au, w=w, b=b)
+if args.test:
+    save_path = "/home/ml1323/project/robert_code/logs/"
+    aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
+    # data = pickle.load(open(save_path + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
+    data = pickle.load(open(args.logdir + '/' + args.trained_model_dir + "/soft_weights.pkl", "rb"), encoding='latin1')
+    w = np.array(data['w'])
+    b = np.array(data['b'])
+    print('---------------- load from MAML')
+    print(w.shape)
+    print(w)
+    print('--------------------------------')
+    three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au, w=w, b=b)
+else:
+    three_layers.loadWeightS(args.restored_model, au_index, num_au_for_rm=args.num_au)
+
 model_intensity = three_layers.model_intensity
 
 
@@ -134,17 +142,17 @@ for i in range(len(model_intensity.layers)):
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
 
-# model_intensity.compile(
-#     optimizer=K.optimizers.Adadelta(
-#         lr=args.lr,
-#         rho=0.95,
-#         epsilon=1e-08,
-#         decay=0.0
-#     ),
-#     loss=pred_loss
-# )
+model_intensity.compile(
+    optimizer=K.optimizers.Adadelta(
+        lr=args.lr,
+        rho=0.95,
+        epsilon=1e-08,
+        decay=0.0
+    ),
+    loss=pred_loss
+)
 
-model_intensity.compile(K.optimizers.Adam(lr=args.lr), loss=pred_loss)
+# model_intensity.compile(K.optimizers.Adam(lr=args.lr), loss=pred_loss)
 
 model_intensity.summary()
 print('loaded softmax weight of model_intensity: ', model_intensity.layers[-1].get_weights()[0])
