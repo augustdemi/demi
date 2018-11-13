@@ -42,8 +42,6 @@ FLAGS = flags.FLAGS
 ## Dataset/method options
 flags.DEFINE_string('datasource', 'disfa', 'sinusoid or omniglot or miniimagenet')
 flags.DEFINE_integer('num_classes', 2, 'number of classes used in classification (e.g. 5-way classification).')
-# oracle means task id is input (only suitable for sinusoid)
-flags.DEFINE_string('baseline', None, 'oracle, or None')
 
 ## Training options
 flags.DEFINE_integer('pretrain_iterations', 0, 'number of pre-training iterations.')
@@ -74,14 +72,9 @@ flags.DEFINE_integer('train_update_batch_size', -1,
 flags.DEFINE_float('train_update_lr', -1,
                    'value of inner gradient step step during training. (use if you want to test with a different value)')  # 0.1 for omniglot
 
-flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
-flags.DEFINE_bool('train_train', False, 're-train model with the train')
-flags.DEFINE_bool('train_test', False, 're-train model with the test set')
 
-# for train, train_test
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 
-# for train_test, test_test
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
@@ -92,12 +85,11 @@ flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_string('feature_path', "", 'path for feature vector')
-flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
 flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
-flags.DEFINE_string('temp_w_save', "", 'temp_w_save')
+# flags.DEFINE_string('temp_w_save', "", 'temp_w_save')
 flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
 
 
@@ -128,7 +120,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         input_tensors = [model.metatrain_op]
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
-        # if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
+
         if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
             input_tensors.extend([model.fast_weights])
 
@@ -149,9 +141,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
                 y_laba = np.vstack(np.array(maml_result[-2][1]))
 
                 save_path = "./logs/result/train/" + trained_model_dir + "/" + str(FLAGS.au_idx) + "/"
-                if not os.path.exists(save_path):
-                    os.makedirs(save_path)
-                if FLAGS.train_test:
+                if FLAGS.keep_train_dir:
                     retrained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
                         FLAGS.train_update_batch_size) + '.numstep' + str(
                         FLAGS.num_updates) + '.updatelr' + str(
@@ -177,7 +167,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
             print("======== weight norm:", np.linalg.norm(w))
             print("======== last weight :", w[-1])
             print("======== b :", sess.run('model/b1:0'))
-            if FLAGS.train_test:
+            if FLAGS.keep_train_dir:
                 save_path = FLAGS.logdir + '/' + trained_model_dir
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
@@ -369,13 +359,13 @@ def main():
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
 
-            w_arr = w
-            b_arr = b
-            save_path = "/home/ml1323/project/robert_code/logs/"
-            out = open(save_path + FLAGS.temp_w_save + ".pkl", 'wb')
-            pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
-            out.close()
-            print('resume_itr: ', resume_itr)
+            # w_arr = w
+            # b_arr = b
+            # save_path = "/home/ml1323/project/robert_code/logs/"
+            # out = open(save_path + FLAGS.temp_w_save + ".pkl", 'wb')
+            # pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
+            # out.close()
+            # print('resume_itr: ', resume_itr)
 
     elif FLAGS.keep_train_dir:  # when the model needs to be initialized from another model.
         resume_itr = 0
