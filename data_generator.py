@@ -26,23 +26,11 @@ class DataGenerator(object):
         self.dim_input = np.prod(self.img_size)
         self.weight_dim = 300
         data_folder = FLAGS.datadir
-        if data_folder.split('/')[-1].startswith('au'):
-            subjects = os.listdir(data_folder)
-            subjects.sort()
-            subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
-            self.metatrain_character_folders = subject_folders[
-                                               FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
-        else:
-            self.metatrain_character_folders = []
-            all_aus = os.listdir(data_folder)
-            num_subjects = int(FLAGS.meta_batch_size / len(all_aus))
-            print('FOR M0 - num_subjects in one au: ', FLAGS.meta_batch_size / len(all_aus))
-            for au in all_aus:
-                subjects = os.listdir(os.path.join(data_folder, au))
-                subjects.sort()
-                subject_folders = [os.path.join(data_folder, au, subject) for subject in subjects]
-                self.metatrain_character_folders.extend(subject_folders[
-                                                        FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + num_subjects])
+        subjects = os.listdir(data_folder)
+        subjects.sort()
+        subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
+        self.metatrain_character_folders = subject_folders[
+                                           FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
 
 
     def make_data_tensor(self, train=True):
