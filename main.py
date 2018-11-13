@@ -93,7 +93,6 @@ flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 500
-    SAVE_INTERVAL = 5000
 
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
@@ -121,13 +120,13 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
             input_tensors.extend([model.fast_weights])
 
-        # SUMMARY_INTERVAL 마다 accuracy 계산해둠
+
         if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
             input_tensors.extend([model.result1, model.result2])
 
         result = sess.run(input_tensors, feed_dict)
 
-        # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
+
         if itr % SUMMARY_INTERVAL == 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
             def summary(maml_result, set):
@@ -150,7 +149,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + set + "_" + str(itr) + ".txt")
                 print("------------------------------------------------------------------------------------")
                 recent_y_hatb = np.array(maml_result[-1][0][
-                                             FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
+                                             FLAGS.num_updates - 1])
                 y_hatb = np.vstack(recent_y_hatb)
                 recent_y_labb = np.array(maml_result[-1][1][FLAGS.num_updates - 1])
                 y_labb = np.vstack(recent_y_labb)
@@ -158,7 +157,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
                 print("================================================================================")
             summary(result, "TR")
 
-        # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
             print("======== weight norm:", np.linalg.norm(w))
@@ -179,7 +177,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
                     local_w = result[1][0]
                     local_b = result[1][1]
                     print("================================================================================")
-                    print('>>>>>> Global weights: ', sess.run('model/b1:0'))
+                    print('>>>>>> Global bias: ', sess.run('model/b1:0'))
                     local_model_dir = save_path + '/local'
                     for i in range(FLAGS.meta_batch_size):
                         model.weights['w1'].load(local_w[i], sess)
