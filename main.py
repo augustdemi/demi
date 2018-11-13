@@ -100,7 +100,8 @@ flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_string('temp_w_save', "", 'temp_w_save')
 flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
 
-def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
+
+def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 500
     SAVE_INTERVAL = 5000
@@ -140,14 +141,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
         # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
         if itr % SUMMARY_INTERVAL == 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
-
-            # run for the validation
-            feed_dict_val = {model.inputa: metaval_input_tensors['inputa'].eval(),
-                             model.inputb: metaval_input_tensors['inputb'].eval(),
-                             model.labela: metaval_input_tensors['labela'].eval(),
-                             model.labelb: metaval_input_tensors['labelb'].eval(), model.meta_lr: 0}
-            result_val = sess.run(input_tensors, feed_dict_val)
-
             def summary(maml_result, set):
                 print(set)
                 print_str = 'Iteration ' + str(itr)
@@ -177,8 +170,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
                 print("================================================================================")
             summary(result, "TR")
-            summary(result_val, "TE")
-
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
@@ -213,7 +204,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                         saver.save(sess, local_model_dir + '/subject' + str(i))
 
             else:
-                # to train the model increasingly whenever new test is coming.
                 out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
                 pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
                 out.close()
@@ -306,19 +296,12 @@ def main():
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
 
-    if FLAGS.train:  # only construct training model if needed
-        inputa, inputb, labela, labelb = data_generator.make_data_tensor()
-        metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
-
-    inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
-    metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+    metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     # pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
-    if FLAGS.train:
-        model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
-    else:
-        model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
+    model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     model.summ_op = tf.summary.merge_all()
 
     saver = loader = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=20)
@@ -359,8 +342,7 @@ def main():
 
     ################## Train ##################
 
-    # train_train or train_test
-    if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
+    if FLAGS.resume:
         model_file = None
         if FLAGS.model.startswith('m2'):
             trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
@@ -393,11 +375,9 @@ def main():
             out = open(save_path + FLAGS.temp_w_save + ".pkl", 'wb')
             pickle.dump({'w': w_arr, 'b': b_arr}, out, protocol=2)
             out.close()
-
-
             print('resume_itr: ', resume_itr)
 
-    elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
+    elif FLAGS.keep_train_dir:  # when the model needs to be initialized from another model.
         resume_itr = 0
         print('resume_itr: ', resume_itr)
         model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
@@ -431,6 +411,7 @@ def main():
             sess.run(w1)
         print("after: ", sess.run('model/b1:0'))
         print("after: ", sess.run('model/w1:0'))
+
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
@@ -444,7 +425,7 @@ def main():
         else:
             inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
     else:
-        train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
+        train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
     end_time = datetime.now()
     elapse = end_time - start_time
     print("================================================================================")
