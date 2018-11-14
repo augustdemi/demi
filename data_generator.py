@@ -26,40 +26,16 @@ class DataGenerator(object):
         self.dim_input = np.prod(self.img_size)
         self.weight_dim = 300
         data_folder = FLAGS.datadir
-        if data_folder.split('/')[-1].startswith('au'):
-            subjects = os.listdir(data_folder)
-            subjects.sort()
-            subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
-            self.metatrain_character_folders = subject_folders[
-                                               FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
-        else:
-            self.metatrain_character_folders = []
-            all_aus = os.listdir(data_folder)
-            num_subjects = int(FLAGS.meta_batch_size / len(all_aus))
-            print('FOR M0 - num_subjects in one au: ', FLAGS.meta_batch_size / len(all_aus))
-            for au in all_aus:
-                subjects = os.listdir(os.path.join(data_folder, au))
-                subjects.sort()
-                subject_folders = [os.path.join(data_folder, au, subject) for subject in subjects]
-                self.metatrain_character_folders.extend(subject_folders[
-                                                        FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + num_subjects])
-        if FLAGS.test_set:  # In test, runs only one test task for the entered subject
-            self.metatest_character_folders = [subject_folders[FLAGS.subject_idx]]
-        else:
-            if FLAGS.train_test:  # test task로 다시한번 모델을 retrain할때는 같은 test task중 train에 쓰이지 않은 다른 샘플을 선택하여 validate
-                self.metatest_character_folders = self.metatrain_character_folders
-            else:
-                self.metatest_character_folders = self.metatrain_character_folders
+        subjects = os.listdir(data_folder)
+        subjects.sort()
+        subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
+        self.metatrain_character_folders = subject_folders[
+                                           FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
 
 
     def make_data_tensor(self, train=True):
-        if train:
-            print("===================================2")
-            folders = self.metatrain_character_folders
-            print(">>>>>>> train folders: ", folders)
-        else:
-            folders = self.metatest_character_folders
-            print(">>>>>>> test folders: ", folders)
+        folders = self.metatrain_character_folders
+        print(">>>>>>> train folders: ", folders)
 
         # make list of files
         print('Generating filenames')
@@ -67,9 +43,8 @@ class DataGenerator(object):
         inputb_features = []
         labelas = []
         labelbs = []
-        # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
-        for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
-            # random.shuffle(sampled_character_folders)
+        # To have totally different inputa and inputb, they should be sampled at the same time and then split.
+        for sub_folder in folders:
             if train:
                 off_imgs, on_imgs = get_kshot_feature(sub_folder, FLAGS.feature_path, FLAGS.kshot_seed,
                                                       nb_samples=FLAGS.update_batch_size * 2, validate=False)
@@ -107,21 +82,14 @@ class DataGenerator(object):
             labelas.extend(labela_this_subj)
             labelbs.extend(labelb_this_subj)
 
-        # print(">>>> inputa_features: ", inputa_features[-1])
-        # print(">>> labelas: ", labelas)
         print("--------------------------------------------")
-        # print(">>>> inputb_features: ", inputb_features[-1])
-        # print(">>> labelbs: ", labelbs)
         print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
         print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
         print(">>>>>>>>>>>>>>>>>> random seed for weight: ", FLAGS.weight_seed)
 
         #################################################################################
 
-
-
-        batch_size = 10
-        three_layers = feature_layer(batch_size, FLAGS.num_au)
+        three_layers = feature_layer(10, FLAGS.num_au)
         three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
         inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)

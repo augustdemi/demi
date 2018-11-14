@@ -2,13 +2,14 @@ import numpy as np
 import tensorflow as tf
 
 from EmoEstimator.utils.evaluate import print_summary
-from data_generator import DataGenerator
-from maml import MAML
+from data_generator2 import DataGenerator
+from maml_new import MAML
 from tensorflow.python.platform import flags
 from datetime import datetime
 import os
 import pickle
 from feature_layers import feature_layer
+
 start_time = datetime.now()
 FLAGS = flags.FLAGS
 
@@ -117,8 +118,6 @@ def main():
         temp_num_updates = FLAGS.num_updates
         FLAGS.num_updates = 1
 
-
-
     data_generator = DataGenerator()
 
     dim_output = data_generator.num_classes
@@ -134,7 +133,6 @@ def main():
     saver = loader = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=20)
 
     sess = tf.InteractiveSession()
-
 
     if not FLAGS.train:
         # change to original meta batch size when loading model.
@@ -233,8 +231,6 @@ def main():
                     b_arr = np.vstack((b_arr, b))
 
         return w_arr, b_arr
-
-
 
     def _load_weight_m0(trained_model_dir):
         model_file = None

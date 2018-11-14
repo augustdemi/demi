@@ -42,8 +42,6 @@ FLAGS = flags.FLAGS
 ## Dataset/method options
 flags.DEFINE_string('datasource', 'disfa', 'sinusoid or omniglot or miniimagenet')
 flags.DEFINE_integer('num_classes', 2, 'number of classes used in classification (e.g. 5-way classification).')
-# oracle means task id is input (only suitable for sinusoid)
-flags.DEFINE_string('baseline', None, 'oracle, or None')
 
 ## Training options
 flags.DEFINE_integer('pretrain_iterations', 0, 'number of pre-training iterations.')
@@ -74,14 +72,9 @@ flags.DEFINE_integer('train_update_batch_size', -1,
 flags.DEFINE_float('train_update_lr', -1,
                    'value of inner gradient step step during training. (use if you want to test with a different value)')  # 0.1 for omniglot
 
-flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
-flags.DEFINE_bool('train_train', False, 're-train model with the train')
-flags.DEFINE_bool('train_test', False, 're-train model with the test set')
 
-# for train, train_test
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 
-# for train_test, test_test
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('local_subj', 0, 'local weight subject')
@@ -92,17 +85,14 @@ flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_string('feature_path', "", 'path for feature vector')
-flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
 flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
-flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
-flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
 
-def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr=0):
+
+def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 500
-    SAVE_INTERVAL = 5000
 
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
@@ -126,27 +116,19 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
         input_tensors = [model.metatrain_op]
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
-        # if FLAGS.train_test and (itr == FLAGS.metatrain_iterations):
+
         if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
             input_tensors.extend([model.fast_weights])
 
-        # SUMMARY_INTERVAL 마다 accuracy 계산해둠
+
         if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
             input_tensors.extend([model.result1, model.result2])
 
         result = sess.run(input_tensors, feed_dict)
 
-        # SUMMARY_INTERVAL 마다 accuracy 쌓아둠
+
         if itr % SUMMARY_INTERVAL == 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
-
-            # run for the validation
-            feed_dict_val = {model.inputa: metaval_input_tensors['inputa'].eval(),
-                             model.inputb: metaval_input_tensors['inputb'].eval(),
-                             model.labela: metaval_input_tensors['labela'].eval(),
-                             model.labelb: metaval_input_tensors['labelb'].eval(), model.meta_lr: 0}
-            result_val = sess.run(input_tensors, feed_dict_val)
-
             def summary(maml_result, set):
                 print(set)
                 print_str = 'Iteration ' + str(itr)
@@ -155,9 +137,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 y_laba = np.vstack(np.array(maml_result[-2][1]))
 
                 save_path = "./logs/result/train/" + trained_model_dir + "/" + str(FLAGS.au_idx) + "/"
-                if not os.path.exists(save_path):
-                    os.makedirs(save_path)
-                if FLAGS.train_test:
+                if FLAGS.keep_train_dir:
                     retrained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
                         FLAGS.train_update_batch_size) + '.numstep' + str(
                         FLAGS.num_updates) + '.updatelr' + str(
@@ -169,29 +149,26 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                 print_summary(y_hata, y_laba, log_dir=save_path + "/outa_" + set + "_" + str(itr) + ".txt")
                 print("------------------------------------------------------------------------------------")
                 recent_y_hatb = np.array(maml_result[-1][0][
-                                             FLAGS.num_updates - 1])  # 모든 num_updates별 outb, labelb말고 가장 마지막 update된 outb, labelb만 가져오면됨. 14 tasks가 병렬계산된 값이므로  length = num_of_task * N * K
+                                             FLAGS.num_updates - 1])
                 y_hatb = np.vstack(recent_y_hatb)
                 recent_y_labb = np.array(maml_result[-1][1][FLAGS.num_updates - 1])
                 y_labb = np.vstack(recent_y_labb)
                 print_summary(y_hatb, y_labb, log_dir=save_path + "/outb_" + set + "_" + str(itr) + ".txt")
                 print("================================================================================")
             summary(result, "TR")
-            summary(result_val, "TE")
 
-
-        # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
             print("======== weight norm:", np.linalg.norm(w))
             print("======== last weight :", w[-1])
             print("======== b :", sess.run('model/b1:0'))
-            if FLAGS.train_test:
+            if FLAGS.keep_train_dir:
                 save_path = FLAGS.logdir + '/' + trained_model_dir
                 if not os.path.exists(save_path):
                     os.makedirs(save_path)
                 saver.save(sess, save_path + '/model' + str(itr))
 
-                out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
+                out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights" + str(itr) + ".pkl", 'wb')
                 pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
                 out.close()
                 # save local weight at the last iteration
@@ -200,93 +177,22 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metava
                     local_w = result[1][0]
                     local_b = result[1][1]
                     print("================================================================================")
-                    print('>>>>>> Global weights: ', sess.run('model/b1:0'))
+                    print('>>>>>> Global bias: ', sess.run('model/b1:0'))
                     local_model_dir = save_path + '/local'
                     for i in range(FLAGS.meta_batch_size):
                         model.weights['w1'].load(local_w[i], sess)
                         model.weights['b1'].load(local_b[i], sess)
-                        print('>>>>>> Local weights for subject: ', i, sess.run('model/b1:0'))
+                        print('>>>>>> Local bias for subject: ', i, sess.run('model/b1:0'))
                         print("-----------------------------------------------------------------")
                         if not os.path.exists(local_model_dir):
                             os.makedirs(local_model_dir)
                         saver.save(sess, local_model_dir + '/subject' + str(i))
 
             else:
-                # to train the model increasingly whenever new test is coming.
                 out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
                 pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
                 out.close()
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
-
-
-def inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr):
-    print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
-
-    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
-                 model.inputb: metatrain_input_tensors['inputb'].eval(),
-                 model.labela: metatrain_input_tensors['labela'].eval(),
-                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: 0}
-    print('Done initializing, starting training.')
-    input_tensors = [model.all_w, model.all_b, model.total_losses2]
-
-    result = sess.run(input_tensors, feed_dict)
-
-    # save local weight as a global weight
-
-    loss = np.array(result[2])
-    print('>>> num of update: ', len(loss))
-    all_w = result[0]
-    all_b = result[1]
-    print('>>> shape of local_weights:', np.array(all_w).shape)
-    print("b:", all_b)
-    print("loss:", loss)
-
-    local_w = all_w[FLAGS.num_updates - 1][0]
-    local_b = all_b[FLAGS.num_updates - 1][0]
-    print("================================================================================")
-    print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
-    model.weights['w1'].load(local_w, sess)
-    model.weights['b1'].load(local_b, sess)
-    print('>>>>>> Updated Local weights ', sess.run('model/b1:0'))
-    save_path = FLAGS.logdir + '/' + trained_model_dir
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    saver.save(sess, save_path + '/model' + str(FLAGS.num_updates))
-
-
-def inner_update_opti(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr):
-    print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
-
-    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
-                 model.inputb: metatrain_input_tensors['inputb'].eval(),
-                 model.labela: metatrain_input_tensors['labela'].eval(),
-                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
-    print('Done initializing, starting training.')
-
-    losses = []
-    prev_weight = [sess.run('model/w1:0'), sess.run('model/b1:0')]
-    final_iteration = FLAGS.metatrain_iterations
-    for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-        input_tensors = [model.pretrain_op, model.total_loss1]
-        result = sess.run(input_tensors, feed_dict)
-        # save local weight as a global weight
-        loss = result[1]
-        print(loss)
-        if itr > 1:
-            reduced_loss = losses[-1] - loss
-            print("reduced loss : ", reduced_loss)
-        losses.append(loss)
-        print('>>>>>> Current Global weights: ', sess.run('model/b1:0'))
-        prev_weight = [sess.run('model/w1:0'), sess.run('model/b1:0')]
-
-    model.weights['w1'].load(prev_weight[0], sess)
-    model.weights['b1'].load(prev_weight[1], sess)
-    print('>>>>>> saved Global weights: ', sess.run('model/b1:0'))
-    save_path = FLAGS.logdir + '/' + trained_model_dir
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    saver.save(sess, save_path + '/model' + str(final_iteration))
-
 
 
 
@@ -305,19 +211,12 @@ def main():
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
 
-    if FLAGS.train:  # only construct training model if needed
-        inputa, inputb, labela, labelb = data_generator.make_data_tensor()
-        metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
-
-    inputa, inputb, labela, labelb = data_generator.make_data_tensor(train=False)
-    metaval_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+    metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     # pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
-    if FLAGS.train:
-        model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
-    else:
-        model.construct_model(input_tensors=metaval_input_tensors, prefix='metaval_')
+    model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
     model.summ_op = tf.summary.merge_all()
 
     saver = loader = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=20)
@@ -358,8 +257,7 @@ def main():
 
     ################## Train ##################
 
-    # train_train or train_test
-    if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
+    if FLAGS.resume:
         model_file = None
         if FLAGS.model.startswith('m2'):
             trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
@@ -380,14 +278,12 @@ def main():
                     print(">>>> model_file2: ", model_file)
             print("1. Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
-            w = sess.run('model/w1:0').tolist()
             b = sess.run('model/b1:0').tolist()
             print("updated weights from ckpt: ", np.array(b))
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
-            print('resume_itr: ', resume_itr)
 
-    elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
+    elif FLAGS.keep_train_dir:  # when the model needs to be initialized from another model.
         resume_itr = 0
         print('resume_itr: ', resume_itr)
         model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
@@ -421,6 +317,7 @@ def main():
             sess.run(w1)
         print("after: ", sess.run('model/b1:0'))
         print("after: ", sess.run('model/w1:0'))
+
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
@@ -428,13 +325,8 @@ def main():
 
     print("================================================================================")
 
-    if not FLAGS.meta_update:
-        if FLAGS.opti:
-            inner_update_opti(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
-        else:
-            inner_update(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
-    else:
-        train(model, saver, sess, trained_model_dir, metatrain_input_tensors, metaval_input_tensors, resume_itr)
+    train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
+
     end_time = datetime.now()
     elapse = end_time - start_time
     print("================================================================================")

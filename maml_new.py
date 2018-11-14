@@ -27,7 +27,8 @@ class MAML:
         self.weight_dim = 300
         self.total_num_au = 8
         self.num_classes = 2
-        self.LAMBDA1 = 1
+        self.LAMBDA1 = 0
+        self.LAMBDA2 = 1 / 2
         self.au_idx = -1
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
@@ -150,26 +151,29 @@ class MAML:
             self.ce_losses = ce_losses_of_inputb
 
             def task_co_occur_loss(inp, reuse=True):
-                inputb, labelb, this_au_subject_w, this_subject_ws, this_au_subject_b, this_subject_bs = inp # this_au_subject_weight = (300,1,2)  this_subject_weights=(8,300,1,2)
+                inputb, labelb, this_au_subject_w, this_subject_ws, this_au_subject_b, this_subject_bs = inp  # this_au_subject_weight = (300,1,2)  this_subject_weights=(8,300,1,2)
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
                 # labelb = tf.cast(labelb, tf.float32)
                 # labelb = tf.reshape(labelb, [int(labelb.shape[0]), self.total_num_au, int(labelb.shape[1])])
 
-                this_au_subject_weight = {'w1': this_au_subject_w, 'b1':this_au_subject_b}
+                this_au_subject_weight = {'w1': this_au_subject_w, 'b1': this_au_subject_b}
 
                 losses = []
                 for i in range(8):
                     other_au_subject_weight = {'w1': this_subject_ws[i], 'b1': this_subject_bs[i]}
-                    pred_this_au = self.forward(inputb, this_au_subject_weight, reuse=reuse) # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
-                    pred_other_au = self.forward(inputb, other_au_subject_weight, reuse=reuse) # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
+                    pred_this_au = self.forward(inputb, this_au_subject_weight,
+                                                reuse=reuse)  # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
+                    pred_other_au = self.forward(inputb, other_au_subject_weight,
+                                                 reuse=reuse)  # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
 
+                    label_this_au = labelb[:, self.au_idx, :]  # (NK,2)
+                    label_other_au = labelb[:, i, :]
+                    label_this_au = tf.reshape(label_this_au,
+                                               [int(label_this_au.shape[0]), 1, int(label_this_au.shape[1])])
+                    label_other_au = tf.reshape(label_other_au,
+                                                [int(label_other_au.shape[0]), 1, int(label_other_au.shape[1])])
 
-                    label_this_au=labelb[:, self.au_idx,:] #(NK,2)
-                    label_other_au=labelb[:,i,:]
-                    label_this_au = tf.reshape(label_this_au, [int(label_this_au.shape[0]), 1, int(label_this_au.shape[1])])
-                    label_other_au = tf.reshape(label_other_au, [int(label_other_au.shape[0]), 1, int(label_other_au.shape[1])])
-
-                    loss = label_this_au * label_other_au - pred_this_au * pred_other_au # (num of samples=NK,1=num of au,2=N)
+                    loss = label_this_au * label_other_au - pred_this_au * pred_other_au  # (num of samples=NK,1=num of au,2=N)
                     losses.append(loss)
 
                 task_output = [losses]
@@ -185,12 +189,13 @@ class MAML:
                 inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0, 0], [batch, -1, -1, -1])
                 sub_idx = np.array(range(FLAGS.meta_batch_size))
-                this_au_weights = self.w_mat[i] # 14*(300*1*2)
-                transposed_w_mat= tf.transpose(self.w_mat, (1, 0, 2, 3, 4)) # 14*8*(300*1*2)
-                this_au_biases = self.b_mat[i] # 14*(300*1*2)
-                transposed_b_mat= tf.transpose(self.b_mat, (1, 0, 2, 3)) # 14*8*(300*1*2)
-                per_au_losses= tf.map_fn(task_co_occur_loss, elems=(inputb, labelb, this_au_weights, transposed_w_mat, this_au_biases, transposed_b_mat),
-                                                         dtype=out_dtype_task_occur_result, parallel_iterations=FLAGS.meta_batch_size)
+                this_au_weights = self.w_mat[i]  # 14*(300*1*2)
+                transposed_w_mat = tf.transpose(self.w_mat, (1, 0, 2, 3, 4))  # 14*8*(300*1*2)
+                this_au_biases = self.b_mat[i]  # 14*(300*1*2)
+                transposed_b_mat = tf.transpose(self.b_mat, (1, 0, 2, 3))  # 14*8*(300*1*2)
+                per_au_losses = tf.map_fn(task_co_occur_loss, elems=(
+                inputb, labelb, this_au_weights, transposed_w_mat, this_au_biases, transposed_b_mat),
+                                          dtype=out_dtype_task_occur_result, parallel_iterations=FLAGS.meta_batch_size)
                 all_co_occur_losses.append(per_au_losses)
 
 
@@ -208,14 +213,22 @@ class MAML:
         #     for i in range(8):
         #         tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[i])
 
-        self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[0]+self.total_losses2[0])
-        self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[1]+self.total_losses2[1])
-        self.metatrain_op2 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[2]+self.total_losses2[2])
-        self.metatrain_op3 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[3]+self.total_losses2[3])
-        self.metatrain_op4 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[4]+self.total_losses2[4])
-        self.metatrain_op5 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[5]+self.total_losses2[5])
-        self.metatrain_op6 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[6]+self.total_losses2[6])
-        self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses1[7]+self.total_losses2[7])
+        self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[0] + self.LAMBDA2 * self.total_losses2[0])
+        self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[1] + self.LAMBDA2 * self.total_losses2[1])
+        self.metatrain_op2 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[2] + self.LAMBDA2 * self.total_losses2[2])
+        self.metatrain_op3 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[3] + self.LAMBDA2 * self.total_losses2[3])
+        self.metatrain_op4 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[4] + self.LAMBDA2 * self.total_losses2[4])
+        self.metatrain_op5 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[5] + self.LAMBDA2 * self.total_losses2[5])
+        self.metatrain_op6 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[6] + self.LAMBDA2 * self.total_losses2[6])
+        self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(
+            self.total_losses1[7] + self.LAMBDA2 * self.total_losses2[7])
         self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1,self.metatrain_op2, self.metatrain_op3,self.metatrain_op4,self.metatrain_op5,self.metatrain_op6, self.metatrain_op7)
 
     def forward_fc(self, inp, weights, reuse=False):

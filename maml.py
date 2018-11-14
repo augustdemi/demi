@@ -148,15 +148,15 @@ class MAML:
                     tf.reduce_sum(accuraciesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j in range(num_updates)]
                 self.result1 = [outputas, res_labela]
                 self.result2 = [outputbs, res_labelbs]
-            self.pretrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_loss1)
-            # self.pretrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(total_loss1)
+            # self.pretrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_loss1)
+            self.pretrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(total_loss1)
 
             if FLAGS.metatrain_iterations > 0:
-                self.metatrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(
-                    self.total_losses2[FLAGS.num_updates - 1])
+                # self.metatrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(
+                #     self.total_losses2[FLAGS.num_updates - 1])
                 # self.gvs = gvs = optimizer.compute_gradients(self.total_losses2[FLAGS.num_updates - 1])
                 # self.metatrain_op = optimizer.apply_gradients(gvs)
-                # self.metatrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[FLAGS.num_updates - 1])
+                self.metatrain_op = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[FLAGS.num_updates - 1])
         else:
             self.metaval_total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
             self.metaval_total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size)
