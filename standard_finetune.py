@@ -39,6 +39,7 @@ parser.add_argument("-tmd", "--trained_model_dir", type=str, default='', help="e
 parser.add_argument("-test", "--test", type=bool, default=True, help="adapt to test data")
 parser.add_argument("-op", "--opti", type=str, default="adam", help="name of optimizer")
 parser.add_argument("-maml", "--maml_model", type=str, default="", help="name of maml_model")
+parser.add_argument("-m_iter", "--m_iter", type=str, default="", help="num of iter used when training maml model")
 
 args = parser.parse_args()
 
@@ -120,8 +121,9 @@ aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 if args.logdir != '':
     print('---------------- load from MAML')
     if args.trained_model_dir != '':
-        data = pickle.load(open(args.logdir + '/' + args.trained_model_dir + "/soft_weights.pkl", "rb"),
-                           encoding='latin1')
+        data = pickle.load(
+            open(args.logdir + '/' + args.trained_model_dir + "/soft_weights" + args.m_iter + ".pkl", "rb"),
+            encoding='latin1')
     else:
         data = pickle.load(open(args.logdir + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
 
