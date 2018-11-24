@@ -88,6 +88,7 @@ flags.DEFINE_string('feature_path', "", 'path for feature vector')
 flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
+flags.DEFINE_string('norm', "batch_norm", '')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
@@ -169,28 +170,36 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
                 saver.save(sess, save_path + '/model' + str(itr))
 
                 out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights" + str(itr) + ".pkl", 'wb')
-                pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
+                weights_to_save = {}
+                for i in range(3):
+                    weights_to_save['w' + str(i + 1)] = sess.run('model/w' + str(i + 1)+':0')
+                    weights_to_save['b' + str(i + 1)] = sess.run('model/b' + str(i + 1)+':0')
+                pickle.dump(weights_to_save, out, protocol=2)
                 out.close()
                 # save local weight at the last iteration
-                if itr == FLAGS.metatrain_iterations:
-                    print(">>>>>>>>>>>>>> local save !! : ", itr)
-                    local_w = result[1][0]
-                    local_b = result[1][1]
-                    print("================================================================================")
-                    print('>>>>>> Global bias: ', sess.run('model/b1:0'))
-                    local_model_dir = save_path + '/local'
-                    for i in range(FLAGS.meta_batch_size):
-                        model.weights['w1'].load(local_w[i], sess)
-                        model.weights['b1'].load(local_b[i], sess)
-                        print('>>>>>> Local bias for subject: ', i, sess.run('model/b1:0'))
-                        print("-----------------------------------------------------------------")
-                        if not os.path.exists(local_model_dir):
-                            os.makedirs(local_model_dir)
-                        saver.save(sess, local_model_dir + '/subject' + str(i))
+                # if itr == FLAGS.metatrain_iterations:
+                #     print(">>>>>>>>>>>>>> local save !! : ", itr)
+                #     local_w = result[1][0]
+                #     local_b = result[1][1]
+                #     print("================================================================================")
+                #     print('>>>>>> Global bias: ', sess.run('model/b1:0'))
+                #     local_model_dir = save_path + '/local'
+                #     for i in range(FLAGS.meta_batch_size):
+                #         model.weights['w1'].load(local_w[i], sess)
+                #         model.weights['b1'].load(local_b[i], sess)
+                #         print('>>>>>> Local bias for subject: ', i, sess.run('model/b1:0'))
+                #         print("-----------------------------------------------------------------")
+                #         if not os.path.exists(local_model_dir):
+                #             os.makedirs(local_model_dir)
+                #         saver.save(sess, local_model_dir + '/subject' + str(i))
 
             else:
                 out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights.pkl", 'wb')
-                pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
+                weights_to_save = {}
+                for i in range(3):
+                    weights_to_save['w' + str(i + 1)] = sess.run('model/w' + str(i + 1)+':0')
+                    weights_to_save['b' + str(i + 1)] = sess.run('model/b' + str(i + 1)+':0')
+                pickle.dump(weights_to_save, out, protocol=2)
                 out.close()
                 saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 

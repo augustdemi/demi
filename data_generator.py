@@ -22,9 +22,10 @@ class DataGenerator(object):
         """
         self.num_samples_per_class = FLAGS.update_batch_size * 2
         self.num_classes = FLAGS.num_classes
-        self.img_size = config.get('img_size', (160, 240))
-        self.dim_input = np.prod(self.img_size)
-        self.weight_dim = 300
+        # self.img_size = config.get('img_size', (160, 240))
+        # self.dim_input = np.prod(self.img_size)
+        self.dim_input = 2048
+        self.weight_dim = 2048
         data_folder = FLAGS.datadir
         subjects = os.listdir(data_folder)
         subjects.sort()
@@ -92,8 +93,10 @@ class DataGenerator(object):
         three_layers = feature_layer(10, FLAGS.num_au)
         three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
-        inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)
-        inputb_latent_feat = three_layers.model_final_latent_feat.predict(inputb_features)
+        # inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)
+        # inputb_latent_feat = three_layers.model_final_latent_feat.predict(inputb_features)
+        inputa_latent_feat = inputa_features
+        inputb_latent_feat = inputb_features
         print(">>> z_arr len:", len(inputa_latent_feat))
         #################################################################################
 

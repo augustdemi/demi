@@ -22,15 +22,12 @@ class MAML:
         self.dim_output = dim_output
         self.update_lr = FLAGS.update_lr
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
-        self.classification = False
-        self.weight_dim = 300
-        if FLAGS.datasource == 'disfa':
-            self.loss_func = xent
-            self.classification = True
-            self.forward = self.forward_fc
-            self.construct_weights = self.getWeightVar
-        else:
-            raise ValueError('Unrecognized data source.')
+
+        self.loss_func = xent
+        self.weight_dim = [500, 300, 300]
+        self.classification = True
+        self.forward = self.forward_fc
+        self.construct_weights = self.construct_fc_weights
 
     def construct_model(self, input_tensors=None, prefix='metatrain_'):
         # a: training data for inner gradient, b: test data for meta gradient
@@ -181,26 +178,34 @@ class MAML:
             if self.classification:
                 tf.summary.scalar(prefix + 'Post-update accuracy, step ' + str(j + 1), total_accuracies2[j])
 
-    def forward_fc(self, inp, weights, reuse=False):
-        var_w = weights['w1'][None, ::]
-        # add dimension for features
-        var_b = weights['b1'][None, ::]
-        # add dimension for output and class
-        var_x = inp[:, :, None]
 
-        # matrix multiplication with dropout
-        z = tf.reduce_sum(var_w * var_x, 1) + var_b
-        # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
+    def construct_fc_weights(self):
+        tf.set_random_seed(FLAGS.weight_seed)
+        dtype = tf.float32
+        fc_initializer = tf.contrib.layers.xavier_initializer(dtype=dtype)
+        weights = {}
+
+        weights['w1'] = tf.get_variable('w1', [self.dim_input, self.weight_dim[0]], initializer=fc_initializer)
+        weights['b1'] = tf.get_variable('b1', [self.weight_dim[0]], initializer=tf.zeros_initializer())
+        for i in range(1,len(self.weight_dim)-1):
+            weights['w' + str(i + 1)] = tf.get_variable('w' + str(i + 1), [self.weight_dim[i-1], self.weight_dim[i]],initializer=fc_initializer)
+            weights['b' + str(i + 1)] = tf.get_variable('b' + str(i + 1), [self.weight_dim[i]], initializer=tf.zeros_initializer())
+
+        #for softmax
+        weights['w' + str(len(self.weight_dim))] = tf.get_variable('w' + str(len(self.weight_dim)), [self.weight_dim[-1], 1, 2],initializer=fc_initializer)
+        weights['b' + str(len(self.weight_dim))] = tf.get_variable('b' + str(len(self.weight_dim)), [1, 2], initializer=tf.zeros_initializer())
+        return weights
+
+    def forward_fc(self, inp, weights, reuse=False):
+        # hidden = normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
+        for i in range(len(self.weight_dim)-1):
+            # hidden = normalize(tf.matmul(hidden, weights['w'+str(i+1)]) + weights['b'+str(i+1)], activation=tf.nn.relu, reuse=reuse, scope=str(i+1))
+
+            if i ==0:
+                hidden = tf.reduce_sum(weights['w' + str(i + 1)] * inp, 1) + weights['b' + str(i + 1)]
+            else:
+                hidden = tf.reduce_sum(weights['w' + str(i+1)] * hidden[:,:,None], 1) + weights['b' + str(i+1)]
+        tt=weights['w' + str(len(self.weight_dim))][None, ::] * hidden[:, :, None,None]
+        z = tf.reduce_sum(weights['w' + str(len(self.weight_dim))][None, ::] * hidden[:, :, None,None], 1) + weights['b' + str(len(self.weight_dim))][None, ::]
         score = tf.nn.softmax(z)
         return score
-
-    def getWeightVar(self):
-        tf.set_random_seed(FLAGS.weight_seed)
-        # w1 = tf.Variable(tf.truncated_normal([self.weight_dim, 1, 2], stddev=0.01), name="w1")
-        # b1 = tf.Variable(tf.zeros([1, 2]), name="b1")
-        dtype = tf.float32
-        w1 = tf.get_variable("w1", [self.weight_dim, 1, 2],
-                             initializer=tf.contrib.layers.xavier_initializer(dtype=dtype))
-        b1 = tf.get_variable("b1", [1, 2], initializer=tf.zeros_initializer())
-        weight_tensor = {"w1": w1, "b1": b1}
-        return weight_tensor
