@@ -161,10 +161,10 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
             summary(result, "TR")
 
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
-            w = sess.run('model/w1:0')
             print("======== w1 norm:", np.linalg.norm(sess.run('model/w1:0')))
             print("======== w2 norm:", np.linalg.norm(sess.run('model/w2:0')))
             print("======== w3 norm:", np.linalg.norm(sess.run('model/w3:0')))
+            print('------------------------------ iter:', itr)
             # print("======== last weight :", w[-1])
             # print("======== b :", sess.run('model/b1:0'))
             if FLAGS.keep_train_dir:
