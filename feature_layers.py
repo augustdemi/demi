@@ -137,3 +137,28 @@ class feature_layer:
         print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
 
         self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
+
+    def loadWeight_from_maml(self, weights, au_index):
+        #### set weight for 3 layers
+        layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
+        layer_dict_3layers['intermediate'].set_weights([weights['w1'], weights['b1']])
+        layer_dict_3layers['z_mean'].set_weights([weights['w2'], weights['b2']])
+        print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
+
+        if weights['b3'].shape[0] == self.num_au:
+            self.model_intensity.layers[-1].set_weights([weights['w3'], weights['b3']])
+        else:
+            print(">>>>>>>>>>> going to choose this index in VAE:", au_index)
+            try:
+                w = weights['w3'][:, au_index]
+                b = weights['b3'][au_index]
+                w = w.reshape(self.latent_dim3, 1, 2)
+                b = b.reshape(1, 2)
+                self.model_intensity.layers[-1].set_weights([w, b])
+            except IndexError as err:
+                print("###########################IndexError:", err)
+
+        print("[vae_model] final loaded weight : ")
+        print("[vae_model] b1 : ", layer_dict_3layers['intermediate'].get_weights()[1])
+        print("[vae_model] b2 : ", layer_dict_3layers['z_mean'].get_weights()[1])
+        print("[vae_model] b3 : ", self.model_intensity.layers[-1].get_weights()[1])

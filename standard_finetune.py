@@ -126,13 +126,13 @@ if args.logdir != '':
             encoding='latin1')
     else:
         data = pickle.load(open(args.logdir + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
-
-    w = np.array(data['w'])
-    b = np.array(data['b'])
-    print(w.shape)
-    print(w)
-    print('--------------------------------')
-    three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au, w=w, b=b)
+    #
+    # w = np.array(data['w'])
+    # b = np.array(data['b'])
+    # print(w.shape)
+    # print(w)
+    # print('--------------------------------')
+    three_layers.loadWeight_from_maml(data, au_index)
 else:
     three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au)
 
