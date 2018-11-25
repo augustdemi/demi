@@ -90,9 +90,8 @@ class DataGenerator(object):
 
         #################################################################################
 
-        three_layers = feature_layer(10, FLAGS.num_au)
-        three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
-
+        # three_layers = feature_layer(10, FLAGS.num_au)
+        # three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
         # inputa_latent_feat = three_layers.model_final_latent_feat.predict(inputa_features)
         # inputb_latent_feat = three_layers.model_final_latent_feat.predict(inputb_features)
         inputa_latent_feat = inputa_features
