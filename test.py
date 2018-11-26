@@ -83,7 +83,13 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     print(w.shape)
     print("!!!!!!!!!!!!!!!!!!")
 
-    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
+    if FLAGS.model.startswith('m'):
+        data = pickle.load(
+            open(FLAGS.logdir + '/' + FLAGS.trained_model_dir + "/soft_weights" + FLAGS.test_iter + ".pkl", "rb"),
+            encoding='latin1')
+        three_layers.loadWeight_from_maml(data, FLAGS.au_idx)
+    else:
+        three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
