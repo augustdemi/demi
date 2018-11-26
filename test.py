@@ -86,7 +86,7 @@ def test_each_subject(w, b, sbjt_start_idx,
 
     if FLAGS.model.startswith('m'):
         data = pickle.load(
-            open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights" + FLAGS.test_iter + ".pkl", "rb"),
+            open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights" + str(FLAGS.test_iter) + ".pkl", "rb"),
             encoding='latin1')
         three_layers.loadWeight_from_maml(data, FLAGS.au_idx)
     else:
