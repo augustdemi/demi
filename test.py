@@ -76,7 +76,8 @@ flags.DEFINE_string('feature_path', "", 'path for feature vector')
 flags.DEFINE_string('vae_model_to_test', '', 'vae model dir from robert code')
 
 
-def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
+def test_each_subject(w, b, sbjt_start_idx,
+                      trained_model_dir):  # In case when test the model with the whole rest frames
     batch_size = 10
     three_layers = feature_layer(batch_size, FLAGS.num_au)
     print("!!!!!!!!!!!!!!!!!!")
@@ -85,7 +86,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
 
     if FLAGS.model.startswith('m'):
         data = pickle.load(
-            open(FLAGS.logdir + '/' + FLAGS.trained_model_dir + "/soft_weights" + FLAGS.test_iter + ".pkl", "rb"),
+            open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights" + FLAGS.test_iter + ".pkl", "rb"),
             encoding='latin1')
         three_layers.loadWeight_from_maml(data, FLAGS.au_idx)
     else:
@@ -287,7 +288,7 @@ def main():
             if FLAGS.model.startswith('s'):
                 w_arr, b_arr = _load_weight_s(i)
 
-            result = test_each_subject(w_arr, b_arr, i)
+            result = test_each_subject(w_arr, b_arr, i, trained_model_dir)
             y_hat.append(result[0])
             y_lab.append(result[1])
             print("y_hat shape:", result[0].shape)
@@ -304,7 +305,7 @@ def main():
                     FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
                     FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
                 w_arr, b_arr = _load_weight_m(trained_model_dir)
-            result = test_each_subject(w_arr, b_arr, subj_idx)
+            result = test_each_subject(w_arr, b_arr, subj_idx, trained_model_dir)
             y_hat.append(result[0])
             y_lab.append(result[1])
             print("y_hat shape:", result[0].shape)
