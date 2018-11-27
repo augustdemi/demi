@@ -71,7 +71,10 @@ class feature_layer:
                 w_softmaxpdf_1 = [w, b]
                 print("[vae_model] loaded weight from MAML : ", w_softmaxpdf_1[1])
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
-        print("[vae_model] final loaded weight : ", self.model_intensity.layers[-1].get_weights()[1])
+        print("[vae_model] final loaded weight : ")
+        print("[vae_model] b1 : ", layer_dict_3layers['intermediate'].get_weights()[1])
+        print("[vae_model] b2 : ", layer_dict_3layers['z_mean'].get_weights()[1])
+        print("[vae_model] b3 : ", self.model_intensity.layers[-1].get_weights()[1])
 
     def loadWeightS(self, vae_model_name, au_index, num_au_for_rm=1, w=None, b=None):
         if num_au_for_rm > 1:
@@ -103,7 +106,10 @@ class feature_layer:
                 w_softmaxpdf_1 = [w, b]
                 print("[vae_model] loaded weight from MAML : ", w_softmaxpdf_1[1])
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
-        print("[vae_model] final loaded weight : ", self.model_intensity.layers[-1].get_weights()[1])
+        print("[vae_model] final loaded weight : ")
+        print("[vae_model] b1 : ", layer_dict_3layers['intermediate'].get_weights()[1])
+        print("[vae_model] b2 : ", layer_dict_3layers['z_mean'].get_weights()[1])
+        print("[vae_model] b3 : ", self.model_intensity.layers[-1].get_weights()[1])
 
 
     def loadWeight_m0(self, vae_model_name, w, b, au_index=-1):
