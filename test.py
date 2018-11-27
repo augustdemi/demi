@@ -278,14 +278,14 @@ def main():
                 FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
 
         ### test per each subject and concatenate
-        for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+        for subj_idx in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
             print(
                 "============================================= m1 =========================================================")
             data = pickle.load(
                 open(FLAGS.logdir + all_au[FLAGS.au_idx] + '/' + trained_model_dir + "/soft_weights" + str(
                     FLAGS.test_iter) + ".pkl", "rb"),
                 encoding='latin1')
-            result = test_each_subject(data, i, trained_model_dir)
+            result = test_each_subject(subj_idx, data=data)
             y_hat.append(result[0])
             y_lab.append(result[1])
             print("y_hat shape:", result[0].shape)
