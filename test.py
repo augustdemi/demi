@@ -282,7 +282,7 @@ def main():
             print(
                 "============================================= m1 =========================================================")
             data = pickle.load(
-                open(FLAGS.logdir + '/' + trained_model_dir + '/' + all_au[FLAGS.au_idx] + "/soft_weights" + str(
+                open(FLAGS.logdir + all_au[FLAGS.au_idx] + '/' + trained_model_dir + "/soft_weights" + str(
                     FLAGS.test_iter) + ".pkl", "rb"),
                 encoding='latin1')
             result = test_each_subject(data, i, trained_model_dir)
