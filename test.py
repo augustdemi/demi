@@ -86,7 +86,7 @@ def test_each_subject(sbjt_start_idx, data=None):  # In case when test the model
     if FLAGS.model.startswith('m'):
         three_layers.loadWeight_from_maml(data, FLAGS.au_idx)
     else:
-        load_model_path = FLAGS.vae_model_to_test + '/s4_' + all_au(FLAGS.au_idx) + '_subject' + str(
+        load_model_path = FLAGS.vae_model_to_test + '/s4_' + all_au[FLAGS.au_idx] + '_subject' + str(
             sbjt_start_idx) + '_' + FLAGS.s4_model
         three_layers.loadWeight(load_model_path, -1)
 
