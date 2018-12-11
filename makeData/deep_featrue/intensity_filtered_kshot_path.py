@@ -10,16 +10,16 @@ for subject in os.listdir(original_frame_path):
     detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in detected_img_files]
     detected_frame_idx = list(set(detected_frame_idx))
     detected_frame_idx.sort()
-    all_intensities = [[]] * (detected_frame_idx[-1] + 1)
+    all_intensities = [0] * (detected_frame_idx[-1] + 1)
     #### filter ####
     for au in all_au:
         label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_" + au + ".txt"
         f = open(label_path, 'r')
         all_labels = f.readlines()
-        print(all_labels)
+        # print(all_labels)
 
         for idx in detected_frame_idx:
-            print(int(all_labels[idx].split(",")[1].split("\n")[0]))
+            # print(int(all_labels[idx].split(",")[1].split("\n")[0]))
             try:
                 intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
                 all_intensities[idx] += intensity
