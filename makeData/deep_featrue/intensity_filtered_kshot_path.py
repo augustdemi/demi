@@ -16,15 +16,15 @@ for subject in os.listdir(original_frame_path):
         label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_" + au + ".txt"
         f = open(label_path, 'r')
         all_labels = f.readlines()
+        print(all_labels)
 
-        test_a_on_idx = []
-        test_a_off_idx = []
         for idx in detected_frame_idx:
+            print(int(all_labels[idx].split(",")[1].split("\n")[0]))
             try:
                 intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
                 all_intensities[idx] += intensity
             except:
-                print("test_a_on_idx - out of index: ", idx, " for au, subject: ", au, subject)
+                print("out of index: ", idx, " for au, subject: ", au, subject)
                 continue
     detected_frame_idx = [idx for idx in range(len(all_intensities)) if all_intensities[idx] > 6]
 
