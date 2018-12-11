@@ -110,3 +110,5 @@ for subject in os.listdir(original_frame_path):
             file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
         f.write(','.join(file_path_to_save))
     print('cnt', cnt)
+    print('cnta_arr', cnta_arr)
+    print('cntb_arr', cntb_arr)
