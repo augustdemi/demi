@@ -36,8 +36,8 @@ for subject in os.listdir(original_frame_path):
     test_b_idx = [i for i in detected_frame_idx if i not in test_a_idx]
     print('test_a_idx:', test_a_idx)
     print('test_b_idx:', test_b_idx)
-    cnta_arr.append(test_a_idx)
-    cntb_arr.append(test_b_idx)
+    cnta_arr.append(len(test_a_idx))
+    cntb_arr.append(len(test_b_idx))
 
     # print('test_a len: ', len(test_a_idx))
     # print('test_b len: ', len(test_b_idx))
