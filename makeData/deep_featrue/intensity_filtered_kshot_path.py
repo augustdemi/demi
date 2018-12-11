@@ -5,11 +5,12 @@ original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter/"
 all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au15', 'au17', 'au25', 'au26']
 cnt = 0
-for subject in os.listdir(original_frame_path):
+for subject in ['SN001']:
     detected_img_files = os.listdir(original_frame_path + subject)
     detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in detected_img_files]
     detected_frame_idx = list(set(detected_frame_idx))
     detected_frame_idx.sort()
+    print('1:', detected_frame_idx)
     all_intensities = [0] * (detected_frame_idx[-1] + 1)
     #### filter ####
     for au in all_au:
@@ -28,6 +29,7 @@ for subject in os.listdir(original_frame_path):
                 continue
     detected_frame_idx = [idx for idx in range(len(all_intensities)) if all_intensities[idx] > 6]
     cnt += len(detected_frame_idx)
+    print('2:', detected_frame_idx)
 
     random.seed(1)
     test_a_idx = random.sample(detected_frame_idx, int(len(detected_frame_idx) / 2))
