@@ -5,6 +5,8 @@ original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter/"
 all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au15', 'au17', 'au25', 'au26']
 cnt = 0
+cnta_arr = []
+cntb_arr = []
 for subject in os.listdir(original_frame_path):
     detected_img_files = os.listdir(original_frame_path + subject)
     detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in detected_img_files]
@@ -34,6 +36,8 @@ for subject in os.listdir(original_frame_path):
     test_b_idx = [i for i in detected_frame_idx if i not in test_a_idx]
     print('test_a_idx:', test_a_idx)
     print('test_b_idx:', test_b_idx)
+    cnta_arr.append(test_a_idx)
+    cntb_arr.append(test_b_idx)
 
     # print('test_a len: ', len(test_a_idx))
     # print('test_b len: ', len(test_b_idx))
