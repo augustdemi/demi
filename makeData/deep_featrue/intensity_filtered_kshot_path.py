@@ -2,8 +2,8 @@ import random
 import os
 
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
-save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter/"
-all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au15', 'au17', 'au25', 'au26']
+save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter_8au/"
+all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 cnt = 0
 cnta_arr = []
 cntb_arr = []
