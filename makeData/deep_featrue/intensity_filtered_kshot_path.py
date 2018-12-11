@@ -5,12 +5,11 @@ original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter/"
 all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au15', 'au17', 'au25', 'au26']
 cnt = 0
-for subject in ['SN001']:
+for subject in os.listdir(original_frame_path):
     detected_img_files = os.listdir(original_frame_path + subject)
     detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in detected_img_files]
     detected_frame_idx = list(set(detected_frame_idx))
     detected_frame_idx.sort()
-    print('1:', detected_frame_idx)
     all_intensities = [0] * (detected_frame_idx[-1] + 1)
     #### filter ####
     for au in all_au:
@@ -25,17 +24,19 @@ for subject in ['SN001']:
                 intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
                 all_intensities[idx] += intensity
             except:
-                print("out of index: ", idx, " for au, subject: ", au, subject)
+                # print("out of index: ", idx, " for au, subject: ", au, subject)
                 continue
     detected_frame_idx = [idx for idx in range(len(all_intensities)) if all_intensities[idx] > 6]
     cnt += len(detected_frame_idx)
-    print('2:', detected_frame_idx)
 
     random.seed(1)
     test_a_idx = random.sample(detected_frame_idx, int(len(detected_frame_idx) / 2))
     test_b_idx = [i for i in detected_frame_idx if i not in test_a_idx]
-    print('test_a len: ', len(test_a_idx))
-    print('test_b len: ', len(test_b_idx))
+    print('test_a_idx:', test_a_idx)
+    print('test_b_idx:', test_b_idx)
+
+    # print('test_a len: ', len(test_a_idx))
+    # print('test_b len: ', len(test_b_idx))
 
     ########### 위의 각 subject 별 fixed test_a, test_b에 대해서, 각 au별로 on/off를 구해 분리해둠.
     ########### 그리곤 test_b셋에대해서 testset pickle값을 만들어 둬서 이 전체 데이터 셋에 대해서 evaluation할 것임.
@@ -51,7 +52,7 @@ for subject in ['SN001']:
             try:
                 intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
             except:
-                print("test_a_on_idx - out of index: ", idx, " for au, subject: ", au, subject)
+                # print("test_a_on_idx - out of index: ", idx, " for au, subject: ", au, subject)
                 continue
             if intensity > 0:
                 test_a_on_idx.append(idx)
@@ -64,7 +65,7 @@ for subject in ['SN001']:
             try:
                 intensity = int(all_labels[idx].split(",")[1].split("\n")[0])
             except:
-                print("test_b_on_idx - out of index: ", idx, " for au, subject: ", au, subject)
+                # print("test_b_on_idx - out of index: ", idx, " for au, subject: ", au, subject)
                 continue
             if intensity > 0:
                 test_b_on_idx.append(idx)
@@ -72,10 +73,10 @@ for subject in ['SN001']:
                 test_b_off_idx.append(idx)
         f.close()
 
-        print('test_a_on_idx len: ', len(test_a_on_idx))
-        print('test_a_off_idx len: ', len(test_a_off_idx))
-        print('test_b_on_idx len: ', len(test_b_on_idx))
-        print('test_b_off_idx len: ', len(test_b_off_idx))
+        # print('test_a_on_idx len: ', len(test_a_on_idx))
+        # print('test_a_off_idx len: ', len(test_a_off_idx))
+        # print('test_b_on_idx len: ', len(test_b_on_idx))
+        # print('test_b_off_idx len: ', len(test_b_off_idx))
 
         save_path_teat_a_per_au_sub = save_path + au + "/" + subject + "/test_a/"
 
