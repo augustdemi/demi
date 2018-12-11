@@ -3,8 +3,8 @@ import os
 
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter/"
-all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-
+all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au15', 'au17', 'au25', 'au26']
+cnt = 0
 for subject in os.listdir(original_frame_path):
     detected_img_files = os.listdir(original_frame_path + subject)
     detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in detected_img_files]
@@ -27,6 +27,7 @@ for subject in os.listdir(original_frame_path):
                 print("out of index: ", idx, " for au, subject: ", au, subject)
                 continue
     detected_frame_idx = [idx for idx in range(len(all_intensities)) if all_intensities[idx] > 6]
+    cnt += len(detected_frame_idx)
 
     random.seed(1)
     test_a_idx = random.sample(detected_frame_idx, int(len(detected_frame_idx) / 2))
@@ -74,7 +75,7 @@ for subject in os.listdir(original_frame_path):
         print('test_b_on_idx len: ', len(test_b_on_idx))
         print('test_b_off_idx len: ', len(test_b_off_idx))
 
-        save_path_teat_a_per_au_sub = save_path + "/test_a/" + au + "/" + subject
+        save_path_teat_a_per_au_sub = save_path + au + "/" + subject + "/test_a/"
 
         if not os.path.exists(save_path_teat_a_per_au_sub + "/on"): os.makedirs(save_path_teat_a_per_au_sub + "/on")
         if not os.path.exists(save_path_teat_a_per_au_sub + "/off"): os.makedirs(save_path_teat_a_per_au_sub + "/off")
@@ -101,3 +102,4 @@ for subject in os.listdir(original_frame_path):
         for i in test_b_idx:
             file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
         f.write(','.join(file_path_to_save))
+    print('cnt', cnt)
