@@ -89,7 +89,7 @@ flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test t
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_string('norm', "batch_norm", '')
-flags.DEFINE_string('leave_one_out', -1, '')
+flags.DEFINE_integer('leave_one_out', -1, '')
 
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
