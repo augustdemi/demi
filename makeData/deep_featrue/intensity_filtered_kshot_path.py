@@ -82,7 +82,7 @@ for subject in os.listdir(original_frame_path):
         # print('test_b_on_idx len: ', len(test_b_on_idx))
         # print('test_b_off_idx len: ', len(test_b_off_idx))
 
-        save_path_teat_a_per_au_sub = save_path + au + "/" + subject + "/test_a/"
+        save_path_teat_a_per_au_sub = save_path + "/test_a/" + au + "/" + subject
 
         if not os.path.exists(save_path_teat_a_per_au_sub + "/on"): os.makedirs(save_path_teat_a_per_au_sub + "/on")
         if not os.path.exists(save_path_teat_a_per_au_sub + "/off"): os.makedirs(save_path_teat_a_per_au_sub + "/off")
@@ -104,6 +104,7 @@ for subject in os.listdir(original_frame_path):
     print("========================================= done: ", subject)
 
     # copy test_b
+    test_save_path = save_path + "test_b/" + subject
     if not os.path.exists(save_path + "test_b/" + subject): os.makedirs(save_path + "test_b/" + subject)
     with open(save_path + "test_b/" + subject + "/file_path.csv", 'w') as f:
         for i in test_b_idx:
