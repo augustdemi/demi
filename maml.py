@@ -179,15 +179,42 @@ class MAML:
             if self.classification:
                 tf.summary.scalar(prefix + 'Post-update accuracy, step ' + str(j + 1), total_accuracies2[j])
 
+    def construct_fc_weights(self):
+        tf.set_random_seed(FLAGS.weight_seed)
+        dtype = tf.float32
+        fc_initializer = tf.contrib.layers.xavier_initializer(dtype=dtype)
+        weights = {}
+        # for softmax
+        weights['w' + str(len(self.weight_dim))] = tf.get_variable('w' + str(len(self.weight_dim)),
+                                                                   [self.weight_dim[-1], 1, 2],
+                                                                   initializer=fc_initializer)
+        weights['b' + str(len(self.weight_dim))] = tf.get_variable('b' + str(len(self.weight_dim)), [1, 2],
+                                                                   initializer=tf.zeros_initializer())
+        return weights
 
+    def forward_fc(self, inp, weights, reuse=False):
+        var_w = weights['w1'][None, ::]
+        # add dimension for features
+        var_b = weights['b1'][None, ::]
+        # add dimension for output and class
+        var_x = inp[:, :, None]
+
+        # matrix multiplication with dropout
+        z = tf.reduce_sum(var_w * var_x, 1) + var_b
+        # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
+        score = tf.nn.softmax(z)
+        return score
+
+
+'''
     def construct_fc_weights(self):
         tf.set_random_seed(FLAGS.weight_seed)
         dtype = tf.float32
         fc_initializer = tf.contrib.layers.xavier_initializer(dtype=dtype)
         weights = {}
 
-        # weights['w1'] = tf.get_variable('w1', [self.dim_input, self.weight_dim[0]], initializer=fc_initializer)
-        # weights['b1'] = tf.get_variable('b1', [self.weight_dim[0]], initializer=tf.zeros_initializer())
+        weights['w1'] = tf.get_variable('w1', [self.dim_input, self.weight_dim[0]], initializer=fc_initializer)
+        weights['b1'] = tf.get_variable('b1', [self.weight_dim[0]], initializer=tf.zeros_initializer())
         for i in range(1,len(self.weight_dim)-1):
             weights['w' + str(i + 1)] = tf.get_variable('w' + str(i + 1), [self.weight_dim[i-1], self.weight_dim[i]],initializer=fc_initializer)
             weights['b' + str(i + 1)] = tf.get_variable('b' + str(i + 1), [self.weight_dim[i]], initializer=tf.zeros_initializer())
@@ -209,3 +236,4 @@ class MAML:
         z = tf.reduce_sum(weights['w' + str(len(self.weight_dim))][None, ::] * hidden[:, :, None,None], 1) + weights['b' + str(len(self.weight_dim))][None, ::]
         score = tf.nn.softmax(z)
         return score
+'''
