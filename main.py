@@ -94,8 +94,8 @@ flags.DEFINE_integer('leave_one_out', -1, '')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
-    print("===============> Final in weight: ", sess.run('model/w2:0').shape, sess.run('model/b2:0').shape)
-    print("===============> Final in weight: ", sess.run('model/w3:0').shape, sess.run('model/b3:0').shape)
+    # print("===============> Final in weight: ", sess.run('model/w2:0').shape, sess.run('model/b2:0').shape)
+    # print("===============> Final in weight: ", sess.run('model/w3:0').shape, sess.run('model/b3:0').shape)
     SUMMARY_INTERVAL = 500
 
     if FLAGS.log:
@@ -163,8 +163,8 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
 
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             print("======== w1 norm:", np.linalg.norm(sess.run('model/w1:0')))
-            print("======== w2 norm:", np.linalg.norm(sess.run('model/w2:0')))
-            print("======== w3 norm:", np.linalg.norm(sess.run('model/w3:0')))
+            # print("======== w2 norm:", np.linalg.norm(sess.run('model/w2:0')))
+            # print("======== w3 norm:", np.linalg.norm(sess.run('model/w3:0')))
             print('------------------------------ iter:', itr)
             # print("======== last weight :", w[-1])
             # print("======== b :", sess.run('model/b1:0'))
