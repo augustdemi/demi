@@ -101,7 +101,6 @@ for subject in os.listdir(original_frame_path):
                 file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
             f.write(','.join(file_path_to_save))
         print(">>>>> done: ", au)
-    print("========================================= done: ", subject)
 
     # copy test_b
     test_save_path = save_path + "test_b/" + subject
@@ -110,6 +109,8 @@ for subject in os.listdir(original_frame_path):
         for i in test_b_idx:
             file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
         f.write(','.join(file_path_to_save))
-    print('cnt', cnt)
-    print('cnta_arr', cnta_arr)
-    print('cntb_arr', cntb_arr)
+
+    print("========================================= done: ", subject)
+print('cnt', cnt)
+print('cnta_arr', cnta_arr)
+print('cntb_arr', cntb_arr)
