@@ -25,9 +25,14 @@ class DataGenerator(object):
         self.dim_input = -1
         self.weight_dim = 300
         data_folder = FLAGS.datadir
-        subjects = os.listdir(data_folder)
-        subjects.sort()
-        subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
+
+        if FLAGS.leave_one_out == -1:
+            subject_folders = FLAGS.datadir
+        else:
+            subjects = os.listdir(data_folder)
+            subjects.sort()
+            subjects = subjects[1:FLAGS.leave_one_out] + subjects[FLAGS.leave_one_out + 1:]
+            subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
         self.metatrain_character_folders = subject_folders[
                                            FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
 
