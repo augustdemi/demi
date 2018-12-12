@@ -25,18 +25,17 @@ class DataGenerator(object):
         self.dim_input = -1
         self.weight_dim = 300
         data_folder = FLAGS.datadir
-        print('data_folder', data_folder)
+
         if FLAGS.leave_one_out == -1:
             subject_folders = FLAGS.datadir
         else:
             subjects = os.listdir(data_folder)
             subjects.sort()
-            print('subjects', subjects)
+
             subjects = subjects[1:FLAGS.leave_one_out] + subjects[FLAGS.leave_one_out + 1:]
             subject_folders = [os.path.join(data_folder, subject) for subject in subjects]
             print('subject_folders', subject_folders)
-        self.metatrain_character_folders = subject_folders[
-                                           FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        self.metatrain_character_folders = subject_folders
 
 
     def make_data_tensor(self, train=True):
