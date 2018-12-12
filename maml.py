@@ -24,7 +24,8 @@ class MAML:
         self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
 
         self.loss_func = xent
-        self.weight_dim = [500, 300, 300]
+        # self.weight_dim = [500, 300, 300]
+        self.weight_dim = [300]
         self.classification = True
         self.forward = self.forward_fc
         self.construct_weights = self.construct_fc_weights
@@ -205,7 +206,6 @@ class MAML:
                 hidden = tf.reduce_sum(weights['w' + str(i + 1)] * inp, 1) + weights['b' + str(i + 1)]
             else:
                 hidden = tf.reduce_sum(weights['w' + str(i+1)] * hidden[:,:,None], 1) + weights['b' + str(i+1)]
-        tt=weights['w' + str(len(self.weight_dim))][None, ::] * hidden[:, :, None,None]
         z = tf.reduce_sum(weights['w' + str(len(self.weight_dim))][None, ::] * hidden[:, :, None,None], 1) + weights['b' + str(len(self.weight_dim))][None, ::]
         score = tf.nn.softmax(z)
         return score
