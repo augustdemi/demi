@@ -201,7 +201,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
             else:
                 out = open(FLAGS.logdir + '/' + trained_model_dir + "/soft_weights" + str(itr) + ".pkl", 'wb')
                 weights_to_save = {}
-                for i in range(3):
+                for i in range(1):
                     weights_to_save['w' + str(i + 1)] = sess.run('model/w' + str(i + 1)+':0')
                     weights_to_save['b' + str(i + 1)] = sess.run('model/b' + str(i + 1)+':0')
                 pickle.dump(weights_to_save, out, protocol=2)
