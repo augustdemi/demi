@@ -186,8 +186,8 @@ class MAML:
         fc_initializer = tf.contrib.layers.xavier_initializer(dtype=dtype)
         weights = {}
 
-        weights['w1'] = tf.get_variable('w1', [self.dim_input, self.weight_dim[0]], initializer=fc_initializer)
-        weights['b1'] = tf.get_variable('b1', [self.weight_dim[0]], initializer=tf.zeros_initializer())
+        # weights['w1'] = tf.get_variable('w1', [self.dim_input, self.weight_dim[0]], initializer=fc_initializer)
+        # weights['b1'] = tf.get_variable('b1', [self.weight_dim[0]], initializer=tf.zeros_initializer())
         for i in range(1,len(self.weight_dim)-1):
             weights['w' + str(i + 1)] = tf.get_variable('w' + str(i + 1), [self.weight_dim[i-1], self.weight_dim[i]],initializer=fc_initializer)
             weights['b' + str(i + 1)] = tf.get_variable('b' + str(i + 1), [self.weight_dim[i]], initializer=tf.zeros_initializer())
