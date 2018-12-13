@@ -87,6 +87,11 @@ class feature_layer:
             w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
             w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
             print('check the last layer of model_train: ', trained_model.layers[-1].name)
+            import pickle
+            out = open("/home/ml1323/project/robert_code/vae_log/leaveoo/itermediate_layers.pkl", 'wb')
+            weights_to_save = {'w_intermediate': w_intermediate, 'w_z_mean': w_z_mean}
+            pickle.dump(weights_to_save, out, protocol=2)
+            out.close()
             w_softmaxpdf_1 = trained_model.layers[-1].get_weights()
             # print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1[1])
 
