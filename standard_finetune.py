@@ -132,7 +132,7 @@ if args.logdir != '':
     print(w.shape)
     print(w)
     print('--------------------------------')
-    three_layers.loadWeight(data, au_index)
+    three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au, w=w, b=b)
 else:
     three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au)
 
