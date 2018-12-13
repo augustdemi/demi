@@ -38,11 +38,6 @@ class feature_layer:
             w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
             w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
             print('check the last layer of model_train: ', trained_model.layers[-1].name)
-            import pickle
-            out = open("/home/ml1323/project/robert_code/vae_log/leaveoo/itermediate_layers.pkl", 'wb')
-            weights_to_save = {'w_intermediate': w_intermediate, 'w_z_mean': w_z_mean}
-            pickle.dump(weights_to_save, out, protocol=2)
-            out.close()
             w_softmaxpdf_1 = trained_model.layers[-1].get_weights()
             # print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1[1])
 
@@ -174,3 +169,22 @@ class feature_layer:
         print("[vae_model] b1 : ", layer_dict_3layers['intermediate'].get_weights()[1])
         print("[vae_model] b2 : ", layer_dict_3layers['z_mean'].get_weights()[1])
         print("[vae_model] b3 : ", self.model_intensity.layers[-1].get_weights()[1])
+
+    def loadWeight_pkl(self, vae_model_name, w, b):
+        print(">>>>>>>>> model loaded from ", vae_model_name)
+        #### get weight
+        import pickle
+        data = pickle.load(open('/home/ml1323/project/robert_code/vae_log/leaveoo/itermediate_layers.pkl', "rb"),
+                           encoding='latin1')
+        w_intermediate = data['w_intermediate']
+        w_z_mean = data['w_z_mean']
+        w_softmaxpdf_1 = [w, b]
+        print("[vae_model]loaded weight from MAML : ", w_softmaxpdf_1)
+
+        #### set weight for 3 layers
+        layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
+        layer_dict_3layers['intermediate'].set_weights(w_intermediate)
+        layer_dict_3layers['z_mean'].set_weights(w_z_mean)
+        print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
+
+        self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
