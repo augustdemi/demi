@@ -27,7 +27,7 @@ class DataGenerator(object):
         data_folder = FLAGS.datadir
 
         if FLAGS.leave_one_out == -1:
-            subject_folders = [data_folder[0]]
+            subject_folders = [os.listdir(data_folder)[0]]
         else:
             subjects = os.listdir(data_folder)
             subjects.sort()
