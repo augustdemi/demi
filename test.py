@@ -84,7 +84,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     print(w.shape)
     print("!!!!!!!!!!!!!!!!!!")
 
-    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
+    three_layers.loadWeight_pkl(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
     test_subjects = os.listdir(FLAGS.testset_dir)
     test_subjects.sort()
