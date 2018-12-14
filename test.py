@@ -75,7 +75,7 @@ flags.DEFINE_bool('local', False, 'save path from local weight')
 flags.DEFINE_string('feature_path', "", 'path for feature vector')
 flags.DEFINE_string('vae_model_to_test', '', 'vae model dir from robert code')
 flags.DEFINE_string('s4_model', '', 's4_model')
-
+flags.DEFINE_integer('leave_one_out', 1, '')
 
 def test_each_subject(sbjt_start_idx, data=None):  # In case when test the model with the whole rest frames
     all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
