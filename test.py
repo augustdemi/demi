@@ -278,7 +278,7 @@ def main():
                 w_arr, b_arr = _load_weight_m(trained_model_dir)  # au별로 모델이 다르게됨
 
         ### test per each subject and concatenate
-        for i in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+        for i in range(FLAGS.sbjt_start_idx, FLAGS.sbjt_start_idx + FLAGS.num_test_tasks):
             if FLAGS.model.startswith('s'):
                 w_arr, b_arr = _load_weight_s(i)
 
@@ -291,7 +291,7 @@ def main():
             print(">> y_lab_all shape:", np.vstack(y_lab).shape)
         print_summary(np.vstack(y_hat), np.vstack(y_lab), log_dir=save_path + "/" + "test.txt")
     else:  # 모델이 각 subject 별로 train된 경우: vae와 MAML의 train_test두 경우에만 존재 가능 + local weight test의 경우
-        for subj_idx in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
+        for subj_idx in range(FLAGS.sbjt_start_idx, FLAGS.sbjt_start_idx + FLAGS.num_test_tasks):
             if FLAGS.model.startswith('s'):
                 w_arr, b_arr = _load_weight_s(subj_idx)
             else:
