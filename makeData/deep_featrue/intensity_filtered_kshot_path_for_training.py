@@ -36,7 +36,8 @@ for subject in os.listdir(original_frame_path):
 
     ########### 위의 각 subject 별 fixed test_a, test_b에 대해서, 각 au별로 on/off를 구해 분리해둠.
     ########### 그리곤 test_b셋에대해서 testset pickle값을 만들어 둬서 이 전체 데이터 셋에 대해서 evaluation할 것임.
-
+    summary_test_a_on = []
+    summary_test_a_off = []
     for au in all_au:
         label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_" + au + ".txt"
         f = open(label_path, 'r')
@@ -55,6 +56,8 @@ for subject in os.listdir(original_frame_path):
             else:
                 test_a_off_idx.append(idx)
 
+        summary_test_a_on.append(len(test_a_on_idx))
+        summary_test_a_off.append(len(test_a_off_idx))
         save_path_teat_a_per_au_sub = save_path + "/train/" + au + "/" + subject
 
         if not os.path.exists(save_path_teat_a_per_au_sub + "/on"): os.makedirs(save_path_teat_a_per_au_sub + "/on")
@@ -75,6 +78,8 @@ for subject in os.listdir(original_frame_path):
             f.write(','.join(file_path_to_save))
         print(">>>>> done: ", au)
 
+    print(summary_test_a_on)
+    print(summary_test_a_off)
     print("========================================= done: ", subject)
 print('cnt', cnt)
 print('cnta_arr', cnta_arr)

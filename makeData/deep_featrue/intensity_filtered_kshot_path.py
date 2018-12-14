@@ -45,6 +45,10 @@ for subject in os.listdir(original_frame_path):
     ########### 위의 각 subject 별 fixed test_a, test_b에 대해서, 각 au별로 on/off를 구해 분리해둠.
     ########### 그리곤 test_b셋에대해서 testset pickle값을 만들어 둬서 이 전체 데이터 셋에 대해서 evaluation할 것임.
 
+    summary_test_a_on = []
+    summary_test_b_on = []
+    summary_test_a_off = []
+    summary_test_b_off = []
     for au in all_au:
         label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_" + au + ".txt"
         f = open(label_path, 'r')
@@ -77,6 +81,10 @@ for subject in os.listdir(original_frame_path):
                 test_b_off_idx.append(idx)
         f.close()
 
+        summary_test_a_on.append(len(test_a_on_idx))
+        summary_test_b_on.append(len(test_b_on_idx))
+        summary_test_a_off.append(len(test_a_off_idx))
+        summary_test_b_off.append(len(test_b_off_idx))
         # print('test_a_on_idx len: ', len(test_a_on_idx))
         # print('test_a_off_idx len: ', len(test_a_off_idx))
         # print('test_b_on_idx len: ', len(test_b_on_idx))
@@ -110,6 +118,10 @@ for subject in os.listdir(original_frame_path):
             file_path_to_save.append(original_frame_path + subject + "/frame" + str(i) + "_0.jpg")
         f.write(','.join(file_path_to_save))
 
+    print(summary_test_a_on)
+    print(summary_test_a_off)
+    print(summary_test_b_on)
+    print(summary_test_b_off)
     print("========================================= done: ", subject)
 print('cnt', cnt)
 print('cnta_arr', cnta_arr)
