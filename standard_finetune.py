@@ -138,10 +138,10 @@ else:
 
 model_intensity = three_layers.model_intensity
 
-# for i in range(len(model_intensity.layers) - 1):
-#     model_intensity.layers[i].trainable = False
-# for i in range(len(model_intensity.layers)):
-#     print(model_intensity.layers[i], model_intensity.layers[i].trainable)
+for i in range(len(model_intensity.layers) - 1):
+    model_intensity.layers[i].trainable = False
+for i in range(len(model_intensity.layers)):
+    print(model_intensity.layers[i], model_intensity.layers[i].trainable)
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
