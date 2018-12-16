@@ -204,10 +204,11 @@ class MAML:
         # ce_loss = 8*14
         self.total_losses1 = [tf.reduce_sum(self.ce_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
                               range(self.total_num_au)]
+        tf.summary.scalar('cross_entropy', self.total_losses1)
 
         self.total_losses2 = [tf.reduce_sum(all_co_occur_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
                               range(self.total_num_au)]
-
+        tf.summary.scalar('co_occur', self.total_losses2)
         # after the map_fn
         # def optimize_all_au():
         #     for i in range(8):
