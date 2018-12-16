@@ -128,10 +128,13 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
 
         if (itr % SUMMARY_INTERVAL == 0):
             input_tensors.extend([model.summ_op])
-            train_writer.add_summary(result[1], itr)
+
 
 
         result = sess.run(input_tensors, feed_dict)
+
+        if (itr % SUMMARY_INTERVAL == 0):
+            train_writer.add_summary(result[1], itr)
 
         # SAVE_INTERVAL 마다 weight값 파일로 떨굼
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
