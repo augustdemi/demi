@@ -102,7 +102,7 @@ flags.DEFINE_float('lambda2', 0.5, '')
 
 def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
-    SUMMARY_INTERVAL = 500
+    SUMMARY_INTERVAL = 10
     SAVE_INTERVAL = 5000
 
     if FLAGS.log:
@@ -126,6 +126,9 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         # input_tensors = [model.metatrain_op0]
         input_tensors = [model.train_op]
 
+        if (itr % SUMMARY_INTERVAL == 0):
+            input_tensors.extend([model.summ_op])
+            train_writer.add_summary(result[1], itr)
 
 
         result = sess.run(input_tensors, feed_dict)
