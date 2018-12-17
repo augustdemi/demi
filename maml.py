@@ -138,6 +138,7 @@ class MAML:
             self.total_loss1 = total_loss1 = tf.reduce_sum(lossesa) / tf.to_float(FLAGS.meta_batch_size)
             self.total_losses2 = total_losses2 = [tf.reduce_sum(lossesb[j]) / tf.to_float(FLAGS.meta_batch_size) for j
                                                   in range(num_updates)]
+            tf.summary.scalar('cross_entropy', self.total_losses2[FLAGS.num_updates - 1])
             # after the map_fn
             self.outputas, self.outputbs, self.all_w, self.all_b, self.fast_weights = outputas, outputbs, all_w, all_b, fast_weights
             if self.classification:

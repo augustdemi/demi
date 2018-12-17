@@ -121,8 +121,11 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
 
         # when train the model again with the test set, local weight needs to be saved at the last iteration.
 
-        if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
-            input_tensors.extend([model.fast_weights])
+        # if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
+        #     input_tensors.extend([model.fast_weights])
+
+        if (itr % 10 == 0):
+            input_tensors.extend([model.summ_op])
 
 
         if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
@@ -130,9 +133,12 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
 
         result = sess.run(input_tensors, feed_dict)
 
+        if itr % 10 == 0:
+            train_writer.add_summary(result[1], itr)
 
         if itr % SUMMARY_INTERVAL == 0:
             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>summary")
+
             def summary(maml_result, set):
                 print(set)
                 print_str = 'Iteration ' + str(itr)
