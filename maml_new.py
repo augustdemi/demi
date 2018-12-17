@@ -32,6 +32,7 @@ class MAML:
         self.au_idx = -1
         if FLAGS.datasource == 'disfa':
             self.loss_func = xent
+            self.loss_func2 = mse
             self.classification = True
             self.forward = self.forward_fc
             self.construct_weights = self.getWeightVar
@@ -173,7 +174,8 @@ class MAML:
                     label_other_au = tf.reshape(label_other_au,
                                                 [int(label_other_au.shape[0]), 1, int(label_other_au.shape[1])])
 
-                    loss = label_this_au * label_other_au - pred_this_au * pred_other_au  # (num of samples=NK,1=num of au,2=N)
+                    loss = self.loss_func2(pred_this_au * pred_other_au,
+                                           label_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
                     losses.append(loss)
 
                 task_output = [losses]
