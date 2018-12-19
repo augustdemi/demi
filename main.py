@@ -124,7 +124,7 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         # if (itr % SUMMARY_INTERVAL == 0) or (itr == 1) or (itr == FLAGS.metatrain_iterations):
         #     input_tensors.extend([model.fast_weights])
 
-        if (itr % 10 == 0):
+        if (itr % 100 == 0):
             input_tensors.extend([model.summ_op])
 
 
