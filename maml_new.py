@@ -87,8 +87,9 @@ class MAML:
                 # ///////////////////////////////////////////////////////////////////////////
                 task_lossa1 = self.loss_func(task_outputa, labela)  # 2,1
                 pairwise_weight_avg = tf.reduce_sum(weights['w1'], 0) / self.total_num_au
-                task_lossa2 = tf.nn.l2_loss(this_weight['w1'] - pairwise_weight_avg)
-                task_lossa = task_lossa1 + self.LAMBDA1 * task_lossa2
+                # task_lossa2 = tf.nn.l2_loss(this_weight['w1'] - pairwise_weight_avg)
+                # task_lossa = task_lossa1 + self.LAMBDA1 * task_lossa2
+                task_lossa = task_lossa1
                 # ///////////////////////////////////////////////////////////////////////////
 
                 grads = tf.gradients(task_lossa, list(this_weight.values()))  # 2000,1,2
@@ -102,8 +103,9 @@ class MAML:
                     # ///////////////////////////////////////////////////////////////////////////
                     loss1 = self.loss_func(self.forward(inputa, fast_weights, reuse=True), labela)
                     pairwise_weight_avg = tf.reduce_sum(weights['w1'], 0) / self.total_num_au
-                    loss2 = tf.nn.l2_loss(this_weight['w1'] - pairwise_weight_avg)
-                    loss = loss1 + self.LAMBDA1 * loss2
+                    # loss2 = tf.nn.l2_loss(this_weight['w1'] - pairwise_weight_avg)
+                    # loss = loss1 + self.LAMBDA1 * loss2
+                    loss = loss1
                     # ///////////////////////////////////////////////////////////////////////////
 
                     # compute gradients based on the previous fast weights
@@ -129,7 +131,7 @@ class MAML:
             b_matrix = []
             ce_losses_of_inputb = []
 
-            for i in range(8):
+            for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1, -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
                 inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
@@ -160,7 +162,7 @@ class MAML:
                 this_au_subject_weight = {'w1': this_au_subject_w, 'b1': this_au_subject_b}
 
                 losses = []
-                for i in range(8):
+                for i in range(self.total_num_au):
                     other_au_subject_weight = {'w1': this_subject_ws[i], 'b1': this_subject_bs[i]}
                     pred_this_au = self.forward(inputb, this_au_subject_weight,
                                                 reuse=reuse)  # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
@@ -174,9 +176,11 @@ class MAML:
                     label_other_au = tf.reshape(label_other_au,
                                                 [int(label_other_au.shape[0]), 1, int(label_other_au.shape[1])])
 
+                    # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                     loss = self.loss_func2(pred_this_au * pred_other_au,
                                            label_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
-                    losses.append(loss)
+
+                    losses.append(loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
 
                 task_output = [losses]
                 return task_output
@@ -186,19 +190,19 @@ class MAML:
             # 로스를 포룹안에서 구하지 않고, 대신 이미주어져있는 inputb와 포룹으로 부터구한 매트릭스로 여기서부터 loss를 구하기시작
 
             all_co_occur_losses = []
-            for i in range(8):
+            for i in range(self.total_num_au):
                 self.au_idx = i
                 inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0, 0], [batch, -1, -1, -1])
-                sub_idx = np.array(range(FLAGS.meta_batch_size))
                 this_au_weights = self.w_mat[i]  # 14*(300*1*2)
                 transposed_w_mat = tf.transpose(self.w_mat, (1, 0, 2, 3, 4))  # 14*8*(300*1*2)
                 this_au_biases = self.b_mat[i]  # 14*(300*1*2)
                 transposed_b_mat = tf.transpose(self.b_mat, (1, 0, 2, 3))  # 14*8*(300*1*2)
+                # 이번 포룹의 au에서, 14개의 subjects가 서로다른 aus와 이뤘던 co occur 에러. 따라서 14개의 값
                 per_au_losses = tf.map_fn(task_co_occur_loss, elems=(
                 inputb, labelb, this_au_weights, transposed_w_mat, this_au_biases, transposed_b_mat),
                                           dtype=out_dtype_task_occur_result, parallel_iterations=FLAGS.meta_batch_size)
-                all_co_occur_losses.append(per_au_losses)
+                all_co_occur_losses.append(per_au_losses)  # 모든 au가 모든 au와 이루는 loss들. 모든 subjects에 대해. 다라서 8*14개
 
 
 
@@ -209,13 +213,14 @@ class MAML:
 
         tf.summary.scalar('cross_entropy', self.total_losses1[0])
 
+        # 8*14개의 all_co_occur_losses에서, 각 au별 loss를 구함 by subject을 통틀어 합해버림으로써
         self.total_losses2 = [tf.reduce_sum(all_co_occur_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
                               range(self.total_num_au)]
-        tf.summary.scalar('co_occur', self.total_losses2[0])
-        # after the map_fn
-        # def optimize_all_au():
-        #     for i in range(8):
-        #         tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses2[i])
+        tf.summary.scalar('co_occur_0', self.total_losses2[0])
+        tf.summary.scalar('co_occur_1', self.total_losses2[1])
+        tf.summary.scalar('co_occur_7', self.total_losses2[7])
+        tf.summary.scalar('co_occur_total', tf.reduce_sum(self.total_losses2))
+
 
         self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(
             self.total_losses1[0] + self.LAMBDA2 * self.total_losses2[0])
