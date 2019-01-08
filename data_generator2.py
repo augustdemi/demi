@@ -132,9 +132,11 @@ class DataGenerator(object):
         labelbs = np.array(labelbs)
         labelas_tensor = tf.convert_to_tensor(labelas)
         labelbs_tensor = tf.convert_to_tensor(labelbs)
-        labelas_tensor = tf.one_hot(labelas_tensor, self.num_classes)  ## (aus*subjects*K*2 = num of task * 2K, au, 2)
-        labelbs_tensor = tf.one_hot(labelbs_tensor, self.num_classes)
-        labelas_tensor = tf.reshape(labelas_tensor, [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.total_num_au, 2]) # (aus*subjects, 2K, au, 2)
-        labelbs_tensor = tf.reshape(labelbs_tensor, [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2, self.total_num_au, 2])
+        labelas_tensor = tf.reshape(labelas_tensor,
+                                    [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
+                                     self.total_num_au])  # (aus*subjects, 2K, au)
+        labelbs_tensor = tf.reshape(labelbs_tensor,
+                                    [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
+                                     self.total_num_au])
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
