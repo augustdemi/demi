@@ -72,8 +72,8 @@ class MAML:
                 inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
 
-                labela = tf.cast(labela, tf.float32)[:, self.au_idx, :] # (NK,2)
-                labelb = tf.cast(labelb, tf.float32)[:, self.au_idx, :]
+                labela = tf.cast(labela, tf.float32)[:, self.au_idx]  # (NK,2)
+                labelb = tf.cast(labelb, tf.float32)[:, self.au_idx]
 
                 this_w = weights['w1'][:, self.au_idx, :] # weights['w1'] = (300, 8,2)    this_w = (300,2)
                 this_b = weights['b1'][self.au_idx, :]
