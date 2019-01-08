@@ -301,5 +301,5 @@ def xent(pred, label):
     return tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=label) / FLAGS.update_batch_size
 
 
-def log_reg(pred, label):
-    return tf.reduce_mean(label * (-tf.log(pred)) + (1 - label) * (-tf.log(1 - pred)))
+def xent_sig(pred, label):
+    return tf.nn.sigmoid_cross_entropy_with_logits(logits=pred, labels=label) / FLAGS.update_batch_size

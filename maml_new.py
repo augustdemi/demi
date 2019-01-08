@@ -10,7 +10,7 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from utils import mse, log_reg, conv_block, normalize
+from utils import mse, xent_sig, conv_block, normalize
 
 FLAGS = flags.FLAGS
 
@@ -31,7 +31,7 @@ class MAML:
         self.LAMBDA2 = FLAGS.lambda2
         self.au_idx = -1
         if FLAGS.datasource == 'disfa':
-            self.loss_func = log_reg
+            self.loss_func = xent_sig
             self.loss_func2 = mse
             self.classification = True
             self.forward = self.forward_fc
@@ -246,8 +246,8 @@ class MAML:
         # matrix multiplication with dropout
         z = tf.reduce_sum(var_w * var_x, 1) + var_b
         # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
-        score = tf.nn.softmax(z)
-        return score
+        # score = tf.nn.softmax(z)
+        return z
 
     def getWeightVar(self):
         tf.set_random_seed(FLAGS.weight_seed)
