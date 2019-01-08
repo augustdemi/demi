@@ -249,7 +249,8 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     off_sample_labels = []
     binary_intensity = lambda lab: 1 if lab > 0 else 0
     for au in aus:
-        label_path = os.path.join('./data/label', subject, subject + '_' + au + '.txt')
+        # label_path = os.path.join('./data/label', subject, subject + '_' + au + '.txt')
+        label_path = os.path.join('/home/ml1323/project/robert_data/DISFA/label', subject, subject + '_' + au + '.txt')
         with open(label_path) as f:
             lines = np.array(f.readlines())
             selected_labels_for_on = [binary_intensity(int(line.split(",")[1].split("\n")[0])) for line in lines[on_frames_idx]]
