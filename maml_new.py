@@ -113,6 +113,8 @@ class MAML:
                                              fast_weights.keys()]))
 
                 outputb = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
+                outputb = outputb[:, 0,
+                          1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1'
                 task_lossb = self.loss_func(outputb, labelb)
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_lossb]
                 return task_output
@@ -162,16 +164,15 @@ class MAML:
                     pred_this_au = self.forward(inputb, this_au_subject_weight,
                                                 reuse=reuse)  # (NK,1,2)
                     pred_this_au = pred_this_au[:, 0,
-                                   1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1' # (NK,2)
+                                   1]  ### choose the prob. of ON intensity from the softmax result to compare it with label '1' # (NK,2)
 
                     pred_other_au = self.forward(inputb, other_au_subject_weight,
                                                  reuse=reuse)
                     pred_other_au = pred_other_au[:, 0,
-                                    1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1'
+                                    1]  ### choose the prob. of ON intensity from the softmax result to compare it with label '1'
 
-
-                    label_this_au = labelb[:, self.au_idx, :]  # (NK,2)
-                    label_other_au = labelb[:, i, :]
+                    label_this_au = labelb[:, self.au_idx]  # (NK,2)
+                    label_other_au = labelb[:, i]
 
                     # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                     loss = self.loss_func2(pred_this_au * pred_other_au,
