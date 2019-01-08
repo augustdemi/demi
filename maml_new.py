@@ -250,8 +250,8 @@ class MAML:
         # matrix multiplication with dropout
         z = tf.reduce_sum(var_w * var_x, 1) + var_b
         # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
-        score = tf.nn.softmax(z)
-        return score
+        # score = tf.nn.softmax(z)
+        return z
 
     def getWeightVar(self):
         tf.set_random_seed(FLAGS.weight_seed)
