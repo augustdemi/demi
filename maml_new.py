@@ -10,7 +10,7 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from utils import mse, xent, conv_block, normalize
+from utils import mse, xent_sig, conv_block, normalize
 
 FLAGS = flags.FLAGS
 
@@ -31,7 +31,7 @@ class MAML:
         self.LAMBDA2 = FLAGS.lambda2
         self.au_idx = -1
         if FLAGS.datasource == 'disfa':
-            self.loss_func = xent
+            self.loss_func = xent_sig
             self.loss_func2 = mse
             self.classification = True
             self.forward = self.forward_fc
@@ -73,9 +73,7 @@ class MAML:
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
 
                 labela = tf.cast(labela, tf.float32)[:, self.au_idx, :] # (NK,2)
-                labela = tf.reshape(labela, [int(labela.shape[0]), 1, int(labela.shape[1])])  # (NK,1,N)
                 labelb = tf.cast(labelb, tf.float32)[:, self.au_idx, :]
-                labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, int(labelb.shape[1])])
 
                 this_w = weights['w1'][:, self.au_idx, :] # weights['w1'] = (300, 8,2)    this_w = (300,2)
                 this_b = weights['b1'][self.au_idx, :]
@@ -83,12 +81,11 @@ class MAML:
                 this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
                 this_weight = {'w1': this_w, 'b1': this_b}
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
-                task_outputa = self.forward(inputa, this_weight, reuse=reuse)
+                task_outputa = self.forward(inputa, this_weight, reuse=reuse)  # (NK, 1, 2)
+                task_outputa = task_outputa[:, 0,
+                               1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1'
                 # ///////////////////////////////////////////////////////////////////////////
                 task_lossa1 = self.loss_func(task_outputa, labela)  # 2,1
-                pairwise_weight_avg = tf.reduce_sum(weights['w1'], 0) / self.total_num_au
-                # task_lossa2 = tf.nn.l2_loss(this_weight['w1'] - pairwise_weight_avg)
-                # task_lossa = task_lossa1 + self.LAMBDA1 * task_lossa2
                 task_lossa = task_lossa1
                 # ///////////////////////////////////////////////////////////////////////////
 
@@ -102,9 +99,6 @@ class MAML:
                 for j in range(num_updates - 1):
                     # ///////////////////////////////////////////////////////////////////////////
                     loss1 = self.loss_func(self.forward(inputa, fast_weights, reuse=True), labela)
-                    pairwise_weight_avg = tf.reduce_sum(weights['w1'], 0) / self.total_num_au
-                    # loss2 = tf.nn.l2_loss(this_weight['w1'] - pairwise_weight_avg)
-                    # loss = loss1 + self.LAMBDA1 * loss2
                     loss = loss1
                     # ///////////////////////////////////////////////////////////////////////////
 
@@ -135,8 +129,9 @@ class MAML:
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1, -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
                 inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
-                labela = tf.slice(self.labela, [i * batch, 0, 0, 0], [batch, -1, -1, -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
-                labelb = tf.slice(self.labelb, [i * batch, 0, 0, 0], [batch, -1, -1, -1])
+                labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
+                                                                   -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
+                labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
                 fast_weight_w, fast_weight_b, lossesb = tf.map_fn(task_metalearn,
                                                                   elems=(inputa, inputb, labela, labelb),
@@ -165,16 +160,18 @@ class MAML:
                 for i in range(self.total_num_au):
                     other_au_subject_weight = {'w1': this_subject_ws[i], 'b1': this_subject_bs[i]}
                     pred_this_au = self.forward(inputb, this_au_subject_weight,
-                                                reuse=reuse)  # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
+                                                reuse=reuse)  # (NK,1,2)
+                    pred_this_au = pred_this_au[:, 0,
+                                   1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1' # (NK,2)
+
                     pred_other_au = self.forward(inputb, other_au_subject_weight,
-                                                 reuse=reuse)  # (num of samples=NK,1=num of au,2=N) -> (num of samples=NK,2=N)
+                                                 reuse=reuse)
+                    pred_other_au = pred_other_au[:, 0,
+                                    1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1'
+
 
                     label_this_au = labelb[:, self.au_idx, :]  # (NK,2)
                     label_other_au = labelb[:, i, :]
-                    label_this_au = tf.reshape(label_this_au,
-                                               [int(label_this_au.shape[0]), 1, int(label_this_au.shape[1])])
-                    label_other_au = tf.reshape(label_other_au,
-                                                [int(label_other_au.shape[0]), 1, int(label_other_au.shape[1])])
 
                     # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                     loss = self.loss_func2(pred_this_au * pred_other_au,
@@ -193,7 +190,7 @@ class MAML:
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
-                labelb = tf.slice(self.labelb, [i * batch, 0, 0, 0], [batch, -1, -1, -1])
+                labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
                 this_au_weights = self.w_mat[i]  # 14*(300*1*2)
                 transposed_w_mat = tf.transpose(self.w_mat, (1, 0, 2, 3, 4))  # 14*8*(300*1*2)
                 this_au_biases = self.b_mat[i]  # 14*(300*1*2)
@@ -250,8 +247,8 @@ class MAML:
         # matrix multiplication with dropout
         z = tf.reduce_sum(var_w * var_x, 1) + var_b
         # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
-        # score = tf.nn.softmax(z)
-        return z
+        score = tf.nn.softmax(z)
+        return score
 
     def getWeightVar(self):
         tf.set_random_seed(FLAGS.weight_seed)
