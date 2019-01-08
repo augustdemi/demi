@@ -218,23 +218,22 @@ class MAML:
         tf.summary.scalar('co_occur_7', self.total_losses2[7])
         tf.summary.scalar('co_occur_total', tf.reduce_sum(self.total_losses2))
 
-
         self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[0])
+            self.total_losses1[0] + self.LAMBDA2 * self.total_losses2[0])
         self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[1])
+            self.total_losses1[1] + self.LAMBDA2 * self.total_losses2[1])
         self.metatrain_op2 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[2])
+            self.total_losses1[2] + self.LAMBDA2 * self.total_losses2[2])
         self.metatrain_op3 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[3])
+            self.total_losses1[3] + self.LAMBDA2 * self.total_losses2[3])
         self.metatrain_op4 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[4])
+            self.total_losses1[4] + self.LAMBDA2 * self.total_losses2[4])
         self.metatrain_op5 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[5])
+            self.total_losses1[5] + self.LAMBDA2 * self.total_losses2[5])
         self.metatrain_op6 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[6])
+            self.total_losses1[6] + self.LAMBDA2 * self.total_losses2[6])
         self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(
-            self.total_losses2[7])
+            self.total_losses1[7] + self.LAMBDA2 * self.total_losses2[7])
         self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1,self.metatrain_op2, self.metatrain_op3,self.metatrain_op4,self.metatrain_op5,self.metatrain_op6, self.metatrain_op7)
 
     def forward_fc(self, inp, weights, reuse=False):
