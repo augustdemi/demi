@@ -153,8 +153,7 @@ class MAML:
             def task_co_occur_loss(inp, reuse=True):
                 inputb, labelb, this_au_subject_w, this_subject_ws, this_au_subject_b, this_subject_bs = inp  # this_au_subject_weight = (300,1,2)  this_subject_weights=(8,300,1,2)
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
-                # labelb = tf.cast(labelb, tf.float32)
-                # labelb = tf.reshape(labelb, [int(labelb.shape[0]), self.total_num_au, int(labelb.shape[1])])
+                labelb = tf.cast(labelb, tf.float32)
 
                 this_au_subject_weight = {'w1': this_au_subject_w, 'b1': this_au_subject_b}
 
