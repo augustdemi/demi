@@ -72,8 +72,10 @@ class MAML:
                 inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
 
-                labela = tf.cast(labela, tf.float32)[:, self.au_idx]  # (NK,2)
+                labela = tf.cast(labela, tf.float32)[:, self.au_idx]  # (NK,1)
+                labela = tf.one_hot(labela, self.num_classes)  # (NK,2)
                 labelb = tf.cast(labelb, tf.float32)[:, self.au_idx]
+                labelb = tf.one_hot(labelb, self.num_classes)  # (NK,2)
 
                 this_w = weights['w1'][:, self.au_idx, :] # weights['w1'] = (300, 8,2)    this_w = (300,2)
                 this_b = weights['b1'][self.au_idx, :]
@@ -82,8 +84,7 @@ class MAML:
                 this_weight = {'w1': this_w, 'b1': this_b}
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
                 task_outputa = self.forward(inputa, this_weight, reuse=reuse)  # (NK, 1, 2)
-                task_outputa = task_outputa[:, 0,
-                               1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1'
+                # task_outputa = task_outputa[:, 0,1] # choose the prob. of ON intensity from the softmax result to compare it with label '1'
                 # ///////////////////////////////////////////////////////////////////////////
                 task_lossa1 = self.loss_func(task_outputa, labela)  # 2,1
                 task_lossa = task_lossa1
@@ -97,8 +98,9 @@ class MAML:
                     zip(this_weight.keys(),
                         [this_weight[key] - self.update_lr * gradients[key] for key in this_weight.keys()]))
                 for j in range(num_updates - 1):
+                    task_outputa = self.forward(inputa, this_weight, reuse=reuse)  # (NK, 1, 2)
                     # ///////////////////////////////////////////////////////////////////////////
-                    loss1 = self.loss_func(self.forward(inputa, fast_weights, reuse=True), labela)
+                    loss1 = self.loss_func(task_outputa, labela)
                     loss = loss1
                     # ///////////////////////////////////////////////////////////////////////////
 
@@ -113,8 +115,7 @@ class MAML:
                                              fast_weights.keys()]))
 
                 outputb = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
-                outputb = outputb[:, 0,
-                          1]  ########### choose the prob. of ON intensity from the softmax result to compare it with label '1'
+                # outputb = outputb[:, 0,1] # choose the prob. of ON intensity from the softmax result to compare it with label '1'
                 task_lossb = self.loss_func(outputb, labelb)
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_lossb]
                 return task_output
