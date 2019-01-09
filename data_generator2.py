@@ -81,20 +81,6 @@ class DataGenerator(object):
                 inputb_this_subj.append([float(k) for k in on_imgs[2 * i + 1]])
                 labela_this_subj.append(on_labels[2 * i])
                 labelb_this_subj.append(on_labels[2 * i + 1])
-            # labela_this_subj = [0] * half_off_img
-            # labela_this_subj.extend([1] * half_on_img)
-            # labelb_this_subj = [0] * half_off_img
-            # labelb_this_subj.extend([1] * half_on_img)
-
-            # np.random.seed(1)
-            # np.random.shuffle(inputa_this_subj)
-            # np.random.seed(1)
-            # np.random.shuffle(labela_this_subj)
-            #
-            # np.random.seed(2)
-            # np.random.shuffle(inputb_this_subj)
-            # np.random.seed(2)
-            # np.random.shuffle(labelb_this_subj)
 
             inputa_features.extend(inputa_this_subj)
             inputb_features.extend(inputb_this_subj)
@@ -128,6 +114,9 @@ class DataGenerator(object):
                                                [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
                                                 self.weight_dim])
 
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+
         labelas = np.array(labelas) # (aus*subjects*K*2 = num of task * 2K, au)
         labelbs = np.array(labelbs)
         labelas_tensor = tf.convert_to_tensor(labelas)
@@ -138,5 +127,11 @@ class DataGenerator(object):
         labelbs_tensor = tf.reshape(labelbs_tensor,
                                     [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
                                      self.total_num_au])
+
+        print("label b shape ----------------------------------------------------------------------------------")
+
+        print(sess.run(labelbs_tensor).shape)
+        print("------------------------------------------------------------------------------------------------")
+        print(sess.run(labelbs_tensor))
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor

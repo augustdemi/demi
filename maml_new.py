@@ -72,10 +72,23 @@ class MAML:
                 inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
 
-                labela = tf.cast(labela, tf.float32)[:, self.au_idx]  # (NK,1)
-                labela = tf.one_hot(labela, self.num_classes)  # (NK,2)
-                labelb = tf.cast(labelb, tf.float32)[:, self.au_idx]
+                sess = tf.Session()
+                sess.run(tf.global_variables_initializer())
+                labela = tf.one_hot(labela, self.num_classes)  # (NK,8,2)
+                labela = tf.cast(labela, tf.float32)[:, self.au_idx, :]  # (NK,1)
+                labela = tf.reshape(labela, [int(labela.shape[0]), 1, self.num_classes])  # (NK,1,N)
+
                 labelb = tf.one_hot(labelb, self.num_classes)  # (NK,2)
+                print(
+                    "label b one hot shape ----------------------------------------------------------------------------------")
+                print(sess.run(labelb).shape)
+                labelb = tf.cast(labelb, tf.float32)[:, self.au_idx, :]
+                labelb = tf.reshape(labelb, [int(labela.shape[0]), 1, self.num_classes])  # (NK,1,N)
+                print(
+                    "final label b shape ----------------------------------------------------------------------------------")
+                print(sess.run(labelb).shape)
+
+
 
                 this_w = weights['w1'][:, self.au_idx, :] # weights['w1'] = (300, 8,2)    this_w = (300,2)
                 this_b = weights['b1'][self.au_idx, :]
@@ -84,7 +97,15 @@ class MAML:
                 this_weight = {'w1': this_w, 'b1': this_b}
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
                 task_outputa = self.forward(inputa, this_weight, reuse=reuse)  # (NK, 1, 2)
-                # task_outputa = task_outputa[:, 0,1] # choose the prob. of ON intensity from the softmax result to compare it with label '1'
+                testtest = task_outputa[:, 0,
+                           1]  # choose the prob. of ON intensity from the softmax result to compare it with label '1'
+                print(
+                    "testtest shape ----------------------------------------------------------------------------------")
+                print(sess.run(testtest).shape)
+                print(sess.run(testtest))
+
+                print(
+                    "------------------------------------------------------------------------------------------------")
                 # ///////////////////////////////////////////////////////////////////////////
                 task_lossa1 = self.loss_func(task_outputa, labela)  # 2,1
                 task_lossa = task_lossa1
