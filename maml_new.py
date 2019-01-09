@@ -143,6 +143,7 @@ class MAML:
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
                 ###########################################################
+                labelb = labelb[0]
                 labelb = tf.one_hot(labelb, self.num_classes)  # (NK,2)
                 print(
                     "label b one hot shape ----------------------------------------------------------------------------------")
@@ -153,6 +154,10 @@ class MAML:
                     "final label b shape ----------------------------------------------------------------------------------")
                 print(sess.run(labelb).shape)
 
+                inputa = inputa[0]
+                print(
+                    "inputa shape ----------------------------------------------------------------------------------")
+                print(sess.run(inputa).shape)
                 inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
 
                 this_w = weights['w1'][:, self.au_idx, :]  # weights['w1'] = (300, 8,2)    this_w = (300,2)
