@@ -209,13 +209,17 @@ class MAML:
         self.total_losses1 = [tf.reduce_sum(self.ce_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
                               range(self.total_num_au)]
 
-        tf.summary.scalar('cross_entropy', self.total_losses1[0])
+
 
         # 8*14개의 all_co_occur_losses에서, 각 au별 loss를 구함 by subject을 통틀어 합해버림으로써
         self.total_losses2 = [tf.reduce_sum(all_co_occur_losses[j]) / tf.to_float(FLAGS.meta_batch_size) for j in
                               range(self.total_num_au)]
+        tf.summary.scalar('cross_entropy_0', self.total_losses1[0])
+        tf.summary.scalar('cross_entropy_5', self.total_losses1[5])
+        tf.summary.scalar('cross_entropy_7', self.total_losses1[7])
+        tf.summary.scalar('cross_entropy_total', tf.reduce_sum(self.total_losses1))
         tf.summary.scalar('co_occur_0', self.total_losses2[0])
-        tf.summary.scalar('co_occur_1', self.total_losses2[1])
+        tf.summary.scalar('co_occur_5', self.total_losses2[5])
         tf.summary.scalar('co_occur_7', self.total_losses2[7])
         tf.summary.scalar('co_occur_total', tf.reduce_sum(self.total_losses2))
 
