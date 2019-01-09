@@ -64,7 +64,8 @@ class MAML:
             lossesa, outputas, lossesb, outputbs = [], [], [], []
 
             num_updates = FLAGS.num_updates  # TODO max(self.test_num_updates, FLAGS.num_updates)
-
+            sess = tf.Session()
+            sess.run(tf.global_variables_initializer())
 
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
@@ -72,8 +73,6 @@ class MAML:
                 inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
 
-                sess = tf.Session()
-                sess.run(tf.global_variables_initializer())
                 labela = tf.one_hot(labela, self.num_classes)  # (NK,8,2)
                 labela = tf.cast(labela, tf.float32)[:, self.au_idx, :]  # (NK,1)
                 labela = tf.reshape(labela, [int(labela.shape[0]), 1, self.num_classes])  # (NK,1,N)
