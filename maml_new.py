@@ -10,7 +10,7 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from utils import mse, xent_sig, conv_block, normalize
+from utils import mse, xent, conv_block, normalize
 
 FLAGS = flags.FLAGS
 
@@ -31,7 +31,7 @@ class MAML:
         self.LAMBDA2 = FLAGS.lambda2
         self.au_idx = -1
         if FLAGS.datasource == 'disfa':
-            self.loss_func = xent_sig
+            self.loss_func = xent
             self.loss_func2 = mse
             self.classification = True
             self.forward = self.forward_fc
