@@ -144,6 +144,8 @@ class MAML:
 
                 ###########################################################
                 labelb = labelb[0]
+                print('---+++')
+                print(sess.run(labelb[:, 2]).shape)
                 labelb = tf.one_hot(labelb, self.num_classes)  # (NK,2)
                 print(
                     "label b one hot shape ----------------------------------------------------------------------------------")
@@ -209,13 +211,13 @@ class MAML:
                     other_au_subject_weight = {'w1': this_subject_ws[i], 'b1': this_subject_bs[i]}
                     pred_this_au = self.forward(inputb, this_au_subject_weight,
                                                 reuse=reuse)  # (NK,1,2)
+                    pred_this_au = tf.nn.softmax(pred_this_au)
                     pred_this_au = pred_this_au[:, 0,
-                                   1]  ### choose the prob. of ON intensity from the softmax result to compare it with label '1' # (NK,2)
+                                   1]  ### choose the prob. of ON intensity from the softmax result to compare it with label '1' # (NK,)
 
-                    pred_other_au = self.forward(inputb, other_au_subject_weight,
-                                                 reuse=reuse)
-                    pred_other_au = pred_other_au[:, 0,
-                                    1]  ### choose the prob. of ON intensity from the softmax result to compare it with label '1'
+                    pred_other_au = self.forward(inputb, other_au_subject_weight, reuse=reuse)
+                    pred_other_au = tf.nn.softmax(pred_other_au)
+                    pred_other_au = pred_other_au[:, 0, 1]
 
                     label_this_au = labelb[:, self.au_idx]  # (NK,2)
                     label_other_au = labelb[:, i]
