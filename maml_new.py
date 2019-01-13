@@ -64,8 +64,6 @@ class MAML:
             lossesa, outputas, lossesb, outputbs = [], [], [], []
 
             num_updates = FLAGS.num_updates  # TODO max(self.test_num_updates, FLAGS.num_updates)
-            sess = tf.Session()
-            sess.run(tf.global_variables_initializer())
 
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
@@ -141,49 +139,6 @@ class MAML:
                 labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
                                                                    -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
-
-                ###########################################################
-                labelb = labelb[0]
-                print('---+++')
-                print(sess.run(labelb[:, 2]).shape)
-                labelb = tf.one_hot(labelb, self.num_classes)  # (NK,2)
-                print(
-                    "label b one hot shape ----------------------------------------------------------------------------------")
-                print(sess.run(labelb).shape)
-                labelb = tf.cast(labelb, tf.float32)[:, self.au_idx, :]
-                labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, self.num_classes])  # (NK,1,N)
-                print(
-                    "final label b shape ----------------------------------------------------------------------------------")
-                print(sess.run(labelb).shape)
-
-                inputa = inputa[0]
-                print(
-                    "inputa shape ----------------------------------------------------------------------------------")
-                print(sess.run(inputa).shape)
-                inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
-
-                this_w = weights['w1'][:, self.au_idx, :]  # weights['w1'] = (300, 8,2)    this_w = (300,2)
-                this_b = weights['b1'][self.au_idx, :]
-                this_w = tf.reshape(this_w, [int(this_w.shape[0]), 1, int(this_w.shape[1])])  # (300,1,2)
-                this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
-                this_weight = {'w1': this_w, 'b1': this_b}
-                task_outputa = self.forward(inputa, this_weight, reuse=True)  # (NK, 1, 2)
-                task_outputa = tf.nn.softmax(task_outputa)
-                print('befffff----------------------------')
-                print(sess.run(task_outputa).shape)
-                print(sess.run(task_outputa))
-                testtest = task_outputa[:, 0,
-                           1]  # choose the prob. of ON intensity from the softmax result to compare it with label '1' (NK,)
-                print(
-                    "testtest shape ----------------------------------------------------------------------------------")
-                print(sess.run(testtest).shape)
-                print(sess.run(testtest))
-
-                print(
-                    "------------------------------------------------------------------------------------------------")
-                ###########################################################
-
-
                 fast_weight_w, fast_weight_b, lossesb = tf.map_fn(task_metalearn,
                                                                   elems=(inputa, inputb, labela, labelb),
                                                                   dtype=out_dtype_task_metalearn,
@@ -219,7 +174,7 @@ class MAML:
                     pred_other_au = tf.nn.softmax(pred_other_au)
                     pred_other_au = pred_other_au[:, 0, 1]
 
-                    label_this_au = labelb[:, self.au_idx]  # (NK,2)
+                    label_this_au = labelb[:, self.au_idx]  # (NK,)
                     label_other_au = labelb[:, i]
 
                     # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
