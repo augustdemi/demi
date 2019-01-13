@@ -166,8 +166,12 @@ class MAML:
                 this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
                 this_weight = {'w1': this_w, 'b1': this_b}
                 task_outputa = self.forward(inputa, this_weight, reuse=True)  # (NK, 1, 2)
+                task_outputa = tf.nn.softmax(task_outputa)
+                print('befffff----------------------------')
+                print(sess.run(task_outputa).shape)
+                print(sess.run(task_outputa))
                 testtest = task_outputa[:, 0,
-                           1]  # choose the prob. of ON intensity from the softmax result to compare it with label '1'
+                           1]  # choose the prob. of ON intensity from the softmax result to compare it with label '1' (NK,)
                 print(
                     "testtest shape ----------------------------------------------------------------------------------")
                 print(sess.run(testtest).shape)
