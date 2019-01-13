@@ -79,7 +79,7 @@ class MAML:
 
                 labelb = tf.one_hot(labelb, self.num_classes)  # (NK,2)
                 labelb = tf.cast(labelb, tf.float32)[:, self.au_idx, :]
-                labelb = tf.reshape(labelb, [int(labela.shape[0]), 1, self.num_classes])  # (NK,1,N)
+                labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, self.num_classes])  # (NK,1,N)
 
 
 
@@ -149,7 +149,7 @@ class MAML:
                     "label b one hot shape ----------------------------------------------------------------------------------")
                 print(sess.run(labelb).shape)
                 labelb = tf.cast(labelb, tf.float32)[:, self.au_idx, :]
-                labelb = tf.reshape(labelb, [int(labela.shape[0]), 1, self.num_classes])  # (NK,1,N)
+                labelb = tf.reshape(labelb, [int(labelb.shape[0]), 1, self.num_classes])  # (NK,1,N)
                 print(
                     "final label b shape ----------------------------------------------------------------------------------")
                 print(sess.run(labelb).shape)
