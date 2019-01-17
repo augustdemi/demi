@@ -178,9 +178,8 @@ class MAML:
                     label_other_au = labelb[:, i]
 
                     # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
-                    loss = self.loss_func2((-1 + 2 * pred_this_au) * (-1 + 2 * pred_other_au),
-                                           (-1 + 2 * label_this_au) * (
-                                           -1 + 2 * label_other_au))  # (num of samples=NK,1=num of au,2=N)
+                    loss = self.loss_func2(pred_this_au * pred_other_au,
+                                           label_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
 
                     losses.append(loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
 
