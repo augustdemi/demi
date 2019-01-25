@@ -41,4 +41,5 @@ for subject in subjects:
 
 print('>>>>>>>> total:', occur)
 
-np.array(list(occur.values())) / occur[pau]
+ratio = np.array(list(occur.values())) / occur[pau]
+print(ratio)
