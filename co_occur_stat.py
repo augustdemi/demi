@@ -8,7 +8,12 @@ label_root_path = '/home/ml1323/project/robert_data/DISFA/label/'
 subjects = os.listdir(label_root_path)
 binary_intensity = lambda lab: 1 if lab > 0 else 0
 
+occur = {}
+for au in aus:
+    occur.update({au: 0})
+
 for subject in subjects:
+    print('===============subject:', subject)
     pau = 'au1'
     label_path = os.path.join(label_root_path, subject, subject + '_' + pau + '.txt')
     with open(label_path) as f:
@@ -17,9 +22,8 @@ for subject in subjects:
         on_intensity_frame_indices = [line.split(",")[0] for line in lines if
                                       int(line.split(",")[1].split("\n")[0]) > 0]
 
-    occur = {}
+    print('-- num of on_intensity of ', pau, ': ', len(on_intensity_frame_indices))
     for au in aus:
-        print(au)
         if au.startswith(pau):
             continue
         else:
@@ -30,5 +34,7 @@ for subject in subjects:
                 for line in lines:
                     if (line.split(",")[0] in on_intensity_frame_indices) and (
                         int(line.split(",")[1].split("\n")[0]) > 0): num_on_intensities += 1
-                occur.update({au: num_on_intensities})
+                occur[au] += num_on_intensities
     print(occur)
+
+print('>>>>>>>> total:', occur)
