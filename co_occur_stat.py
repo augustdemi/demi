@@ -10,7 +10,7 @@ binary_intensity = lambda lab: 1 if lab > 0 else 0
 
 for subject in subjects:
     pau = 'au1'
-    label_path = os.path.join(label_root_path, subject, subject + '_' + au + '.txt')
+    label_path = os.path.join(label_root_path, subject, subject + '_' + pau + '.txt')
     with open(label_path) as f:
         lines = np.array(f.readlines())
         # get the frame indices whose intensity is greater than 0
