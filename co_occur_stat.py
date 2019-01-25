@@ -23,7 +23,8 @@ for subject in subjects:
                                       int(line.split(",")[1].split("\n")[0]) > 0]
 
     print('-- num of on_intensity: ', len(on_intensity_frame_indices))
-    print(on_intensity_frame_indices)
+    # print(on_intensity_frame_indices)
+    occur[pau] += len(on_intensity_frame_indices)
     for au in aus:
         if au.startswith(pau):
             continue
@@ -39,3 +40,5 @@ for subject in subjects:
     print(occur)
 
 print('>>>>>>>> total:', occur)
+
+np.array(list(occur.values())) / occur[pau]
