@@ -249,8 +249,8 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
     with open(sample_info_save_path + current_au + '.off' + str(len(off_random_frames_n_features)) + '.on' + str(
             len(on_random_frames_n_features)) + ".csv", 'w') as f:
-        total_frames = [int(elt[0].split('frame')[1]) + 1 for elt in on_random_frames_n_features]
-        total_frames.extend([int(elt[0].split('frame')[1]) + 1 for elt in off_random_frames_n_features])
+        total_frames = [elt[0].split('frame')[1] for elt in on_random_frames_n_features]
+        total_frames.extend([elt[0].split('frame')[1] for elt in off_random_frames_n_features])
         print(total_frames)
         f.write(','.join(total_frames))
 
