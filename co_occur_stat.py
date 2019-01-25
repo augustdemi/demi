@@ -13,7 +13,7 @@ for au in aus:
     occur.update({au: 0})
 
 for subject in subjects:
-    print('===============subject:', subject)
+    print('=================================================================subject:', subject)
     pau = 'au1'
     label_path = os.path.join(label_root_path, subject, subject + '_' + pau + '.txt')
     with open(label_path) as f:
@@ -22,7 +22,8 @@ for subject in subjects:
         on_intensity_frame_indices = [line.split(",")[0] for line in lines if
                                       int(line.split(",")[1].split("\n")[0]) > 0]
 
-    print('-- num of on_intensity of ', pau, ': ', len(on_intensity_frame_indices))
+    print('-- num of on_intensity: ', len(on_intensity_frame_indices))
+    print(on_intensity_frame_indices)
     for au in aus:
         if au.startswith(pau):
             continue
