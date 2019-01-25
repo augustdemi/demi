@@ -178,6 +178,10 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     subject = kshot_path.split('/')[-1]
     current_au = kshot_path.split('/')[-2]
     sample_info_save_path = '/home/ml1323/project/robert_code/new/sample_info/' + subject + '/'
+
+    if not os.path.exists(sample_info_save_path):
+        os.makedirs(sample_info_save_path)
+
     print("============================================")
     print('kshot_path: ', kshot_path)
     print("subject: ", subject)
