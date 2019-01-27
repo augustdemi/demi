@@ -101,10 +101,11 @@ class MAML:
                     other_w = tf.reshape(other_w, [int(other_w.shape[0]), 1, int(other_w.shape[1])])  # (300,1,2)
                     other_b = tf.reshape(other_b, [1, int(other_b.shape[0])])
                     other_weight = {'w1': other_w, 'b1': other_b}
-                    pred_other_au = self.forward(input, other_weight, reuse=reuse)
-                    pred_other_au = tf.nn.softmax(pred_other_au)
-                    pred_other_au = tf.cast(tf.argmax(pred_other_au[:, 0], 1), tf.float32)
+                    # pred_other_au = self.forward(input, other_weight, reuse=reuse)
+                    # pred_other_au = tf.nn.softmax(pred_other_au)
+                    # pred_other_au = tf.cast(tf.argmax(pred_other_au[:, 0], 1), tf.float32)
                     label_other_au = tf.cast(label[:, i], tf.float32)
+                    pred_other_au = label_other_au
                     return [pred_other_au, label_other_au]
 
                 task_co_lossa = []
