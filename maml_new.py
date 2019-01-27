@@ -92,7 +92,7 @@ class MAML:
 
                 ##### for co-occur loss ####
                 pred_this_au = tf.nn.softmax(task_outputa)
-                pred_this_au = pred_this_au[:, 0, 1]  ### choose the prob. of ON intensity from the softmax result
+                pred_this_au = tf.cast(tf.argmax(pred_this_au[:, 0], 1), tf.float32)  ### get predicted label
                 labela_this_au = tf.cast(labela[:, self.au_idx], tf.float32)  # (NK,)
 
                 def predict_other_au(i, input, label):
@@ -103,7 +103,7 @@ class MAML:
                     other_weight = {'w1': other_w, 'b1': other_b}
                     pred_other_au = self.forward(input, other_weight, reuse=reuse)
                     pred_other_au = tf.nn.softmax(pred_other_au)
-                    pred_other_au = pred_other_au[:, 0, 1]
+                    pred_other_au = tf.cast(tf.argmax(pred_other_au[:, 0], 1), tf.float32)
                     label_other_au = tf.cast(label[:, i], tf.float32)
                     return [pred_other_au, label_other_au]
 
@@ -154,7 +154,7 @@ class MAML:
                 ### for co-occur loss ###
                 labelb_this_au = tf.cast(labelb[:, self.au_idx], tf.float32)  # (NK,)
                 predb_this_au = tf.nn.softmax(outputb)
-                predb_this_au = predb_this_au[:, 0, 1]
+                predb_this_au = tf.cast(tf.argmax(predb_this_au[:, 0], 1), tf.float32)
                 task_co_lossb = []
                 for i in range(self.total_num_au):
                     predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
@@ -185,11 +185,12 @@ class MAML:
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
 
+        # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [
             tf.reduce_sum(self.task_ce_losses[k] + self.LAMBDA2 * self.task_co_losses[k]) / tf.to_float(
                 FLAGS.meta_batch_size) for k in range(self.total_num_au)]
-        ## Performance & Optimization
 
+        ## Performance & Optimization
         tf.summary.scalar('CE_AU1', tf.reduce_sum(self.task_ce_losses[0]) / tf.to_float(FLAGS.meta_batch_size))
         tf.summary.scalar('CE_AU2', tf.reduce_sum(self.task_ce_losses[1]) / tf.to_float(FLAGS.meta_batch_size))
         tf.summary.scalar('CE_AU4', tf.reduce_sum(self.task_ce_losses[2]) / tf.to_float(FLAGS.meta_batch_size))
