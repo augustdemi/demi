@@ -93,7 +93,7 @@ class MAML:
                 ##### for co-occur loss ####
                 pred_this_au = tf.nn.softmax(task_outputa)
                 pred_this_au = pred_this_au[:, 0, 1]  ### choose the prob. of ON intensity from the softmax result
-                labela_this_au = labela[:, self.au_idx]  # (NK,)
+                labela_this_au = tf.cast(labela[:, self.au_idx], tf.float32)  # (NK,)
 
                 def predict_other_au(i, input, label):
                     other_w = weights['w1'][:, i, :]  # weights['w1'] = (300, 8,2)    this_w = (300,2)
@@ -152,7 +152,7 @@ class MAML:
                 outputb = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
                 task_ce_lossb = self.loss_func(outputb, labelb_ce)
                 ### for co-occur loss ###
-                labelb_this_au = labelb[:, self.au_idx]  # (NK,)
+                labelb_this_au = tf.cast(labelb[:, self.au_idx], tf.float32)  # (NK,)
                 predb_this_au = tf.nn.softmax(outputb)
                 predb_this_au = predb_this_au[:, 0, 1]
                 task_co_lossb = []
