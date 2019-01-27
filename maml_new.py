@@ -186,7 +186,7 @@ class MAML:
                 self.task_co_losses.append(co_lossesb)  # 8*14
 
         self.total_losses = [
-            tf.reduce_sum(self.task_ce_losses(k) + self.LAMBDA2 * self.task_co_losses(k)) / tf.to_float(
+            tf.reduce_sum(self.task_ce_losses[k] + self.LAMBDA2 * self.task_co_losses[k]) / tf.to_float(
                 FLAGS.meta_batch_size) for k
             in range(self.total_num_au)]
         ## Performance & Optimization
