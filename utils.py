@@ -176,12 +176,6 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
     subject = kshot_path.split('/')[-1]
-    current_au = kshot_path.split('/')[-2]
-    sample_info_save_path = '/home/ml1323/project/robert_code/new/sample_info/' + subject + '/'
-
-    if not os.path.exists(sample_info_save_path):
-        os.makedirs(sample_info_save_path)
-
     print("============================================")
     print('kshot_path: ', kshot_path)
     print("subject: ", subject)
@@ -247,12 +241,6 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     print("label: ", labels[1])
     print('num of on_images: ', len(on_random_frames_n_features))
     print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
-    with open(sample_info_save_path + current_au + '.off' + str(len(off_random_frames_n_features)) + '.on' + str(
-            len(on_random_frames_n_features)) + ".csv", 'w') as f:
-        total_frames = [elt[0].split('frame')[1] for elt in on_random_frames_n_features]
-        total_frames.extend([elt[0].split('frame')[1] for elt in off_random_frames_n_features])
-        print(total_frames)
-        f.write(','.join(total_frames))
 
     off_frames_idx = [int(elt[0].split('frame')[1]) for elt in off_random_frames_n_features]
     on_frames_idx = [int(elt[0].split('frame')[1]) for elt in on_random_frames_n_features]
