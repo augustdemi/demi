@@ -200,7 +200,7 @@ class MAML:
         tf.summary.scalar('CE_AU26', tf.reduce_sum(self.task_ce_losses[7]) / tf.to_float(FLAGS.meta_batch_size))
         tf.summary.scalar('CE_total', tf.reduce_sum(
             [tf.reduce_sum(self.task_ce_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
-             range(self.total_num_au)]) / tf.to_float(FLAGS.total_num_au))
+             range(self.total_num_au)]) / tf.to_float(self.total_num_au))
 
         tf.summary.scalar('co_occur_AU1', tf.reduce_sum(self.task_co_losses[0]) / tf.to_float(FLAGS.meta_batch_size))
         tf.summary.scalar('co_occur_AU2', tf.reduce_sum(self.task_co_losses[1]) / tf.to_float(FLAGS.meta_batch_size))
@@ -212,7 +212,7 @@ class MAML:
         tf.summary.scalar('co_occur_AU26', tf.reduce_sum(self.task_co_losses[7]) / tf.to_float(FLAGS.meta_batch_size))
         tf.summary.scalar('co_occur_total', tf.reduce_sum(
             [tf.reduce_sum(self.task_co_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
-             range(self.total_num_au)]) / tf.to_float(FLAGS.total_num_au))
+             range(self.total_num_au)]) / tf.to_float(self.total_num_au))
 
         tf.summary.scalar('co+ce_AU1', self.total_losses[0])
         tf.summary.scalar('co+ce_AU2', self.total_losses[1])
@@ -222,7 +222,7 @@ class MAML:
         tf.summary.scalar('co+ce_AU12', self.total_losses[5])
         tf.summary.scalar('co+ce_AU25', self.total_losses[6])
         tf.summary.scalar('co+ce_AU26', self.total_losses[7])
-        tf.summary.scalar('co+ce_total', tf.reduce_sum(self.total_losses) / tf.to_float(FLAGS.total_num_au))
+        tf.summary.scalar('co+ce_total', tf.reduce_sum(self.total_losses) / tf.to_float(self.total_num_au))
 
         self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[0])
         self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[1])
