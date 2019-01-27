@@ -187,28 +187,42 @@ class MAML:
 
         self.total_losses = [
             tf.reduce_sum(self.task_ce_losses[k] + self.LAMBDA2 * self.task_co_losses[k]) / tf.to_float(
-                FLAGS.meta_batch_size) for k
-            in range(self.total_num_au)]
+                FLAGS.meta_batch_size) for k in range(self.total_num_au)]
         ## Performance & Optimization
 
-        tf.summary.scalar('CE_AU1', self.task_ce_losses[0])
-        tf.summary.scalar('CE_AU2', self.task_ce_losses[1])
-        tf.summary.scalar('CE_AU4', self.task_ce_losses[2])
-        tf.summary.scalar('CE_AU6', self.task_ce_losses[3])
-        tf.summary.scalar('CE_AU9', self.task_ce_losses[4])
-        tf.summary.scalar('CE_AU12', self.task_ce_losses[5])
-        tf.summary.scalar('CE_AU25', self.task_ce_losses[6])
-        tf.summary.scalar('CE_AU26', self.task_ce_losses[7])
-        tf.summary.scalar('CE_total', tf.reduce_sum(self.task_ce_losses))
-        tf.summary.scalar('co_occur_AU1', self.task_co_losses[0])
-        tf.summary.scalar('co_occur_AU2', self.task_co_losses[1])
-        tf.summary.scalar('co_occur_AU4', self.task_co_losses[2])
-        tf.summary.scalar('co_occur_AU6', self.task_co_losses[3])
-        tf.summary.scalar('co_occur_AU9', self.task_co_losses[4])
-        tf.summary.scalar('co_occur_AU12', self.task_co_losses[5])
-        tf.summary.scalar('co_occur_AU25', self.task_co_losses[6])
-        tf.summary.scalar('co_occur_AU26', self.task_co_losses[7])
-        tf.summary.scalar('co_occur_total', tf.reduce_sum(self.task_co_losses))
+        tf.summary.scalar('CE_AU1', tf.reduce_sum(self.task_ce_losses[0]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_AU2', tf.reduce_sum(self.task_ce_losses[1]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_AU4', tf.reduce_sum(self.task_ce_losses[2]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_AU6', tf.reduce_sum(self.task_ce_losses[3]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_AU9', tf.reduce_sum(self.task_ce_losses[4]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_AU12', tf.reduce_sum(self.task_ce_losses[5]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_AU25', tf.reduce_sum(self.task_ce_losses[6]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_AU26', tf.reduce_sum(self.task_ce_losses[7]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('CE_total', tf.reduce_sum(
+            [tf.reduce_sum(self.task_ce_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
+             range(self.total_num_au)]) / tf.to_float(FLAGS.total_num_au))
+
+        tf.summary.scalar('co_occur_AU1', tf.reduce_sum(self.task_co_losses[0]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_AU2', tf.reduce_sum(self.task_co_losses[1]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_AU4', tf.reduce_sum(self.task_co_losses[2]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_AU6', tf.reduce_sum(self.task_co_losses[3]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_AU9', tf.reduce_sum(self.task_co_losses[4]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_AU12', tf.reduce_sum(self.task_co_losses[5]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_AU25', tf.reduce_sum(self.task_co_losses[6]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_AU26', tf.reduce_sum(self.task_co_losses[7]) / tf.to_float(FLAGS.meta_batch_size))
+        tf.summary.scalar('co_occur_total', tf.reduce_sum(
+            [tf.reduce_sum(self.task_co_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
+             range(self.total_num_au)]) / tf.to_float(FLAGS.total_num_au))
+
+        tf.summary.scalar('co+ce_AU1', self.total_losses[0])
+        tf.summary.scalar('co+ce_AU2', self.total_losses[1])
+        tf.summary.scalar('co+ce_AU4', self.total_losses[2])
+        tf.summary.scalar('co+ce_AU6', self.total_losses[3])
+        tf.summary.scalar('co+ce_AU9', self.total_losses[4])
+        tf.summary.scalar('co+ce_AU12', self.total_losses[5])
+        tf.summary.scalar('co+ce_AU25', self.total_losses[6])
+        tf.summary.scalar('co+ce_AU26', self.total_losses[7])
+        tf.summary.scalar('co+ce_total', tf.reduce_sum(self.total_losses) / tf.to_float(FLAGS.total_num_au))
 
         self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[0])
         self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[1])
