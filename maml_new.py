@@ -104,7 +104,7 @@ class MAML:
                     pred_other_au = self.forward(input, other_weight, reuse=reuse)
                     pred_other_au = tf.nn.softmax(pred_other_au)
                     pred_other_au = pred_other_au[:, 0, 1]
-                    label_other_au = label[:, i]
+                    label_other_au = tf.cast(label[:, i], tf.float32)
                     return [pred_other_au, label_other_au]
 
                 task_co_lossa = []
