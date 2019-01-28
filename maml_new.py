@@ -188,7 +188,7 @@ class MAML:
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
                 print('--------------------inputb of au', i)
-                print(sess.run(self.inputb))
+                print(inputb.shape)
                 print(sess.run(self.labelb))
 
                 fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, test_other_au = tf.map_fn(
