@@ -114,8 +114,6 @@ class DataGenerator(object):
                                                [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
                                                 self.weight_dim])
 
-        sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
 
         labelas = np.array(labelas) # (aus*subjects*K*2 = num of task * 2K, au)
         labelbs = np.array(labelbs)
@@ -128,10 +126,5 @@ class DataGenerator(object):
                                     [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
                                      self.total_num_au])
 
-        print("label b shape ----------------------------------------------------------------------------------")
-
-        print(sess.run(labelbs_tensor).shape)
-        print("------------------------------------------------------------------------------------------------")
-        print(sess.run(labelbs_tensor))
 
         return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
