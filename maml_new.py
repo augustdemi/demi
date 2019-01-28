@@ -116,6 +116,7 @@ class MAML:
                                            labela_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
                     task_co_lossa.append(
                         loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
+                test = task_co_lossa
                 task_co_lossa = tf.reduce_sum(task_co_lossa) / self.total_num_au
                 task_lossa = task_ce_lossa + self.LAMBDA2 * task_co_lossa
 
@@ -165,7 +166,7 @@ class MAML:
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
-                               task_co_lossb[0]]
+                               test[0]]
                 return task_output
 
             out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32]
