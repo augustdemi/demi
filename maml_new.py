@@ -88,7 +88,7 @@ class MAML:
                 task_outputa = self.forward(inputa, this_weight, reuse=reuse)  # (NK, 1, 2)
 
                 ##### for cross-entropy loss ####
-                task_ce_lossa = self.loss_func(task_outputa, labela_ce)  # 2,1
+                task_ce_lossa = self.loss_func(task_outputa, labela_ce)[:, 0]  # 2,1
 
                 ##### for co-occur loss ####
                 pred_this_au = tf.nn.softmax(task_outputa)
@@ -117,7 +117,7 @@ class MAML:
                     task_co_lossa.append(
                         loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
                 test = task_co_lossa
-                task_co_lossa = tf.reduce_sum(task_co_lossa) / self.total_num_au
+                task_co_lossa = tf.reduce_sum(task_co_lossa, 0) / self.total_num_au
                 task_lossa = task_ce_lossa + self.LAMBDA2 * task_co_lossa
 
                 grads = tf.gradients(task_lossa, list(this_weight.values()))  # 2000,1,2
@@ -202,6 +202,7 @@ class MAML:
         print(self.task_co_losses[0].shape)
         print(self.task_total_losses[0].shape)
         print(self.total_losses[0].shape)
+        print(self.test[0].shape)
         print('----------------------------------------')
 
 
