@@ -93,26 +93,26 @@ class MAML:
 
                 ##### for co-occur loss ####
                 pred_this_au = tf.nn.softmax(task_outputa)
-                pred_this_au = tf.cast(tf.argmax(pred_this_au[:, 0], 1), tf.float32)  ### get predicted label
+                pred_this_au = pred_this_au[:, 0, 1]
+                # pred_this_au = tf.cast(tf.argmax(pred_this_au[:, 0], 1), tf.float32)  ### get predicted label
                 labela_this_au = tf.cast(labela[:, self.au_idx], tf.float32)  # (NK,)
 
                 def predict_other_au(i, input, label):
-                    # other_w = weights['w1'][:, i, :]  # weights['w1'] = (300, 8,2)    this_w = (300,2)
-                    # other_b = weights['b1'][i, :]
-                    # other_w = tf.reshape(other_w, [int(other_w.shape[0]), 1, int(other_w.shape[1])])  # (300,1,2)
-                    # other_b = tf.reshape(other_b, [1, int(other_b.shape[0])])
-                    # other_weight = {'w1': other_w, 'b1': other_b}
-                    # pred_other_au = self.forward(input, other_weight, reuse=reuse)
-                    # pred_other_au = tf.nn.softmax(pred_other_au)
+                    other_w = weights['w1'][:, i, :]  # weights['w1'] = (300, 8,2)    this_w = (300,2)
+                    other_b = weights['b1'][i, :]
+                    other_w = tf.reshape(other_w, [int(other_w.shape[0]), 1, int(other_w.shape[1])])  # (300,1,2)
+                    other_b = tf.reshape(other_b, [1, int(other_b.shape[0])])
+                    other_weight = {'w1': other_w, 'b1': other_b}
+                    pred_other_au = self.forward(input, other_weight, reuse=reuse)
+                    pred_other_au = tf.nn.softmax(pred_other_au)
+                    pred_other_au = pred_other_au[:, 0, 1]
                     # pred_other_au = tf.cast(tf.argmax(pred_other_au[:, 0], 1), tf.float32)
                     label_other_au = tf.cast(label[:, i], tf.float32)
-                    pred_other_au = tf.cast(label[:, i], tf.float32)
                     return [pred_other_au, label_other_au]
 
                 task_co_lossa = []
                 for i in range(self.total_num_au):
-                    pred_other_au, label_other_au = tf.cast(labela[:, i], tf.float32), tf.cast(labela[:, i],
-                                                                                               tf.float32)
+                    pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
 
                     loss = self.loss_func2(pred_this_au * pred_other_au,
                                            labela_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
@@ -134,8 +134,7 @@ class MAML:
                     task_ce_loss = self.loss_func(self.forward(inputa, fast_weights, reuse=reuse), labela_ce)[:, 0]
                     task_co_loss = []
                     for i in range(self.total_num_au):
-                        pred_other_au, label_other_au = tf.cast(labela[:, i], tf.float32), tf.cast(labela[:, i],
-                                                                                                   tf.float32)
+                        pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
                         # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                         # (num of samples=NK,1=num of au,2=N)
                         task_co_loss.append(self.loss_func2(pred_this_au * pred_other_au,
@@ -158,12 +157,12 @@ class MAML:
                 ### for co-occur loss ###
                 labelb_this_au = tf.cast(labelb[:, self.au_idx], tf.float32)  # (NK,)
                 predb_this_au = tf.nn.softmax(outputb)
-                predb_this_au = tf.cast(tf.argmax(predb_this_au[:, 0], 1), tf.float32)
+                predb_this_au = predb_this_au[:, 0, 1]
+                # predb_this_au = tf.cast(tf.argmax(predb_this_au[:, 0], 1), tf.float32)
                 task_co_lossb = []
                 # test_other_au = []
                 for i in range(self.total_num_au):
-                    predb_other_au, labelb_other_au = tf.cast(labelb[:, i], tf.float32), tf.cast(labelb[:, i],
-                                                                                                 tf.float32)
+                    predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
                     # test_other_au.append(labelb_other_au)
