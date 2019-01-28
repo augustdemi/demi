@@ -130,7 +130,7 @@ class MAML:
 
                 ### for more inner update ###
                 for j in range(num_updates - 1):
-                    task_ce_loss = self.loss_func(self.forward(inputa, fast_weights, reuse=reuse), labela_ce)
+                    task_ce_loss = self.loss_func(self.forward(inputa, fast_weights, reuse=reuse), labela_ce)[:, 0]
                     task_co_loss = []
                     for i in range(self.total_num_au):
                         pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
@@ -138,7 +138,7 @@ class MAML:
                         # (num of samples=NK,1=num of au,2=N)
                         task_co_loss.append(self.loss_func2(pred_this_au * pred_other_au,
                                                             labela_this_au * label_other_au))
-                    task_co_loss = tf.reduce_sum(task_co_loss) / self.total_num_au
+                    task_co_loss = tf.reduce_sum(task_co_loss, 0) / self.total_num_au
                     task_loss = task_ce_loss + self.LAMBDA2 * task_co_loss
                     # compute gradients based on the previous fast weights
                     grads = tf.gradients(task_loss, list(fast_weights.values()))
@@ -152,7 +152,7 @@ class MAML:
 
                 #### make evaluation with inputb ####
                 outputb = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
-                task_ce_lossb = self.loss_func(outputb, labelb_ce)
+                task_ce_lossb = self.loss_func(outputb, labelb_ce)[:, 0]
                 ### for co-occur loss ###
                 labelb_this_au = tf.cast(labelb[:, self.au_idx], tf.float32)  # (NK,)
                 predb_this_au = tf.nn.softmax(outputb)
@@ -162,7 +162,7 @@ class MAML:
                     predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
-                task_co_lossb = tf.reduce_sum(task_co_lossb) / self.total_num_au
+                task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
