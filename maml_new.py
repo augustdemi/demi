@@ -160,7 +160,8 @@ class MAML:
                 task_co_lossb = []
                 test_other_au = []
                 for i in range(self.total_num_au):
-                    predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
+                    predb_other_au, labelb_other_au = tf.cast(labelb[:, i], tf.float32), tf.cast(labelb[:, i],
+                                                                                                 tf.float32)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
                     test_other_au.append(label_other_au)
