@@ -240,7 +240,6 @@ class MAML:
                                  self.metatrain_op4, self.metatrain_op5, self.metatrain_op6, self.metatrain_op7)
 
     def forward_fc(self, inp, weights, reuse=False):
-        ㅠ
         var_w = weights['w1'][None, ::]
         # add dimension for features
         var_b = weights['b1'][None, ::]
