@@ -116,7 +116,7 @@ class MAML:
                                            labela_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
                     task_co_lossa.append(
                         loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
-                task_co_lossa = tf.reduce_sum(task_co_lossa, 1) / self.total_num_au
+                task_co_lossa = tf.reduce_sum(task_co_lossa) / self.total_num_au
                 task_lossa = task_ce_lossa + self.LAMBDA2 * task_co_lossa
 
                 grads = tf.gradients(task_lossa, list(this_weight.values()))  # 2000,1,2
@@ -137,7 +137,7 @@ class MAML:
                         # (num of samples=NK,1=num of au,2=N)
                         task_co_loss.append(self.loss_func2(pred_this_au * pred_other_au,
                                                             labela_this_au * label_other_au))
-                    task_co_loss = tf.reduce_sum(task_co_loss, 1) / self.total_num_au
+                    task_co_loss = tf.reduce_sum(task_co_loss) / self.total_num_au
                     task_loss = task_ce_loss + self.LAMBDA2 * task_co_loss
                     # compute gradients based on the previous fast weights
                     grads = tf.gradients(task_loss, list(fast_weights.values()))
@@ -161,18 +161,20 @@ class MAML:
                     predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
-                task_co_lossb = tf.reduce_sum(task_co_lossb, 1) / self.total_num_au
+                task_co_lossb = tf.reduce_sum(task_co_lossb) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
-                task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total]
+                task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
+                               task_co_lossb[0]]
                 return task_output
 
-            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32]
+            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32]
             ##### inputa를 모든 au에 대해 다 받아온후 여기서 8등분해줘야함. 8등분 된 인풋별로 다음 for loop을 하나씩 걸쳐 매트릭스 건져냄
             batch = FLAGS.meta_batch_size
             self.task_ce_losses = []
             self.task_co_losses = []
             self.task_total_losses = []
+            self.test = []
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
@@ -181,13 +183,14 @@ class MAML:
                 labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
                                                                    -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
-                fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb = tf.map_fn(task_metalearn,
-                                                                                                elems=(inputa, inputb, labela, labelb),
-                                                                                                dtype=out_dtype_task_metalearn,
-                                                                                                parallel_iterations=FLAGS.meta_batch_size)
+                fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, test = tf.map_fn(task_metalearn,
+                                                                                                      elems=(inputa, inputb, labela, labelb),
+                                                                                                      dtype=out_dtype_task_metalearn,
+                                                                                                      parallel_iterations=FLAGS.meta_batch_size)
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
+                self.test.append(test)
 
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
