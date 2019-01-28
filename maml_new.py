@@ -169,11 +169,11 @@ class MAML:
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
-                               test_other_au, labelb]
+                               test_other_au, labelb_this_au]
                 return task_output
 
             out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32,
-                                        tf.int64]
+                                        tf.float32]
             ##### inputa를 모든 au에 대해 다 받아온후 여기서 8등분해줘야함. 8등분 된 인풋별로 다음 for loop을 하나씩 걸쳐 매트릭스 건져냄
             batch = FLAGS.meta_batch_size
             self.task_ce_losses = []
@@ -203,7 +203,7 @@ class MAML:
                 print(" ================= i is ", i)
                 print('len of test_other_ua: ', test_other_aus.shape)
                 print('len of ce_lossesb: ', ce_lossesb.shape)
-                print('len of used_label: ', used_label.shape)
+                print('len of labelb_this_au: ', used_label.shape)
                 print(test_other_aus)
                 print(test_other_aus[0].shape)
                 print(sess.run(test_other_aus[0]))
