@@ -259,6 +259,11 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     on_sample_labels = np.array(on_sample_labels).transpose(1,0)
     off_sample_labels = np.array(off_sample_labels).transpose(1,0)
 
+    print("------on_sample_labels:")
+    print(on_sample_labels)
+    print("------off_sample_labels:")
+    print(off_sample_labels)
+
     return [elt[1] for elt in off_random_frames_n_features], [elt[1] for elt in on_random_frames_n_features], off_sample_labels, on_sample_labels
 
 
