@@ -192,7 +192,7 @@ class MAML:
 
                 print('--------------------labelb of au', i)
                 print(labelb.shape)
-                print(sess.run(labelb))
+                print(sess.run(labelb)[0][:])
 
                 fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, predict_b = tf.map_fn(
                     task_metalearn,
@@ -203,7 +203,8 @@ class MAML:
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
                 print('--------------------predict_b of au', i)
-                print(sess.run(predict_b))
+                print(predict_b.shape)
+                print(sess.run(predict_b)[0][:])
                 print('================================================')
                 # print(" ================= i is ", i)
                 # print('len of test_other_ua: ', test_other_aus.shape)
