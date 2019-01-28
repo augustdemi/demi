@@ -164,7 +164,7 @@ class MAML:
                                                                                                  tf.float32)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
-                    test_other_au.append(label_other_au)
+                    test_other_au.append(labelb_other_au)
                 test_other_au = tf.convert_to_tensor(test_other_au)
                 task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
