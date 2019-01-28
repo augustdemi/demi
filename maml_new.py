@@ -171,7 +171,7 @@ class MAML:
                                test_other_au, labelb]
                 return task_output
 
-            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32,
+            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, [tf.float32] * 8,
                                         tf.float32]
             ##### inputa를 모든 au에 대해 다 받아온후 여기서 8등분해줘야함. 8등분 된 인풋별로 다음 for loop을 하나씩 걸쳐 매트릭스 건져냄
             batch = FLAGS.meta_batch_size
@@ -203,6 +203,7 @@ class MAML:
                 print('len of test_other_ua: ', len(test_other_au))
                 print('len of ce_lossesb: ', len(ce_lossesb))
                 print('len of used_label: ', len(used_label))
+                print(test_other_au)
                 print(test_other_au[0].shape)
                 print(sess.run(test_other_au[0]))
                 print('--------------------')
