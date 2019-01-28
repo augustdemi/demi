@@ -118,7 +118,7 @@ class MAML:
                                            labela_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
                     task_co_lossa.append(
                         loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
-                task_co_lossa = tf.reduce_sum(task_co_lossa, 0) / self.total_num_au
+                task_co_lossa = tf.reduce_sum(task_co_lossa, 0)
                 task_lossa = task_ce_lossa + self.LAMBDA2 * task_co_lossa
 
                 grads = tf.gradients(task_lossa, list(this_weight.values()))  # 2000,1,2
@@ -140,7 +140,7 @@ class MAML:
                         # (num of samples=NK,1=num of au,2=N)
                         task_co_loss.append(self.loss_func2(pred_this_au * pred_other_au,
                                                             labela_this_au * label_other_au))
-                    task_co_loss = tf.reduce_sum(task_co_loss, 0) / self.total_num_au
+                    task_co_loss = tf.reduce_sum(task_co_loss, 0)
                     task_loss = task_ce_loss + self.LAMBDA2 * task_co_loss
                     # compute gradients based on the previous fast weights
                     grads = tf.gradients(task_loss, list(fast_weights.values()))
@@ -168,7 +168,7 @@ class MAML:
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
                     # test_other_au.append(labelb_other_au)
                 # test_other_au = tf.convert_to_tensor(test_other_au)
-                task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
+                task_co_lossb = tf.reduce_sum(task_co_lossb, 0)
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
