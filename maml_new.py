@@ -51,7 +51,8 @@ class MAML:
             self.inputb = input_tensors['inputb']
             self.labela = input_tensors['labela']
             self.labelb = input_tensors['labelb']
-
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
         with tf.variable_scope('model', reuse=None) as training_scope:
             if 'weights' in dir(self):
                 training_scope.reuse_variables()
@@ -157,22 +158,26 @@ class MAML:
                 predb_this_au = tf.nn.softmax(outputb)
                 predb_this_au = tf.cast(tf.argmax(predb_this_au[:, 0], 1), tf.float32)
                 task_co_lossb = []
+                test_other_au = []
                 for i in range(self.total_num_au):
                     predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
+                    test_other_au.append(label_other_au)
                 task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
-                task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total]
+                task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
+                               test_other_au]
                 return task_output
 
-            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32]
+            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, [tf.float32] * 8]
             ##### inputa를 모든 au에 대해 다 받아온후 여기서 8등분해줘야함. 8등분 된 인풋별로 다음 for loop을 하나씩 걸쳐 매트릭스 건져냄
             batch = FLAGS.meta_batch_size
             self.task_ce_losses = []
             self.task_co_losses = []
             self.task_total_losses = []
+            self.test_other_au = []
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
@@ -181,6 +186,11 @@ class MAML:
                 labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
                                                                    -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
+
+                print('--------------------inputb of au', i)
+                print(sess.run(self.inputb))
+                print(sess.run(self.labelb))
+
                 fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb = tf.map_fn(task_metalearn,
                                                                                                 elems=(inputa, inputb, labela, labelb),
                                                                                                 dtype=out_dtype_task_metalearn,
@@ -188,11 +198,16 @@ class MAML:
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
+                self.test_other_au.append(test_other_au)
 
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
                              range(self.total_num_au)]
 
+        print('--------------------au 1 ')
+        print(sess.run(self.test_other_au[0]))
+        print('--------------------au 26')
+        print(sess.run(self.test_other_au[7]))
 
         ## Performance & Optimization
         tf.summary.scalar('CE_AU1', tf.reduce_sum(self.task_ce_losses[0]) / tf.to_float(FLAGS.meta_batch_size))
