@@ -162,7 +162,7 @@ class MAML:
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
                 task_co_lossb = tf.reduce_mean(task_co_lossb)
-                task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
+                task_total = tf.reduce_sum(task_ce_lossb) + self.LAMBDA2 * task_co_lossb
                 ### return output ###
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total]
                 return task_output
