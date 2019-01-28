@@ -158,12 +158,12 @@ class MAML:
                 predb_this_au = tf.nn.softmax(outputb)
                 predb_this_au = tf.cast(tf.argmax(predb_this_au[:, 0], 1), tf.float32)
                 task_co_lossb = []
-                test_other_au = {}
+                test_other_au = []
                 for i in range(self.total_num_au):
                     predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
-                    test_other_au.update({i: label_other_au})
+                    test_other_au.append(label_other_au)
                 task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
@@ -171,7 +171,7 @@ class MAML:
                                test_other_au, labelb]
                 return task_output
 
-            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, {tf.float32},
+            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32,
                                         tf.float32]
             ##### inputa를 모든 au에 대해 다 받아온후 여기서 8등분해줘야함. 8등분 된 인풋별로 다음 for loop을 하나씩 걸쳐 매트릭스 건져냄
             batch = FLAGS.meta_batch_size
@@ -202,14 +202,15 @@ class MAML:
                 print(" ================= i is ", i)
                 print('len of test_other_ua: ', len(test_other_au))
                 print('len of ce_lossesb: ', len(ce_lossesb))
+                print('len of used_label: ', len(used_label))
                 print(test_other_au[0].shape)
                 print(sess.run(test_other_au[0]))
                 print('--------------------')
                 print(test_other_au[1].shape)
                 print(sess.run(test_other_au[1]))
                 print('--------------------')
-                print(used_label.shape)
-                print(sess.run(used_label))
+                print(used_label[0].shape)
+                print(sess.run(used_label[0]))
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
                              range(self.total_num_au)]
