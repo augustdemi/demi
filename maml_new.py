@@ -199,9 +199,12 @@ class MAML:
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
                 print(" ================= i is ", i)
-                print(test_other_au.shape)
-                print(sess.run(test_other_au))
-
+                print('len of test_other_ua: ', len(test_other_au))
+                print(test_other_au[0].shape)
+                print(sess.run(test_other_au[0]))
+                print('--------------------')
+                print(test_other_au[1].shape)
+                print(sess.run(test_other_au[1]))
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
                              range(self.total_num_au)]
