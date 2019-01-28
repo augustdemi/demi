@@ -189,8 +189,8 @@ class MAML:
                 self.task_total_losses.append(total_lossesb)  # 8*14
 
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
-        self.task_total_losses = [self.task_total_losses[k] / tf.to_float(FLAGS.meta_batch_size) for k in
-                                  range(self.total_num_au)]
+        self.total_losses = [self.task_total_losses[k] / tf.to_float(FLAGS.meta_batch_size) for k in
+                             range(self.total_num_au)]
 
         ## Performance & Optimization
         tf.summary.scalar('CE_AU1', tf.reduce_sum(self.task_ce_losses[0]) / tf.to_float(FLAGS.meta_batch_size))
@@ -240,6 +240,7 @@ class MAML:
                                  self.metatrain_op4, self.metatrain_op5, self.metatrain_op6, self.metatrain_op7)
 
     def forward_fc(self, inp, weights, reuse=False):
+        ㅠ
         var_w = weights['w1'][None, ::]
         # add dimension for features
         var_b = weights['b1'][None, ::]
