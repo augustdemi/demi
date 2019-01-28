@@ -204,6 +204,7 @@ class MAML:
                 self.task_total_losses.append(total_lossesb)  # 8*14
                 print('--------------------predict_b of au', i)
                 print(predict_b.shape)
+                sess.run(tf.global_variables_initializer())
                 print(sess.run(predict_b)[0][:])
                 print('================================================')
                 # print(" ================= i is ", i)
