@@ -164,6 +164,7 @@ class MAML:
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
                     test_other_au.append(label_other_au)
+                test_other_au = tf.convert_to_tensor(test_other_au)
                 task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
@@ -171,7 +172,7 @@ class MAML:
                                test_other_au, labelb]
                 return task_output
 
-            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, [tf.float32] * 8,
+            out_dtype_task_metalearn = [tf.float32, tf.float32, tf.float32, tf.float32, tf.float32, tf.float32,
                                         tf.float32]
             ##### inputa를 모든 au에 대해 다 받아온후 여기서 8등분해줘야함. 8등분 된 인풋별로 다음 for loop을 하나씩 걸쳐 매트릭스 건져냄
             batch = FLAGS.meta_batch_size
@@ -191,7 +192,7 @@ class MAML:
                 print(labelb.shape)
                 print(sess.run(labelb))
 
-                fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, test_other_au, used_label = tf.map_fn(
+                fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, test_other_aus, used_label = tf.map_fn(
                     task_metalearn,
                     elems=(inputa, inputb, labela, labelb),
                     dtype=out_dtype_task_metalearn,
@@ -200,15 +201,15 @@ class MAML:
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
                 print(" ================= i is ", i)
-                print('len of test_other_ua: ', len(test_other_au))
-                print('len of ce_lossesb: ', len(ce_lossesb))
-                print('len of used_label: ', len(used_label))
-                print(test_other_au)
-                print(test_other_au[0].shape)
-                print(sess.run(test_other_au[0]))
+                print('len of test_other_ua: ', test_other_aus.shape)
+                print('len of ce_lossesb: ', ce_lossesb.shape)
+                print('len of used_label: ', used_label.shape)
+                print(test_other_aus)
+                print(test_other_aus[0].shape)
+                print(sess.run(test_other_aus[0]))
                 print('--------------------')
-                print(test_other_au[1].shape)
-                print(sess.run(test_other_au[1]))
+                print(test_other_aus[1].shape)
+                print(sess.run(test_other_aus[1]))
                 print('--------------------')
                 print(used_label[0].shape)
                 print(sess.run(used_label[0]))
