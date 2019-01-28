@@ -191,10 +191,11 @@ class MAML:
                 print(sess.run(self.inputb))
                 print(sess.run(self.labelb))
 
-                fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb = tf.map_fn(task_metalearn,
-                                                                                                elems=(inputa, inputb, labela, labelb),
-                                                                                                dtype=out_dtype_task_metalearn,
-                                                                                                parallel_iterations=FLAGS.meta_batch_size)
+                fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, test_other_au = tf.map_fn(
+                    task_metalearn,
+                    elems=(inputa, inputb, labela, labelb),
+                    dtype=out_dtype_task_metalearn,
+                    parallel_iterations=FLAGS.meta_batch_size)
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
