@@ -177,7 +177,6 @@ class MAML:
             self.task_ce_losses = []
             self.task_co_losses = []
             self.task_total_losses = []
-            self.test_other_au = []
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
@@ -199,16 +198,14 @@ class MAML:
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
-                self.test_other_au.append(test_other_au)
+                print(" ================= i is ", i)
+                print(test_other_au.shape)
+                print(sess.run(test_other_au))
 
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
                              range(self.total_num_au)]
 
-        print('--------------------au 1 ')
-        print(sess.run(self.test_other_au[0]))
-        print('--------------------au 26')
-        print(sess.run(self.test_other_au[7]))
 
         ## Performance & Optimization
         tf.summary.scalar('CE_AU1', tf.reduce_sum(self.task_ce_losses[0]) / tf.to_float(FLAGS.meta_batch_size))
