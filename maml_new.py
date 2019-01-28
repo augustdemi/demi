@@ -172,6 +172,7 @@ class MAML:
             batch = FLAGS.meta_batch_size
             self.task_ce_losses = []
             self.task_co_losses = []
+            self.task_total_losses = []
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
