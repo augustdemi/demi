@@ -307,3 +307,7 @@ def xent(pred, label):
 
 def xent_sig(pred, label):
     return tf.nn.sigmoid_cross_entropy_with_logits(logits=pred, labels=label) / FLAGS.update_batch_size
+
+
+def scaling(data):
+    return -1 + 2 * data
