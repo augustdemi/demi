@@ -16,9 +16,9 @@ for subject in subjects:
     files = os.listdir(subject_folder)
     test_file_paths = open(os.path.join(kshot_path, subject, 'file_path.csv')).readline().split(',')
     print('original files len in ', subject, ' : ', len(test_file_paths))
+    if len(test_file_paths) == 4846: test_file_paths = test_file_paths[:4845]
     frame_idx = [int(path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for path in test_file_paths]
 
-    if len(frame_idx) == 4846: frame_idx = frame_idx[:4845]
     label_per_subject = []
     for au in all_au:
         label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_" + au + ".txt"
