@@ -110,7 +110,7 @@ class MAML:
 
                 task_co_lossa = []
                 for i in range(self.total_num_au):
-                    pred_other_au, label_other_au = tf.cast(labela[:, i], tf.float32), tf.cast(labela[:, i], tf.float32)
+                    pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
 
                     loss = self.loss_func2(self.scaling(pred_this_au) * self.scaling(pred_other_au),
                                            self.scaling(labela_this_au) * self.scaling(
@@ -133,8 +133,7 @@ class MAML:
                     task_ce_loss = self.loss_func(self.forward(inputa, fast_weights, reuse=reuse), labela_ce)[:, 0]
                     task_co_loss = []
                     for i in range(self.total_num_au):
-                        pred_other_au, label_other_au = tf.cast(labela[:, i], tf.float32), tf.cast(labela[:, i],
-                                                                                                   tf.float32)
+                        pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
                         # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                         # (num of samples=NK,1=num of au,2=N)
                         task_co_loss.append(self.loss_func2(self.scaling(pred_this_au) * self.scaling(pred_other_au),
@@ -164,8 +163,7 @@ class MAML:
                 task_co_lossb = []
                 # test_other_au = []
                 for i in range(self.total_num_au):
-                    predb_other_au, labelb_other_au = tf.cast(labelb[:, i], tf.float32), tf.cast(labelb[:, i],
-                                                                                                 tf.float32)
+                    predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
                     task_co_lossb.append(
                         self.loss_func2(self.scaling(predb_this_au) * self.scaling(predb_other_au),
                                         self.scaling(labelb_this_au) * self.scaling(labelb_other_au)))
