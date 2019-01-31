@@ -10,7 +10,7 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from utils import mse, xent, conv_block, normalize
+from utils import mse, xent, scaling
 
 FLAGS = flags.FLAGS
 
@@ -30,14 +30,12 @@ class MAML:
         self.LAMBDA1 = FLAGS.lambda1
         self.LAMBDA2 = FLAGS.lambda2
         self.au_idx = -1
-        if FLAGS.datasource == 'disfa':
-            self.loss_func = xent
-            self.loss_func2 = mse
-            self.classification = True
-            self.forward = self.forward_fc
-            self.construct_weights = self.getWeightVar
-        else:
-            raise ValueError('Unrecognized data source.')
+        self.loss_func = xent
+        self.loss_func2 = mse
+        self.scaling = scaling
+        self.classification = True
+        self.forward = self.forward_fc
+        self.construct_weights = self.getWeightVar
 
     def construct_model(self, input_tensors=None, prefix='metatrain_'):
         # a: training data for inner gradient, b: test data for meta gradient
@@ -114,8 +112,9 @@ class MAML:
                 for i in range(self.total_num_au):
                     pred_other_au, label_other_au = tf.cast(labela[:, i], tf.float32), tf.cast(labela[:, i], tf.float32)
 
-                    loss = self.loss_func2(pred_this_au * pred_other_au,
-                                           labela_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
+                    loss = self.loss_func2(self.scaling(pred_this_au) * self.scaling(pred_other_au),
+                                           self.scaling(labela_this_au) * self.scaling(
+                                               label_other_au))  # (num of samples=NK,1=num of au,2=N)
                     task_co_lossa.append(
                         loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
                 task_co_lossa = tf.reduce_sum(task_co_lossa, 0)
@@ -138,8 +137,10 @@ class MAML:
                                                                                                    tf.float32)
                         # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                         # (num of samples=NK,1=num of au,2=N)
-                        task_co_loss.append(self.loss_func2(pred_this_au * pred_other_au,
-                                                            labela_this_au * label_other_au))
+                        task_co_loss.append(self.loss_func2(self.scaling(pred_this_au) * self.scaling(pred_other_au),
+                                                            self.scaling(labela_this_au) * self.scaling(
+                                                                label_other_au)))
+
                     task_co_loss = tf.reduce_sum(task_co_loss, 0)
                     task_loss = task_ce_loss + self.LAMBDA2 * task_co_loss
                     # compute gradients based on the previous fast weights
@@ -166,7 +167,8 @@ class MAML:
                     predb_other_au, labelb_other_au = tf.cast(labelb[:, i], tf.float32), tf.cast(labelb[:, i],
                                                                                                  tf.float32)
                     task_co_lossb.append(
-                        self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
+                        self.loss_func2(self.scaling(predb_this_au) * self.scaling(predb_other_au),
+                                        self.scaling(labelb_this_au) * self.scaling(labelb_other_au)))
                     # test_other_au.append(labelb_other_au)
                 # test_other_au = tf.convert_to_tensor(test_other_au)
                 task_co_lossb = tf.reduce_sum(task_co_lossb, 0)
