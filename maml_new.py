@@ -112,7 +112,7 @@ class MAML:
 
                 task_co_lossa = []
                 for i in range(self.total_num_au):
-                    pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
+                    pred_other_au, label_other_au = tf.cast(labela[:, i], tf.float32), tf.cast(labela[:, i], tf.float32)
 
                     loss = self.loss_func2(pred_this_au * pred_other_au,
                                            labela_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
@@ -134,7 +134,8 @@ class MAML:
                     task_ce_loss = self.loss_func(self.forward(inputa, fast_weights, reuse=reuse), labela_ce)[:, 0]
                     task_co_loss = []
                     for i in range(self.total_num_au):
-                        pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
+                        pred_other_au, label_other_au = tf.cast(labela[:, i], tf.float32), tf.cast(labela[:, i],
+                                                                                                   tf.float32)
                         # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                         # (num of samples=NK,1=num of au,2=N)
                         task_co_loss.append(self.loss_func2(pred_this_au * pred_other_au,
@@ -162,7 +163,8 @@ class MAML:
                 task_co_lossb = []
                 # test_other_au = []
                 for i in range(self.total_num_au):
-                    predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
+                    predb_other_au, labelb_other_au = tf.cast(labelb[:, i], tf.float32), tf.cast(labelb[:, i],
+                                                                                                 tf.float32)
                     task_co_lossb.append(
                         self.loss_func2(predb_this_au * predb_other_au, labelb_this_au * labelb_other_au))
                     # test_other_au.append(labelb_other_au)
@@ -259,14 +261,14 @@ class MAML:
         tf.summary.scalar('co+ce_AU26', self.total_losses[7])
         tf.summary.scalar('co+ce_total', tf.reduce_sum(self.total_losses) / tf.to_float(self.total_num_au))
 
-        self.metatrain_op0 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[0])
-        self.metatrain_op1 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[1])
-        self.metatrain_op2 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[2])
-        self.metatrain_op3 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[3])
-        self.metatrain_op4 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[4])
-        self.metatrain_op5 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[5])
-        self.metatrain_op6 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[6])
-        self.metatrain_op7 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[7])
+        self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[0])
+        self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[1])
+        self.metatrain_op2 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[2])
+        self.metatrain_op3 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[3])
+        self.metatrain_op4 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[4])
+        self.metatrain_op5 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[5])
+        self.metatrain_op6 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[6])
+        self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[7])
 
         self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1, self.metatrain_op2, self.metatrain_op3,
                                  self.metatrain_op4, self.metatrain_op5, self.metatrain_op6, self.metatrain_op7)
