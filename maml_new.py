@@ -96,12 +96,12 @@ class MAML:
                 labela_this_au = tf.cast(labela[:, self.au_idx], tf.float32)  # (NK,)
 
                 def predict_other_au(i, input, label):
-                    # other_w = weights['w1'][:, i, :]  # weights['w1'] = (300, 8,2)    this_w = (300,2)
-                    # other_b = weights['b1'][i, :]
-                    # other_w = tf.reshape(other_w, [int(other_w.shape[0]), 1, int(other_w.shape[1])])  # (300,1,2)
-                    # other_b = tf.reshape(other_b, [1, int(other_b.shape[0])])
-                    # other_weight = {'w1': other_w, 'b1': other_b}
-                    pred_other_au = self.forward(input, this_weight, reuse=reuse)
+                    other_w = weights['w1'][:, i, :]  # weights['w1'] = (300, 8,2)    this_w = (300,2)
+                    other_b = weights['b1'][i, :]
+                    other_w = tf.reshape(other_w, [int(other_w.shape[0]), 1, int(other_w.shape[1])])  # (300,1,2)
+                    other_b = tf.reshape(other_b, [1, int(other_b.shape[0])])
+                    other_weight = {'w1': other_w, 'b1': other_b}
+                    pred_other_au = self.forward(input, other_weight, reuse=reuse)
                     pred_other_au = tf.nn.softmax(pred_other_au)
                     pred_other_au = pred_other_au[:, 0, 1]
                     # pred_other_au = tf.cast(tf.argmax(pred_other_au[:, 0], 1), tf.float32)
