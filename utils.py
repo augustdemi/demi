@@ -179,12 +179,13 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     print("============================================")
     print('kshot_path: ', kshot_path)
     print("subject: ", subject)
+    # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     labels = ['off', 'on']  # off = 0, on =1
 
-    # check the num of existing samples per off / on
-    frames_n_features = []  # on /off label을 가지는 frame idx와 그 frame의 2048 dim feat vector를 가져옴
+    # check count of existing samples per off / on
+    frames_n_features = []
     for label in labels:
-        # taking feature vector of this subject
+        # 모든 feature 파일이 존재하는 경로
         feature_file_path = feat_path + '/' + subject + '.csv'
         print('feature_file_path: ', feature_file_path)
         f = open(feature_file_path, 'r')
@@ -194,7 +195,7 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
             line = line.split(',')
             all_feat_data.update({line[1]: line[2:]})  # key = frame, value = feature vector
 
-        # taking frame idx of <this au & this subject & this label>
+        # on/off 이미지를 구분해 놓은 csv파일로부터 라벨별 이미지 경로 읽어와( au, subject별 on 혹은 off 이미지)
         img_path_list = open(kshot_path + '/' + label + '/file_path.csv').readline().split(',')
         frame_n_feature_per_label = []
         try:
@@ -205,7 +206,7 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
             print('CHECK DATA FOR LABEL: ', label, ' - ', img_path_list)
         frames_n_features.append(frame_n_feature_per_label)
 
-    print('total off / on before balancing: ', len(frames_n_features[0]), len(frames_n_features[1]))
+    print('total off / on: ', len(frames_n_features[0]), len(frames_n_features[1]))
     # make the balance
     num_samples_to_select = [nb_samples, nb_samples]
     if len(frames_n_features[0]) < nb_samples:
@@ -216,36 +217,34 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
         n_on_samples = 2 * math.floor(len(frames_n_features[1]) / 2)
         n_off_samples = 2 * nb_samples - n_on_samples
         num_samples_to_select = [n_off_samples, n_on_samples]
-    print('num_samples_to_select after balancing: ', num_samples_to_select)
+    print('num_samples_to_select: ', num_samples_to_select)
 
-    def sampler(frames_n_features, n_samples):  # on(of off) frames and corresponding features, num of samples to choose
-        random.seed(0)
+    def sampler(frames_n_features, n_samples):
+        if validate:
+            random.seed(1)
+        else:
+            random.seed(0)
         random_frames_n_features = random.sample(frames_n_features, n_samples)
         return random_frames_n_features
 
     # 각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     off_random_frames_n_features = sampler(frames_n_features[0], num_samples_to_select[0])
-    val_random_frames_n_features = [elt for elt in frames_n_features[0] if elt not in off_random_frames_n_features]
     print("-------------------------------")
     print("validate: ", validate)
     print("label: ", labels[0])
     print('num of off_images: ', len(off_random_frames_n_features))
     print('off_frames: ', [elt[0] for elt in off_random_frames_n_features])
     on_random_frames_n_features = sampler(frames_n_features[1], num_samples_to_select[1])
-    val_random_frames_n_features.extend([elt for elt in frames_n_features[1] if elt not in on_random_frames_n_features])
     print("-------------------------------")
     print("validate: ", validate)
     print("label: ", labels[1])
     print('num of on_images: ', len(on_random_frames_n_features))
     print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
 
-
     off_frames_idx = [int(elt[0].split('frame')[1]) for elt in off_random_frames_n_features]
     on_frames_idx = [int(elt[0].split('frame')[1]) for elt in on_random_frames_n_features]
-    val_frames_idx = [int(elt[0].split('frame')[1]) for elt in val_random_frames_n_features]
     on_sample_labels = []
     off_sample_labels = []
-    val_sample_labels = []
     binary_intensity = lambda lab: 1 if lab > 0 else 0
     for au in aus:
         # label_path = os.path.join('./data/label', subject, subject + '_' + au + '.txt')
@@ -254,19 +253,10 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
             lines = np.array(f.readlines())
             selected_labels_for_on = [binary_intensity(int(line.split(",")[1].split("\n")[0])) for line in lines[on_frames_idx]]
             selected_labels_for_off = [binary_intensity(int(line.split(",")[1].split("\n")[0])) for line in lines[off_frames_idx]]
-            selected_labels_for_val = [binary_intensity(int(line.split(",")[1].split("\n")[0])) for line in
-                                       lines[val_frames_idx]]
             on_sample_labels.append(selected_labels_for_on)
             off_sample_labels.append(selected_labels_for_off)
-            val_sample_labels.append(selected_labels_for_val)
     on_sample_labels = np.array(on_sample_labels).transpose(1,0)
     off_sample_labels = np.array(off_sample_labels).transpose(1,0)
-    val_sample_labels = np.array(val_sample_labels).transpose(1, 0)
-
-    random.seed(123)
-    random.shuffle(val_random_frames_n_features)
-    random.seed(123)
-    random.shuffle(val_sample_labels)
 
     print("------on_sample_labels:")
     print(on_sample_labels)
@@ -274,8 +264,7 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     print(off_sample_labels)
 
     return [elt[1] for elt in off_random_frames_n_features], [elt[1] for elt in
-                                                              on_random_frames_n_features], off_sample_labels, on_sample_labels, [
-               elt[1] for elt in val_random_frames_n_features], val_sample_labels
+                                                              on_random_frames_n_features], off_sample_labels, on_sample_labels
 
 
 
