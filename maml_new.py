@@ -84,7 +84,7 @@ class MAML:
                 this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
                 this_weight = {'w1': this_w, 'b1': this_b}
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
-                task_outputa = self.forward(inputa, this_weight, reuse=reuse)  # (NK, 1, 2)
+                task_outputa = self.forward(inputa, this_weight)  # (NK, 1, 2)
 
                 ##### for cross-entropy loss ####
                 task_ce_lossa = self.loss_func(task_outputa, labela_ce)[:, 0]  # 2,1
@@ -101,7 +101,7 @@ class MAML:
                     other_w = tf.reshape(other_w, [int(other_w.shape[0]), 1, int(other_w.shape[1])])  # (300,1,2)
                     other_b = tf.reshape(other_b, [1, int(other_b.shape[0])])
                     other_weight = {'w1': other_w, 'b1': other_b}
-                    pred_other_au = self.forward(input, other_weight, reuse=reuse)
+                    pred_other_au = self.forward(input, other_weight)
                     pred_other_au = tf.nn.softmax(pred_other_au)
                     pred_other_au = pred_other_au[:, 0, 1]
                     # pred_other_au = tf.cast(tf.argmax(pred_other_au[:, 0], 1), tf.float32)
@@ -130,7 +130,7 @@ class MAML:
 
                 ### for more inner update ###
                 for j in range(num_updates - 1):
-                    task_ce_loss = self.loss_func(self.forward(inputa, fast_weights, reuse=reuse), labela_ce)[:, 0]
+                    task_ce_loss = self.loss_func(self.forward(inputa, fast_weights), labela_ce)[:, 0]
                     task_co_loss = []
                     for i in range(self.total_num_au):
                         pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
@@ -153,7 +153,7 @@ class MAML:
                                              fast_weights.keys()]))
 
                 #### make evaluation with inputb ####
-                outputb = self.forward(inputb, fast_weights, reuse=True)  # (2,1,2) = (2*k, # of au, onehot label)
+                outputb = self.forward(inputb, fast_weights)  # (2,1,2) = (2*k, # of au, onehot label)
                 task_ce_lossb = self.loss_func(outputb, labelb_ce)[:, 0]
                 ### for co-occur loss ###
                 labelb_this_au = tf.cast(labelb[:, self.au_idx], tf.float32)  # (NK,)
