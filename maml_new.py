@@ -117,7 +117,7 @@ class MAML:
                                                label_other_au))  # (num of samples=NK,1=num of au,2=N)
                     task_co_lossa.append(
                         loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
-                task_co_lossa = tf.reduce_sum(task_co_lossa, 0)
+                task_co_lossa = tf.reduce_sum(task_co_lossa, 0) / self.total_num_au
                 task_lossa = task_ce_lossa + self.LAMBDA2 * task_co_lossa
 
                 grads = tf.gradients(task_lossa, list(this_weight.values()))  # 2000,1,2
@@ -140,7 +140,7 @@ class MAML:
                                                             self.scaling(labela_this_au) * self.scaling(
                                                                 label_other_au)))
 
-                    task_co_loss = tf.reduce_sum(task_co_loss, 0)
+                    task_co_loss = tf.reduce_sum(task_co_loss, 0) / self.total_num_au
                     task_loss = task_ce_loss + self.LAMBDA2 * task_co_loss
                     # compute gradients based on the previous fast weights
                     grads = tf.gradients(task_loss, list(fast_weights.values()))
@@ -169,7 +169,7 @@ class MAML:
                                         self.scaling(labelb_this_au) * self.scaling(labelb_other_au)))
                     # test_other_au.append(labelb_other_au)
                 # test_other_au = tf.convert_to_tensor(test_other_au)
-                task_co_lossb = tf.reduce_sum(task_co_lossb, 0)
+                task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
                 task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
@@ -273,7 +273,7 @@ class MAML:
         self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1, self.metatrain_op2, self.metatrain_op3,
                                  self.metatrain_op4, self.metatrain_op5, self.metatrain_op6, self.metatrain_op7)
 
-    def forward_fc(self, inp, weights, reuse=False):
+    def forward_fc(self, inp, weights):
         var_w = weights['w1'][None, ::]
         # add dimension for features
         var_b = weights['b1'][None, ::]
