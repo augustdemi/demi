@@ -129,17 +129,35 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         if (itr % SUMMARY_INTERVAL == 0):
             input_tensors.extend([model.summ_op])
 
-
-
+        input_tensors.extend([model.fast_weight])
         result = sess.run(input_tensors, feed_dict)
 
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
 
-        # SAVE_INTERVAL 마다 weight값 파일로 떨굼
-        if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
+        if FLAGS.train_test:
+            # save local weight at the last iteration
+            print(">>>>>>>>>>>>>> local save !! : ", itr)
+            fast_w = np.array(result[-1][0])
+            fast_b = np.array(result[-1][1])
+            print("fast_w shape: ", fast_w.shape)
+            print("fast_b shape: ", fast_b.shape)
+            print("================================================================================")
+            print('>>>>>> Global bias: ', sess.run('model/b1:0'))
+            for i in range(FLAGS.meta_batch_size):
+                local_model_dir = FLAGS.logdir + '/' + trained_model_dir + '/adaptation/'
+                print('>>>>>>  subject : ', i)
+                out = open(local_model_dir + 'subject' + str(i) + ".pkl", 'wb')
+                weights_to_save = {}
+                weights_to_save.update({'w': fast_w[:, i]})
+                weights_to_save.update({'b': fast_b[:, i]})
+                pickle.dump(weights_to_save, out, protocol=2)
+                out.close()
+
+        elif (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
             print("================================================ iter:", itr)
+            print()
             print("= weight norm:", np.linalg.norm(w))
             print("= last weight :", w[-1])
             print("= b :", sess.run('model/b1:0'))

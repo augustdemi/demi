@@ -180,6 +180,7 @@ class MAML:
             self.task_ce_losses = []
             self.task_co_losses = []
             self.task_total_losses = []
+            self.fast_weight = []
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
@@ -198,6 +199,7 @@ class MAML:
                     elems=(inputa, inputb, labela, labelb),
                     dtype=out_dtype_task_metalearn,
                     parallel_iterations=FLAGS.meta_batch_size)
+                self.fast_weight.append((fast_weight_w, fast_weight_b))
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
@@ -206,19 +208,6 @@ class MAML:
                 sess.run(tf.global_variables_initializer())
                 print(sess.run(predict_b)[0][:])
                 print('================================================')
-                # print(" ================= i is ", i)
-                # print('len of test_other_ua: ', test_other_aus.shape)
-                # print('len of ce_lossesb: ', ce_lossesb.shape)
-                # print('len of labelb_this_au: ', used_label.shape)
-                # print(test_other_aus)
-                # print(test_other_aus[0].shape)
-                # print(sess.run(test_other_aus[0]))
-                # print('--------------------')
-                # print(test_other_aus[1].shape)
-                # print(sess.run(test_other_aus[1]))
-                # print('--------------------')
-                # print(used_label[0].shape)
-                # print(sess.run(used_label[0]))
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
                              range(self.total_num_au)]
