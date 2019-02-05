@@ -129,7 +129,8 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         if (itr % SUMMARY_INTERVAL == 0):
             input_tensors.extend([model.summ_op])
 
-        input_tensors.extend([model.fast_weight])
+        input_tensors.extend([model.fast_weight_w])
+        input_tensors.extend([model.fast_weight_b])
         result = sess.run(input_tensors, feed_dict)
 
         if (itr % SUMMARY_INTERVAL == 0):
@@ -138,8 +139,8 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         if FLAGS.train_test:
             # save local weight at the last iteration
             print(">>>>>>>>>>>>>> local save !! : ", itr)
-            fast_w = np.array(result[-1][0])
-            fast_b = np.array(result[-1][1])
+            fast_w = np.array(result[-2])
+            fast_b = np.array(result[-1])
             print("fast_w shape: ", fast_w.shape)
             print("fast_b shape: ", fast_b.shape)
             print("================================================================================")

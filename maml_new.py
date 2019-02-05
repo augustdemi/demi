@@ -180,7 +180,7 @@ class MAML:
             self.task_ce_losses = []
             self.task_co_losses = []
             self.task_total_losses = []
-            self.fast_weight = []
+            self.fast_weight_w = []
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
@@ -199,7 +199,8 @@ class MAML:
                     elems=(inputa, inputb, labela, labelb),
                     dtype=out_dtype_task_metalearn,
                     parallel_iterations=FLAGS.meta_batch_size)
-                self.fast_weight.append((fast_weight_w, fast_weight_b))
+                self.fast_weight_w.append(fast_weight_w)
+                self.fast_weight_b.append(fast_weight_b)
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
