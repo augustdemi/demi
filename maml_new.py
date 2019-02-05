@@ -181,6 +181,7 @@ class MAML:
             self.task_co_losses = []
             self.task_total_losses = []
             self.fast_weight_w = []
+            self.fast_weight_b = []
             for i in range(self.total_num_au):
                 self.au_idx = i
                 inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
