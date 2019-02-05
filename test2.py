@@ -222,7 +222,7 @@ def main():
                 print('=============== Model S loaded from ', load_model_path)
                 w = three_layers.model_intensity.layers[-1].get_weights()[0]
                 b = three_layers.model_intensity.layers[-1].get_weights()[1]
-                print('----------------------------------------------------------')
+                print('--------------------------------------------------8--------')
                 if w_arr is None:
                     w_arr = w
                     b_arr = b
@@ -231,6 +231,7 @@ def main():
                     b_arr = np.vstack((b_arr, b))
 
         return w_arr, b_arr
+
 
     def _load_weight_m0(trained_model_dir):
         model_file = None
@@ -289,6 +290,13 @@ def main():
         for subj_idx in range(FLAGS.sbjt_start_idx, FLAGS.num_test_tasks):
             if FLAGS.model.startswith('s'):
                 w_arr, b_arr = _load_weight_s(subj_idx)
+            elif FLAGS.model.startswith('p'):
+                data = pickle.load(open(FLAGS.logdir + 'subject' + str(subj_idx) + '.pkl', "rb"))
+                w_arr = data['w']  # (8, 300, 1, 2)
+                w_arr = np.reshape(w_arr, (w_arr.shape[0], w_arr.shape[1], w_arr.shape[3]))  # (8, 300, 2)
+                w_arr = np.transpose(w_arr, (1, 0, 2))  # (300, 8, 2)
+                b_arr = data['b']  # (8, 1, 2)
+                b_arr = np.reshape(b_arr, (b_arr.shape[0], b_arr.shape[2]))
             else:
                 trained_model_dir = '/sbjt' + str(subj_idx) + '.ubs_' + str(
                     FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
