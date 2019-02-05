@@ -145,8 +145,11 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
             print("fast_b shape: ", fast_b.shape)
             print("================================================================================")
             print('>>>>>> Global bias: ', sess.run('model/b1:0'))
+            local_model_dir = FLAGS.keep_train_dir + '/adaptation/'
+            if not os.path.exists(local_model_dir):
+                os.makedirs(local_model_dir)
+
             for i in range(FLAGS.meta_batch_size):
-                local_model_dir = FLAGS.logdir + '/' + trained_model_dir + '/adaptation/'
                 print('>>>>>>  subject : ', i)
                 out = open(local_model_dir + 'subject' + str(i) + ".pkl", 'wb')
                 weights_to_save = {}
