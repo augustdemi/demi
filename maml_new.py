@@ -113,8 +113,9 @@ class MAML:
                 for i in range(self.total_num_au):
                     pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
 
-                    loss = self.loss_func2(pred_this_au * pred_other_au,
-                                           labela_this_au * label_other_au)  # (num of samples=NK,1=num of au,2=N)
+                    loss = self.loss_func2(self.scaling(pred_this_au) * self.scaling(pred_other_au),
+                                           self.scaling(labela_this_au) * self.scaling(
+                                               label_other_au))  # (num of samples=NK,1=num of au,2=N)
                     task_co_lossa.append(
                         loss)  # losses 는 현재 주어진 subject이, between 현재 주어진 au and 다른 모든 au간 이룬 loss들의 모임.
                 task_co_lossa = tf.reduce_sum(task_co_lossa, 0) / self.total_num_au
@@ -136,8 +137,9 @@ class MAML:
                         pred_other_au, label_other_au = predict_other_au(i, inputa, labela)
                         # sample 갯수만큼이 reduced sum된 per au and per subject의 loss가 생김
                         # (num of samples=NK,1=num of au,2=N)
-                        task_co_loss.append(self.loss_func2(pred_this_au * pred_other_au,
-                                                            labela_this_au * label_other_au))
+                        task_co_loss.append(self.loss_func2(self.scaling(pred_this_au) * (pred_other_au),
+                                                            self.scaling(labela_this_au) * self.scaling(
+                                                                label_other_au)))
 
                     task_co_loss = tf.reduce_sum(task_co_loss, 0) / self.total_num_au
                     task_loss = task_ce_loss + self.LAMBDA2 * task_co_loss
@@ -164,8 +166,8 @@ class MAML:
                 for i in range(self.total_num_au):
                     predb_other_au, labelb_other_au = predict_other_au(i, inputb, labelb)
                     task_co_lossb.append(
-                        self.loss_func2(predb_this_au * predb_other_au,
-                                        labelb_this_au * labelb_other_au))
+                        self.loss_func2(self.scaling(predb_this_au) * self.scaling(predb_other_au),
+                                        self.scaling(labelb_this_au) * self.scaling(labelb_other_au)))
                     # test_other_au.append(labelb_other_au)
                 # test_other_au = tf.convert_to_tensor(test_other_au)
                 task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
