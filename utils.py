@@ -172,7 +172,7 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
     return [elt[1] for elt in off_random_frames_n_features], [elt[1] for elt in on_random_frames_n_features]
 
 
-def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None, validate=False):
+def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samples=None):
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
     subject = kshot_path.split('/')[-1]
@@ -220,23 +220,18 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
     print('num_samples_to_select: ', num_samples_to_select)
 
     def sampler(frames_n_features, n_samples):
-        if validate:
-            random.seed(1)
-        else:
-            random.seed(0)
+        random.seed(sampling_seed)
         random_frames_n_features = random.sample(frames_n_features, n_samples)
         return random_frames_n_features
 
     # 각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     off_random_frames_n_features = sampler(frames_n_features[0], num_samples_to_select[0])
     print("-------------------------------")
-    print("validate: ", validate)
     print("label: ", labels[0])
     print('num of off_images: ', len(off_random_frames_n_features))
     print('off_frames: ', [elt[0] for elt in off_random_frames_n_features])
     on_random_frames_n_features = sampler(frames_n_features[1], num_samples_to_select[1])
     print("-------------------------------")
-    print("validate: ", validate)
     print("label: ", labels[1])
     print('num of on_images: ', len(on_random_frames_n_features))
     print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
@@ -257,11 +252,11 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, seed, nb_samples=None,
             off_sample_labels.append(selected_labels_for_off)
     on_sample_labels = np.array(on_sample_labels).transpose(1,0)
     off_sample_labels = np.array(off_sample_labels).transpose(1,0)
-
-    print("------on_sample_labels:")
-    print(on_sample_labels)
-    print("------off_sample_labels:")
-    print(off_sample_labels)
+    #
+    # print("------on_sample_labels:")
+    # print(on_sample_labels)
+    # print("------off_sample_labels:")
+    # print(off_sample_labels)
 
     return [elt[1] for elt in off_random_frames_n_features], [elt[1] for elt in
                                                               on_random_frames_n_features], off_sample_labels, on_sample_labels

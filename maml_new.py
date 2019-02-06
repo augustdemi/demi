@@ -52,12 +52,6 @@ class MAML:
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
 
-        print('>>>>>>>>>>>>>>>>>>>>>>> construct_model: ')
-        temp = tf.slice(self.labela, [0, 0, 0], [FLAGS.meta_batch_size, -1, -1])
-        print(temp.shape)
-        print('subj0 au1: ', temp[0].shape)
-        print('subj0 au1: ', temp[0])
-
         with tf.variable_scope('model', reuse=None) as training_scope:
             if 'weights' in dir(self):
                 training_scope.reuse_variables()
@@ -198,7 +192,7 @@ class MAML:
                                                                    -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
-                print('--------------------labelb of au', i)
+                print('--------------------for sub0, labelb of au', i)
                 print(labelb.shape)
                 print(sess.run(labelb)[0][:])
 
@@ -212,7 +206,7 @@ class MAML:
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
-                print('--------------------predict_b of au', i)
+                print('--------------------for sub0, predict_b of au', i)
                 print(predict_b.shape)
                 sess.run(tf.global_variables_initializer())
                 print(sess.run(predict_b)[0][:])
