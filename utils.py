@@ -176,10 +176,10 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
     subject = kshot_path.split('/')[-1]
-    print("============================================")
-    print("sampling seed: ", sampling_seed)
-    print('kshot_path: ', kshot_path)
-    print("subject: ", subject)
+    # print("============================================")
+    # print("sampling seed: ", sampling_seed)
+    # print('kshot_path: ', kshot_path)
+    # print("subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
     labels = ['off', 'on']  # off = 0, on =1
 
@@ -206,7 +206,7 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
             print('CHECK DATA FOR LABEL: ', label, ' - ', img_path_list)
         frames_n_features.append(frame_n_feature_per_label)
 
-    print('total off / on: ', len(frames_n_features[0]), len(frames_n_features[1]))
+    # print('total off / on: ', len(frames_n_features[0]), len(frames_n_features[1]))
     # make the balance
     num_samples_to_select = [nb_samples, nb_samples]
     if len(frames_n_features[0]) < nb_samples:
@@ -217,7 +217,8 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
         n_on_samples = 2 * math.floor(len(frames_n_features[1]) / 2)
         n_off_samples = 2 * nb_samples - n_on_samples
         num_samples_to_select = [n_off_samples, n_on_samples]
-    print('num_samples_to_select: ', num_samples_to_select)
+
+    # print('num_samples_to_select: ', num_samples_to_select)
 
     def sampler(frames_n_features, n_samples):
         random.seed(sampling_seed)
@@ -226,15 +227,15 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
 
     # 각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
     off_random_frames_n_features = sampler(frames_n_features[0], num_samples_to_select[0])
-    print("-------------------------------")
-    print("label: ", labels[0])
-    print('num of off_images: ', len(off_random_frames_n_features))
-    print('off_frames: ', [elt[0] for elt in off_random_frames_n_features])
+    # print("-------------------------------")
+    # print("label: ", labels[0])
+    # print('num of off_images: ', len(off_random_frames_n_features))
+    # print('off_frames: ', [elt[0] for elt in off_random_frames_n_features])
     on_random_frames_n_features = sampler(frames_n_features[1], num_samples_to_select[1])
-    print("-------------------------------")
-    print("label: ", labels[1])
-    print('num of on_images: ', len(on_random_frames_n_features))
-    print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
+    # print("-------------------------------")
+    # print("label: ", labels[1])
+    # print('num of on_images: ', len(on_random_frames_n_features))
+    # print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
 
     off_frames_idx = [int(elt[0].split('frame')[1]) for elt in off_random_frames_n_features]
     on_frames_idx = [int(elt[0].split('frame')[1]) for elt in on_random_frames_n_features]
