@@ -49,7 +49,8 @@ class DataGenerator(object):
 
     def make_data_tensor(self, kshot_seed, train=True):
         if train:
-            print("===================================2")
+            print("===================================make_data_tensor in daga_generator2")
+            print(">>>>>>> sampling seed: ", kshot_seed)
             folders = self.metatrain_character_folders
             print(">>>>>>> train folders: ", folders)
 

@@ -220,6 +220,7 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
     print('num_samples_to_select: ', num_samples_to_select)
 
     def sampler(frames_n_features, n_samples):
+        print(">>>>>>> sampling seed: ", sampling_seed)
         random.seed(sampling_seed)
         random_frames_n_features = random.sample(frames_n_features, n_samples)
         return random_frames_n_features
