@@ -177,6 +177,7 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
 
     subject = kshot_path.split('/')[-1]
     print("============================================")
+    print("sampling seed: ", sampling_seed)
     print('kshot_path: ', kshot_path)
     print("subject: ", subject)
     # random seed는 subject에 따라서만 다르도록. 즉, 한 subject내에서는 k가 증가해도 계속 동일한 seed인것.
@@ -187,7 +188,6 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
     for label in labels:
         # 모든 feature 파일이 존재하는 경로
         feature_file_path = feat_path + '/' + subject + '.csv'
-        print('feature_file_path: ', feature_file_path)
         f = open(feature_file_path, 'r')
         lines = f.readlines()
         all_feat_data = {}  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
@@ -220,7 +220,6 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
     print('num_samples_to_select: ', num_samples_to_select)
 
     def sampler(frames_n_features, n_samples):
-        print(">>>>>>> sampling seed: ", sampling_seed)
         random.seed(sampling_seed)
         random_frames_n_features = random.sample(frames_n_features, n_samples)
         return random_frames_n_features
