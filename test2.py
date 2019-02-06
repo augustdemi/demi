@@ -124,7 +124,7 @@ def main():
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
 
-    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+    inputa, inputb, labela, labelb = data_generator.make_data_tensor(0)
     metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     model = MAML(dim_input, dim_output)

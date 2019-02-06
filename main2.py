@@ -100,7 +100,8 @@ flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gr
 flags.DEFINE_float('lambda1', 0, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 
-def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr=0):
+
+def train(model, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 10
     SAVE_INTERVAL = 5000
@@ -108,14 +109,21 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
-    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
-                 model.inputb: metatrain_input_tensors['inputb'].eval(),
-                 model.labela: metatrain_input_tensors['labela'].eval(),
-                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
-
     print('Done initializing, starting training.')
 
-    for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
+    for itr in range(resume_itr, FLAGS.metatrain_iterations):
+
+        data_generator = DataGenerator()
+
+        inputa, inputb, labela, labelb = data_generator.make_data_tensor(itr)
+        metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+
+        feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
+                     model.inputb: metatrain_input_tensors['inputb'].eval(),
+                     model.labela: metatrain_input_tensors['labela'].eval(),
+                     model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
+
+        itr += 1
         if itr <= 1000:
             SAVE_INTERVAL = 100
         elif itr <= 5000:
@@ -123,7 +131,6 @@ def train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume
         else:
             SAVE_INTERVAL = 5000
 
-        # input_tensors = [model.metatrain_op0]
         input_tensors = [model.train_op]
 
         if (itr % SUMMARY_INTERVAL == 0):
@@ -179,7 +186,7 @@ def main():
     dim_output = data_generator.num_classes
     dim_input = data_generator.dim_input
 
-    inputa, inputb, labela, labelb = data_generator.make_data_tensor()
+    inputa, inputb, labela, labelb = data_generator.make_data_tensor(0)
     metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
     # pred_weights = data_generator.pred_weights
@@ -285,7 +292,7 @@ def main():
 
     print("================================================================================")
 
-    train(model, saver, sess, trained_model_dir, metatrain_input_tensors, resume_itr)
+    train(model, saver, sess, trained_model_dir, resume_itr)
 
     end_time = datetime.now()
     elapse = end_time - start_time
