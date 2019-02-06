@@ -55,8 +55,8 @@ class MAML:
         print('>>>>>>>>>>>>>>>>>>>>>>> construct_model: ')
         temp = tf.slice(self.labela, [0, 0, 0], [FLAGS.meta_batch_size, -1, -1])
         print(temp.shape)
-        print('subj0 au1: ', temp.shape[0].shape)
-        print('subj0 au1: ', temp.shape[0])
+        print('subj0 au1: ', temp[0].shape)
+        print('subj0 au1: ', temp[0])
 
         with tf.variable_scope('model', reuse=None) as training_scope:
             if 'weights' in dir(self):
