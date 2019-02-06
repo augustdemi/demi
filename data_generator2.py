@@ -89,14 +89,7 @@ class DataGenerator(object):
             labelas.extend(labela_this_subj)
             labelbs.extend(labelb_this_subj)
 
-        # print(">>>> inputa_features: ", inputa_features[-1])
-        # print(">>> labelas: ", labelas)
-        print("--------------------------------------------")
-        # print(">>>> inputb_features: ", inputb_features[-1])
-        # print(">>> labelbs: ", labelbs)
-        print(">>>>>>>>>>>>>>>>> vae_model: ", FLAGS.vae_model)
-        print(">>>>>>>>>>>>>>>>>> random seed for kshot: ", FLAGS.kshot_seed)
-        print(">>>>>>>>>>>>>>>>>> random seed for weight: ", FLAGS.weight_seed)
+        print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
 
         ################################### dim reduction ####################################
         three_layers = feature_layer(10, FLAGS.num_au)
