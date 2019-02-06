@@ -111,10 +111,10 @@ def train(model, saver, sess, trained_model_dir, resume_itr=0):
 
     print('Done initializing, starting training.')
 
-    for itr in range(resume_itr, FLAGS.metatrain_iterations):
+    for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
 
         data_generator = DataGenerator()
-
+        print('main2  iteration:', itr)
         inputa, inputb, labela, labelb = data_generator.make_data_tensor(itr)
         metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
 
@@ -123,7 +123,6 @@ def train(model, saver, sess, trained_model_dir, resume_itr=0):
                      model.labela: metatrain_input_tensors['labela'].eval(),
                      model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
 
-        itr += 1
         if itr <= 1000:
             SAVE_INTERVAL = 100
         elif itr <= 5000:
