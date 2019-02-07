@@ -146,7 +146,29 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
 
-        if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
+        if FLAGS.train_test:
+            w = sess.run('model/w1:0')
+            print("================================================ iter:", itr)
+            print()
+            print("= weight norm:", np.linalg.norm(w))
+            print("= last weight :", w[-1])
+            print("= b :", sess.run('model/b1:0'))
+            print("= b :", sess.run('model/w1:0').shape)
+            local_model_dir = FLAGS.keep_train_dir + '/adaptation.update_lr' + str(
+                FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates) + '.lambda' + str(FLAGS.lambda2)
+            if not os.path.exists(local_model_dir):
+                os.makedirs(local_model_dir)
+
+            print('>>>>>>  subject : ', FLAGS.sbjt_start_idx)
+            out = open(local_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+            weights_to_save = {}
+            weights_to_save.update({'w': sess.run('model/w1:0')})
+            weights_to_save.update({'b': sess.run('model/b1:0')})
+            pickle.dump(weights_to_save, out, protocol=2)
+            out.close()
+
+
+        elif (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
             print("================================================ iter:", itr)
             print()
