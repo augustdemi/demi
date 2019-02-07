@@ -307,10 +307,11 @@ def main():
             y_lab.append(result[1])
             print("y_hat shape:", result[0].shape)
             print("y_lab shape:", result[1].shape)
-            print(">> y_hat_all shape:", np.vstack(y_hat).shape)
-            print(">> y_lab_all shape:", np.vstack(y_lab).shape)
-        print_summary(np.vstack(y_hat), np.vstack(y_lab),
-                      log_dir=save_path + "/test.txt")
+            print_summary(y_hat, y_lab, log_dir=save_path + "/test.txt")
+            #     print(">> y_hat_all shape:", np.vstack(y_hat).shape)
+            #     print(">> y_lab_all shape:", np.vstack(y_lab).shape)
+            # print_summary(np.vstack(y_hat), np.vstack(y_lab),
+            #               log_dir=save_path + "/test.txt")
 
     end_time = datetime.now()
     elapse = end_time - start_time
