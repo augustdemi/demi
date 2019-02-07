@@ -294,10 +294,12 @@ def main():
             elif FLAGS.model.startswith('p'):
                 data = pickle.load(open(FLAGS.logdir + 'subject' + str(subj_idx) + '.pkl', "rb"))
                 w_arr = data['w']  # (8, 300, 1, 2)
-                w_arr = np.reshape(w_arr, (w_arr.shape[0], w_arr.shape[1], w_arr.shape[3]))  # (8, 300, 2)
-                w_arr = np.transpose(w_arr, (1, 0, 2))  # (300, 8, 2)
+                print('################## w_arr.shape', w_arr.shape)
+                # w_arr = np.reshape(w_arr, (w_arr.shape[0], w_arr.shape[1], w_arr.shape[3]))  # (8, 300, 2)
+                # w_arr = np.transpose(w_arr, (1, 0, 2))  # (300, 8, 2)
                 b_arr = data['b']  # (8, 1, 2)
-                b_arr = np.reshape(b_arr, (b_arr.shape[0], b_arr.shape[2]))
+                print('################## b_arr.shape', b_arr.shape)
+                # b_arr = np.reshape(b_arr, (b_arr.shape[0], b_arr.shape[2]))
             else:
                 trained_model_dir = '/sbjt' + str(subj_idx) + '.ubs_' + str(
                     FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
