@@ -146,30 +146,7 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
 
-        if FLAGS.train_test:
-            # save local weight at the last iteration
-            print(">>>>>>>>>>>>>> local save !! : ", itr)
-            fast_w = np.array(result[-2])
-            fast_b = np.array(result[-1])
-            print("fast_w shape: ", fast_w.shape)
-            print("fast_b shape: ", fast_b.shape)
-            print("================================================================================")
-            print('>>>>>> Global bias: ', sess.run('model/b1:0'))
-            local_model_dir = FLAGS.keep_train_dir + '/adaptation.update_lr' + str(
-                FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates) + '.lambda' + str(FLAGS.lambda2)
-            if not os.path.exists(local_model_dir):
-                os.makedirs(local_model_dir)
-
-            for i in range(FLAGS.meta_batch_size):
-                print('>>>>>>  subject : ', i)
-                out = open(local_model_dir + '/subject' + str(i) + ".pkl", 'wb')
-                weights_to_save = {}
-                weights_to_save.update({'w': fast_w[:, i]})
-                weights_to_save.update({'b': fast_b[:, i]})
-                pickle.dump(weights_to_save, out, protocol=2)
-                out.close()
-
-        elif (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
+        if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
             print("================================================ iter:", itr)
             print()
