@@ -203,7 +203,7 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
                 frame = path.split('/')[-1].split('.')[0].split('_')[0]
                 frame_n_feature_per_label.append((frame, all_feat_data[frame]))
         except:
-            print('CHECK DATA FOR LABEL: ', label, ' - ', img_path_list)
+            print('CHECK DATA FOR LABEL: ', kshot_path, label, ' - ', img_path_list)
         frames_n_features.append(frame_n_feature_per_label)
 
     # print('total off / on: ', len(frames_n_features[0]), len(frames_n_features[1]))
