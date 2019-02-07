@@ -156,7 +156,7 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
             print("================================================================================")
             print('>>>>>> Global bias: ', sess.run('model/b1:0'))
             local_model_dir = FLAGS.keep_train_dir + '/adaptation.update_lr' + str(
-                FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates)
+                FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates) + '.lambda' + str(FLAGS.lambda2)
             if not os.path.exists(local_model_dir):
                 os.makedirs(local_model_dir)
 
