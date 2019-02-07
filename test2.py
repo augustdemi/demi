@@ -310,13 +310,13 @@ def main():
             print("y_lab shape:", result[1].shape)
             out = print_summary(result[0], result[1], log_dir=save_path + "/test.txt")
             f1_scores.append(out['data'][5])
-
         print(">> y_hat_all shape:", np.vstack(y_hat).shape)
         print(">> y_lab_all shape:", np.vstack(y_lab).shape)
         print_summary(np.vstack(y_hat), np.vstack(y_lab),
                       log_dir=save_path + "/test.txt")
         print(">> each f1 score: ")
-        print(f1_scores)
+        for i in f1_scores:
+            print(i)
 
     end_time = datetime.now()
     elapse = end_time - start_time
