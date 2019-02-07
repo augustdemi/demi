@@ -97,7 +97,7 @@ flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
-flags.DEFINE_float('lambda1', 0, '')
+flags.DEFINE_integer('shuffle_batch', 1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 
 
@@ -109,18 +109,24 @@ def train(model, saver, sess, trained_model_dir, resume_itr=0):
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
+    data_generator = DataGenerator()
+    inputa, inputb, labela, labelb = data_generator.make_data_tensor(0)
+
+    feed_dict = {model.inputa: inputa.eval(),
+                 model.inputb: inputb.eval(),
+                 model.labela: labela.eval(),
+                 model.labelb: labelb.eval(), model.meta_lr: FLAGS.meta_lr}
+
     print('Done initializing, starting training.')
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-        data_generator = DataGenerator()
-        print('============================================================= iteration:', itr)
-        inputa, inputb, labela, labelb = data_generator.make_data_tensor(itr)
-        metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
-
-        feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
-                     model.inputb: metatrain_input_tensors['inputb'].eval(),
-                     model.labela: metatrain_input_tensors['labela'].eval(),
-                     model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
+        if itr % FLAGS.shuffle_batch == 0:
+            print('=============================================================shuffle data, iteration:', itr)
+            inputa, inputb, labela, labelb = data_generator.make_data_tensor(itr)
+            feed_dict = {model.inputa: inputa.eval(),
+                         model.inputb: inputb.eval(),
+                         model.labela: labela.eval(),
+                         model.labelb: labelb.eval(), model.meta_lr: FLAGS.meta_lr}
 
         if itr <= 1000:
             SAVE_INTERVAL = 100
