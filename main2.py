@@ -101,7 +101,7 @@ flags.DEFINE_integer('shuffle_batch', 1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 
 
-def train(model, saver, sess, trained_model_dir, resume_itr=0):
+def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 10
     SAVE_INTERVAL = 5000
@@ -110,12 +110,11 @@ def train(model, saver, sess, trained_model_dir, resume_itr=0):
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
     data_generator = DataGenerator()
-    inputa, inputb, labela, labelb = data_generator.make_data_tensor(0)
 
-    feed_dict = {model.inputa: inputa.eval(),
-                 model.inputb: inputb.eval(),
-                 model.labela: labela.eval(),
-                 model.labelb: labelb.eval(), model.meta_lr: FLAGS.meta_lr}
+    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
+                 model.inputb: metatrain_input_tensors['inputb'].eval(),
+                 model.labela: metatrain_input_tensors['labela'].eval(),
+                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
 
     print('Done initializing, starting training.')
 
@@ -156,7 +155,8 @@ def train(model, saver, sess, trained_model_dir, resume_itr=0):
             print("fast_b shape: ", fast_b.shape)
             print("================================================================================")
             print('>>>>>> Global bias: ', sess.run('model/b1:0'))
-            local_model_dir = FLAGS.keep_train_dir + '/adaptation' + str(FLAGS.update_lr)
+            local_model_dir = FLAGS.keep_train_dir + '/adaptation.update_lr' + str(
+                FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates)
             if not os.path.exists(local_model_dir):
                 os.makedirs(local_model_dir)
 
@@ -296,7 +296,7 @@ def main():
 
     print("================================================================================")
 
-    train(model, saver, sess, trained_model_dir, resume_itr)
+    train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr)
 
     end_time = datetime.now()
     elapse = end_time - start_time
