@@ -148,8 +148,8 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
 
         if FLAGS.train_test:
             local_model_dir = FLAGS.keep_train_dir + '/adaptation.' + FLAGS.adaptation + 'update_lr' + str(
-                FLAGS.update_lr) + '.lambda' + str(FLAGS.lambda2) + '.num_updates' + str(
-                FLAGS.num_updates) + '.meta_iter' + str(
+                FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+                FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
                 FLAGS.metatrain_iterations) + '.opti' + FLAGS.opti
             if not os.path.exists(local_model_dir):
                 os.makedirs(local_model_dir)
