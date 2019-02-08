@@ -99,7 +99,7 @@ flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
 flags.DEFINE_integer('shuffle_batch', 1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
-
+flags.DEFINE_string('adaptation', "", 'adaptation way: inner or outer')
 
 def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
@@ -147,25 +147,51 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
             train_writer.add_summary(result[1], itr)
 
         if FLAGS.train_test:
-            w = sess.run('model/w1:0')
-            print("================================================ iter:", itr)
-            print()
-            print("= weight norm:", np.linalg.norm(w))
-            print("= last weight :", w[-1])
-            print("= b :", sess.run('model/b1:0'))
-            print("= b :", sess.run('model/w1:0').shape)
-            local_model_dir = FLAGS.keep_train_dir + '/adaptation.update_lr' + str(
-                FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates) + '.lambda' + str(FLAGS.lambda2)
+            local_model_dir = FLAGS.keep_train_dir + '/adaptation.' + FLAGS.adaptation + 'update_lr' + str(
+                FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+                FLAGS.metatrain_iterations) + '.lambda' + str(FLAGS.lambda2)
             if not os.path.exists(local_model_dir):
                 os.makedirs(local_model_dir)
-
+            print("================================================ iter:", itr)
             print('>>>>>>  subject : ', FLAGS.sbjt_start_idx)
-            out = open(local_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-            weights_to_save = {}
-            weights_to_save.update({'w': sess.run('model/w1:0')})
-            weights_to_save.update({'b': sess.run('model/b1:0')})
-            pickle.dump(weights_to_save, out, protocol=2)
-            out.close()
+            if FLAGS.adaptation.startwith('outer'):
+                w = sess.run('model/w1:0')
+                print()
+                print("= weight norm:", np.linalg.norm(w))
+                print("= last weight :", w[-1])
+                print("= b :", sess.run('model/b1:0'))
+                print("= w shape :", sess.run('model/w1:0').shape)
+
+                out = open(local_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+                weights_to_save = {}
+                weights_to_save.update({'w': sess.run('model/w1:0')})
+                weights_to_save.update({'b': sess.run('model/b1:0')})
+                pickle.dump(weights_to_save, out, protocol=2)
+                out.close()
+            elif FLAGS.adaptation.startwith('inner'):
+                # save local weight at the last iteration
+                print(">>>>>>>>>>>>>> local save !! : ", itr)
+                fast_w = np.array(result[-2])
+                fast_b = np.array(result[-1])
+                print("fast_w shape: ", fast_w.shape)
+                print("fast_b shape: ", fast_b.shape)
+                print("================================================================================")
+                print('>>>>>> Global bias: ', sess.run('model/b1:0'))
+                local_model_dir = FLAGS.keep_train_dir + '/adaptation.update_lr' + str(
+                    FLAGS.update_lr) + '.num_updates' + str(FLAGS.num_updates) + '.lambda' + str(FLAGS.lambda2)
+                if not os.path.exists(local_model_dir):
+                    os.makedirs(local_model_dir)
+            else:
+                print(">>>>>>>>>>>>>> check adaptation method: inner or outer but given ", FLAGS.adaptation)
+
+            for i in range(FLAGS.meta_batch_size):
+                print('>>>>>>  subject : ', i)
+                out = open(local_model_dir + '/subject' + str(i) + ".pkl", 'wb')
+                weights_to_save = {}
+                weights_to_save.update({'w': fast_w[:, i]})
+                weights_to_save.update({'b': fast_b[:, i]})
+                pickle.dump(weights_to_save, out, protocol=2)
+                out.close()
 
 
         elif (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
