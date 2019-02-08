@@ -96,7 +96,7 @@ flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test t
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
-flags.DEFINE_bool('opti', False, 'do inner gradient with optimzier,not simple gradient')
+flags.DEFINE_string('opti', '', 'optimizer : adam or adadelta')
 flags.DEFINE_integer('shuffle_batch', 1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 flags.DEFINE_string('adaptation', "", 'adaptation way: inner or outer')
