@@ -154,7 +154,7 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
                 os.makedirs(local_model_dir)
             print("================================================ iter:", itr)
             print('>>>>>>  subject : ', FLAGS.sbjt_start_idx)
-            if FLAGS.adaptation.startwith('outer'):
+            if FLAGS.adaptation.startswith('outer'):
                 w = sess.run('model/w1:0')
                 print()
                 print("= weight norm:", np.linalg.norm(w))
@@ -168,7 +168,7 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
                 weights_to_save.update({'b': sess.run('model/b1:0')})
                 pickle.dump(weights_to_save, out, protocol=2)
                 out.close()
-            elif FLAGS.adaptation.startwith('inner'):
+            elif FLAGS.adaptation.startswith('inner'):
                 assert (FLAGS.metatrain_iterations == 1)
                 # save local weight at the last iteration
                 print(">>>>>>>>>>>>>> local save !! : ", itr)
