@@ -301,12 +301,14 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
             f = open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r')
             lines = f.readlines()[:4845]
             all_labels_per_subj.append([float(line.split(',')[1].split('\n')[0]) for line in lines])
+            # for dataframe
             on_intensity_info = [int(i) for i in range(len(lines)) if float(lines[i].split(',')[1].split('\n')[0]) > 0]
             off_intensity_info = [int(i) for i in range(4845) if i not in on_intensity_info]
             all_au_on_intensity_info.append(on_intensity_info)
             all_au_off_intensity_info.append(off_intensity_info)
         all_labels_per_subj = np.transpose(np.array(all_labels_per_subj), (1, 0))
         all_subject_labels.append(all_labels_per_subj)
+        # for dataframe
         all_subject_on_intensity_info.append(all_au_on_intensity_info)
         all_subject_off_intensity_info.append(all_au_off_intensity_info)
     all_subject_on_intensity_info = np.array(all_subject_on_intensity_info)  # 14*8
