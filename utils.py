@@ -263,6 +263,64 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
                                                               on_random_frames_n_features], off_sample_labels, on_sample_labels
 
 
+def get_all_feature_w_all_labels(feature_files, label_paths):
+    all_subject_features = []
+
+    print('>>>> get feature vec')
+    for feature_file in feature_files:
+        print(feature_file.split('/')[-1])
+        f = open(feature_file, 'r')
+        lines = f.readlines()
+        one_subject_features = [list(range(2048)) for _ in range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
+        for line in lines:
+            line = line.split(',')
+            frame_idx = int(line[1].split('frame')[1])
+            one_subject_features[frame_idx] = [float(elt) for elt in line[2:]]  # key = frame, value = feature vector
+        all_subject_features.append(np.array(one_subject_features))
+
+    print('>>>> get label')
+    aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
+    all_subject_labels = []  # list of feat_vec array per subject
+    all_subject_on_intensity_info = []
+    all_subject_off_intensity_info = []
+    for label_path in label_paths:
+        subject = label_path.split('/')[-1]
+        print(subject)
+        all_labels_per_subj = []
+        all_au_on_intensity_info = []
+        all_au_off_intensity_info = []
+        for au in aus:
+            f = open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r')
+            lines = f.readlines()[:4845]
+            all_labels_per_subj.append([float(line.split(',')[1].split('\n')[0]) for line in lines])
+            on_intensity_info = [i for i in range(len(lines)) if float(lines[i].split(',')[1].split('\n')[0]) > 0]
+            off_intensity_info = [i for i in range(4845) if i not in on_intensity_info]
+            all_au_on_intensity_info.append(on_intensity_info)
+            all_au_off_intensity_info.append(off_intensity_info)
+        all_labels_per_subj = np.transpose(np.array(all_labels_per_subj), (1, 0))
+        all_subject_labels.append(all_labels_per_subj)
+        all_subject_on_intensity_info.append(all_au_on_intensity_info)
+        all_subject_off_intensity_info.append(all_au_off_intensity_info)
+    all_subject_on_intensity_info = np.array(all_subject_on_intensity_info)  # 14*8
+    all_subject_off_intensity_info = np.array(all_subject_off_intensity_info)
+
+    import pandas as pd
+    on_pd_data = {}
+    for i in range(len(aus)):
+        on_pd_data[aus[i]] = all_subject_on_intensity_info[:, i]
+    on_df = pd.DataFrame(
+        data=on_pd_data
+    )
+
+    off_pd_data = {}
+    for i in range(len(aus)):
+        off_pd_data[aus[i]] = all_subject_off_intensity_info[:, i]
+    off_df = pd.DataFrame(
+        data=off_pd_data
+    )
+
+    return all_subject_features, all_subject_labels, on_df, off_df
+
 
 
 ## Network helpers
