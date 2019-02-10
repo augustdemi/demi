@@ -89,7 +89,7 @@ class DataGenerator(object):
                 tt = selected_off_frame_idx[i][kshot:]
                 print('input b index: ', tt)
                 for elt in tt:
-                    print(type[elt])
+                    print(type(elt))
                 inputb.append(tf.gather(self.feat_tensor[i], selected_off_frame_idx[i][kshot:]))
                 inputb.append(tf.gather(self.feat_tensor[i], selected_on_frame_idx[i][kshot:]))
                 labela.append(tf.gather(self.label_tensor[i], selected_off_frame_idx[i][:kshot]))
