@@ -271,7 +271,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
     three_layers = feature_layer(10, FLAGS.num_au)
     three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
-    print('>>>> get feature vec')
+    print('---- get feature vec')
     for feature_file in feature_files:
         print(feature_file.split('/')[-1])
         f = open(feature_file, 'r')
@@ -283,11 +283,10 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
             feat_vec = np.array([float(elt) for elt in line[2:]])
             one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
         one_subject_features = np.array(one_subject_features)
-        print('one_subject_features shape:', one_subject_features.shape)
         one_subject_features = three_layers.model_final_latent_feat.predict(one_subject_features)
         all_subject_features.append(one_subject_features)
 
-    print('>>>> get label')
+    print('---- get label')
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     all_subject_labels = []  # list of feat_vec array per subject
     all_subject_on_intensity_info = []

@@ -46,13 +46,15 @@ class DataGenerator(object):
         feat_vec, labels, on_info_df, off_info_df = get_all_feature_w_all_labels(self.feature_files, self.label_folder)
 
         ################################### dim reduction ####################################
-        print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
+
         # three_layers = feature_layer(10, FLAGS.num_au)
         # three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
         # feat_vec = [three_layers.model_final_latent_feat.predict(one_vec) for one_vec in feat_vec]
         print("--- z_arr len:", len(feat_vec[0][0]))
-        print("--- feat_vec len:", len(feat_vec))
-        print("--- labels len:", len(labels))
+        feat_vec = np.array(feat_vec)
+        labels = np.array(labels)
+        print("--- feat_vec len:", feat_vec.shape)
+        print("--- labels len:", labels.shape)
 
         #################################### make tensor ###############################
         self.feat_tensor = tf.convert_to_tensor(feat_vec)
