@@ -276,14 +276,15 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
         print(feature_file.split('/')[-1])
         f = open(feature_file, 'r')
         lines = f.readlines()
-        one_subject_features = [list(range(2048)) for _ in range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
+        one_subject_features = [np.array(range(2048)) for _ in range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
         for line in lines:
             line = line.split(',')
             frame_idx = int(line[1].split('frame')[1])
             feat_vec = np.array([float(elt) for elt in line[2:]])
-
-            one_subject_features[frame_idx] = [feat_vec]  # key = frame, value = feature vector
-        one_subject_features = three_layers.model_final_latent_feat.predict(np.array(one_subject_features))
+            one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
+        one_subject_features = np.array(one_subject_features)
+        print('one_subject_features shape:', one_subject_features.shape)
+        one_subject_features = three_layers.model_final_latent_feat.predict(one_subject_features)
         all_subject_features.append(one_subject_features)
 
     print('>>>> get label')
