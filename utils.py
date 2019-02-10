@@ -264,7 +264,12 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
 
 
 def get_all_feature_w_all_labels(feature_files, label_paths):
+    from feature_layers import feature_layer
+
     all_subject_features = []
+    print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
+    three_layers = feature_layer(10, FLAGS.num_au)
+    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
     print('>>>> get feature vec')
     for feature_file in feature_files:
@@ -275,7 +280,9 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
         for line in lines:
             line = line.split(',')
             frame_idx = int(line[1].split('frame')[1])
-            one_subject_features[frame_idx] = [float(elt) for elt in line[2:]]  # key = frame, value = feature vector
+            feat_vec = np.array([float(elt) for elt in line[2:]])
+            feat_vec = three_layers.model_final_latent_feat.predict(feat_vec)
+            one_subject_features[frame_idx] = [feat_vec]  # key = frame, value = feature vector
         all_subject_features.append(np.array(one_subject_features))
 
     print('>>>> get label')
