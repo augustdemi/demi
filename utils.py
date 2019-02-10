@@ -281,9 +281,10 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
             line = line.split(',')
             frame_idx = int(line[1].split('frame')[1])
             feat_vec = np.array([float(elt) for elt in line[2:]])
-            feat_vec = three_layers.model_final_latent_feat.predict(feat_vec)
+
             one_subject_features[frame_idx] = [feat_vec]  # key = frame, value = feature vector
-        all_subject_features.append(np.array(one_subject_features))
+        one_subject_features = three_layers.model_final_latent_feat.predict(np.array(one_subject_features))
+        all_subject_features.append(one_subject_features)
 
     print('>>>> get label')
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
