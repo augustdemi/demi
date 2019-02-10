@@ -84,18 +84,19 @@ class DataGenerator(object):
                 selected_off_frame_idx.append(random.sample(each_subj_idx, needed_num_samples))
             print('>>> selected_off_frame_idx: ', selected_off_frame_idx)
             for i in range(FLAGS.meta_batch_size):
-                inputa.append(tf.gather(self.feat_tensor[i], selected_off_frame_idx[i][:kshot]))
-                inputa.append(tf.gather(self.feat_tensor[i], selected_on_frame_idx[i][:kshot]))
-                tt = selected_on_frame_idx[i][kshot:]
-                print('input b index: ', tt)
-                for elt in tt:
-                    print(type(elt))
-                inputb.append(tf.gather(self.feat_tensor[i], selected_off_frame_idx[i][kshot:]))
-                inputb.append(tf.gather(self.feat_tensor[i], selected_on_frame_idx[i][kshot:]))
-                labela.append(tf.gather(self.label_tensor[i], selected_off_frame_idx[i][:kshot]))
-                labela.append(tf.gather(self.label_tensor[i], selected_on_frame_idx[i][:kshot]))
-                labelb.append(tf.gather(self.label_tensor[i], selected_off_frame_idx[i][kshot:]))
-                labelb.append(tf.gather(self.label_tensor[i], selected_on_frame_idx[i][kshot:]))
+                inputa_idx = selected_off_frame_idx[i][:kshot]
+                print('---- inputa off index: \n', inputa_idx)
+                inputa_idx = inputa_idx.extend(selected_on_frame_idx[i][:kshot])
+                print('---- inputa off & on index: \n', inputa_idx)
+                inputa.append(tf.gather(self.feat_tensor[i], inputa_idx))
+                labela.append(tf.gather(self.label_tensor[i], inputa_idx))
+
+                inputb_idx = selected_off_frame_idx[i][kshot:]
+                print('---- inputb off index: \n', inputb_idx)
+                inputb_idx = inputb_idx.extend(selected_on_frame_idx[i][kshot:])
+                print('---- inputb off & on index: \n', inputb_idx)
+                inputb.append(tf.gather(self.feat_tensor[i], inputb_idx))
+                labelb.append(tf.gather(self.label_tensor[i], inputb_idx))
         inputa = tf.concat(inputa, 0)
         inputb = tf.concat(inputb, 0)
         labela = tf.concat(labela, 0)
