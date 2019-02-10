@@ -219,7 +219,7 @@ def main():
 
     # pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
-    model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
+    model.construct_model(input_tensors=metatrain_input_tensors)
     model.summ_op = tf.summary.merge_all()
 
     saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=20)

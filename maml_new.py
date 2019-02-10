@@ -36,7 +36,7 @@ class MAML:
         self.forward = self.forward_fc
         self.construct_weights = self.getWeightVar
 
-    def construct_model(self, input_tensors=None, prefix='metatrain_'):
+    def construct_model(self, input_tensors=None):
         # a: training data for inner gradient, b: test data for meta gradient
         if input_tensors is None:
             self.inputa = tf.placeholder(tf.float32)
