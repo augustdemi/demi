@@ -62,7 +62,7 @@ class DataGenerator(object):
         self.on_info_df = on_info_df
         self.off_info_df = off_info_df
 
-    def shuffle_data_tensor(self, seed, aus, kshot):
+    def shuffle_data_tensor(self, seed, kshot, aus):
         inputa = []
         inputb = []
         labela = []
