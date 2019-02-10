@@ -287,6 +287,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
         all_subject_features.append(one_subject_features)
 
     print('---- get label')
+    binary_intensity = lambda lab: 1 if lab > 0 else 0
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     all_subject_labels = []  # list of feat_vec array per subject
     all_subject_on_intensity_info = []
@@ -300,7 +301,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
         for au in aus:
             f = open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r')
             lines = f.readlines()[:4845]
-            all_labels_per_subj.append([float(line.split(',')[1].split('\n')[0]) for line in lines])
+            all_labels_per_subj.append([binary_intensity(float(line.split(',')[1].split('\n')[0])) for line in lines])
             # for dataframe
             on_intensity_info = [int(i) for i in range(len(lines)) if float(lines[i].split(',')[1].split('\n')[0]) > 0]
             off_intensity_info = [int(i) for i in range(4845) if i not in on_intensity_info]
