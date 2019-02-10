@@ -97,6 +97,7 @@ class DataGenerator(object):
         inputb_latent_feat = three_layers.model_final_latent_feat.predict(inputb_features)
         print(">>> z_arr len:", len(inputa_latent_feat))
 
+        sess = tf.Session()
         #################################### make tensor ###############################
         inputa_latent_feat_tensor = tf.convert_to_tensor(inputa_latent_feat)
         inputa_latent_feat_tensor = tf.reshape(inputa_latent_feat_tensor,
@@ -106,6 +107,9 @@ class DataGenerator(object):
         inputb_latent_feat_tensor = tf.reshape(inputb_latent_feat_tensor,
                                                [self.total_num_au * FLAGS.meta_batch_size, FLAGS.update_batch_size * 2,
                                                 self.weight_dim])
+
+        sess.run(tf.global_variables_initializer())
+        print(sess.run(inputa_latent_feat_tensor))
 
 
         labelas = np.array(labelas) # (aus*subjects*K*2 = num of task * 2K, au)
