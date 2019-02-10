@@ -90,16 +90,18 @@ class DataGenerator(object):
             one_au_labelb = []
             for i in range(FLAGS.meta_batch_size):
                 print('-------------------------------------------------------- subject ', i)
-                inputa_idx = selected_off_frame_idx[i][:int(len(selected_off_frame_idx) / 2)]
+                half_off_frame = int(len(selected_off_frame_idx[i]) / 2)
+                half_on_frame = int(len(selected_on_frame_idx[i]) / 2)
+                inputa_idx = selected_off_frame_idx[i][:half_off_frame]
                 print('---- inputA off index: \n', inputa_idx)
-                inputa_idx.extend(selected_on_frame_idx[i][:int(len(selected_on_frame_idx) / 2)])
+                inputa_idx.extend(selected_on_frame_idx[i][:half_on_frame])
                 print('---- inputA off + on index: \n', inputa_idx)
                 one_au_inputa.append(tf.gather(self.feat_tensor[i], inputa_idx))
                 one_au_labela.append(tf.gather(self.label_tensor[i], inputa_idx))
 
-                inputb_idx = selected_off_frame_idx[i][int(len(selected_off_frame_idx) / 2):]
+                inputb_idx = selected_off_frame_idx[i][half_off_frame:]
                 print('---- inputB off index: \n', inputb_idx)
-                inputb_idx.extend(selected_on_frame_idx[i][int(len(selected_on_frame_idx) / 2):])
+                inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
                 print('---- inputB off + on index: \n', inputb_idx)
                 one_au_inputb.append(tf.gather(self.feat_tensor[i], inputb_idx))
                 one_au_labelb.append(tf.gather(self.label_tensor[i], inputb_idx))
