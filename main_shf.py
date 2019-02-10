@@ -100,6 +100,7 @@ flags.DEFINE_string('opti', '', 'optimizer : adam or adadelta')
 flags.DEFINE_integer('shuffle_batch', 1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 flags.DEFINE_string('adaptation', "", 'adaptation way: inner or outer')
+flags.DEFINE_string('labledir', "'/home/ml1323/project/robert_data/DISFA/label/'", 'lable_dir')
 
 
 def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr=0):
