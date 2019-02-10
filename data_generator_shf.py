@@ -86,7 +86,7 @@ class DataGenerator(object):
             for i in range(FLAGS.meta_batch_size):
                 inputa.append(tf.gather(self.feat_tensor[i], selected_off_frame_idx[i][:kshot]))
                 inputa.append(tf.gather(self.feat_tensor[i], selected_on_frame_idx[i][:kshot]))
-                tt = selected_off_frame_idx[i][kshot:]
+                tt = selected_on_frame_idx[i][kshot:]
                 print('input b index: ', tt)
                 for elt in tt:
                     print(type(elt))
