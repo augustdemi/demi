@@ -45,9 +45,6 @@ class DataGenerator(object):
     def make_data_tensor(self):
         feat_vec, labels, on_info_df, off_info_df = get_all_feature_w_all_labels(self.feature_files, self.label_folder)
 
-        print("--- z_arr len:", len(feat_vec[0][0]))
-        print("--- feat_vec len:", feat_vec.shape)
-        print("--- labels len:", labels.shape)
         #################################### make tensor ###############################
         self.feat_tensor = tf.convert_to_tensor(feat_vec)
         self.label_tensor = tf.convert_to_tensor(labels)
@@ -65,7 +62,7 @@ class DataGenerator(object):
             selected_on_frame_idx = []
             for each_subj_idx in one_au_all_subjects_on_frame_indices:
                 random.seed(seed)
-                selected_on_frame_idx.append(random.sample(each_subj_idx, min(2 * kshot, len(each_subj_idx))))
+                selected_on_frame_idx.append(random.sample(each_subj_idx, 2 * min(kshot, int(len(each_subj_idx) / 2))))
                 print(len(selected_on_frame_idx[-1]))
             print('>>> selected_on_frame_idx: ', selected_on_frame_idx)
 
