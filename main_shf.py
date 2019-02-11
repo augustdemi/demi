@@ -123,6 +123,12 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
         if itr % FLAGS.shuffle_batch == 0:
             print('=============================================================shuffle data, iteration:', itr)
             inputa, inputb, labela, labelb = data_generator.shuffle_data_tensor(itr, FLAGS.update_batch_size, aus)
+            print(inputa)
+            print(inputb)
+            print(labela)
+            print(labelb)
+            print(labelb.eval())
+
             feed_dict = {model.inputa: inputa.eval(),
                          model.inputb: inputb.eval(),
                          model.labela: labela.eval(),
