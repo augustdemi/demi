@@ -66,7 +66,9 @@ class DataGenerator(object):
             for each_subj_idx in one_au_all_subjects_on_frame_indices:
                 random.seed(seed)
                 selected_on_frame_idx.append(random.sample(each_subj_idx, min(2 * kshot, len(each_subj_idx))))
+                print(len(selected_on_frame_idx[-1]))
             print('>>> selected_on_frame_idx: ', selected_on_frame_idx)
+
             one_au_all_subjects_off_frame_indices = self.off_info_df[au]
             selected_off_frame_idx = []
             for i in range(len(one_au_all_subjects_off_frame_indices)):
@@ -74,6 +76,8 @@ class DataGenerator(object):
                 needed_num_samples = 4 * kshot - len(selected_on_frame_idx[i])
                 random.seed(seed)
                 selected_off_frame_idx.append(random.sample(each_subj_idx, needed_num_samples))
+                print('off subejct :', i)
+                print(len(selected_off_frame_idx[-1]))
             print('>>> selected_off_frame_idx: ', selected_off_frame_idx)
 
             for i in range(FLAGS.meta_batch_size):
