@@ -200,9 +200,9 @@ class MAML:
                                                                    -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
-                print('--------------------for sub0, labelb of au', i)
-                print(labelb.shape)
-                print(sess.run(labelb)[0][:])
+                # print('--------------------for sub0, labelb of au', i)
+                # print(labelb.shape)
+                # print(sess.run(labelb)[0][:])
 
                 fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, predict_b = tf.map_fn(
                     task_metalearn,
@@ -214,11 +214,11 @@ class MAML:
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
-                print('--------------------for sub0, predict_b of au', i)
-                print(predict_b.shape)
-                sess.run(tf.global_variables_initializer())
-                print(sess.run(predict_b)[0][:])
-                print('================================================')
+                # print('--------------------for sub0, predict_b of au', i)
+                # print(predict_b.shape)
+                # sess.run(tf.global_variables_initializer())
+                # print(sess.run(predict_b)[0][:])
+                # print('================================================')
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
                              range(self.total_num_au)]

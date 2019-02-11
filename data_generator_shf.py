@@ -89,26 +89,22 @@ class DataGenerator(object):
             one_au_labela = []
             one_au_labelb = []
             for i in range(FLAGS.meta_batch_size):
-                print('-------------------------------------------------------- subject ', i)
+                # print('-------------------------------------------------------- subject ', i)
                 half_off_frame = int(len(selected_off_frame_idx[i]) / 2)
                 half_on_frame = int(len(selected_on_frame_idx[i]) / 2)
                 inputa_idx = selected_off_frame_idx[i][:half_off_frame]
-                print('---- inputA off index: \n', inputa_idx)
+                # print('---- inputA off index: \n', inputa_idx)
                 inputa_idx.extend(selected_on_frame_idx[i][:half_on_frame])
-                print('---- inputA off + on index: \n', inputa_idx)
+                # print('---- inputA off + on index: \n', inputa_idx)
                 inputa.append(tf.gather(self.feat_tensor[i], inputa_idx))
                 labela.append(tf.gather(self.label_tensor[i], inputa_idx))
 
                 inputb_idx = selected_off_frame_idx[i][half_off_frame:]
-                print('---- inputB off index: \n', inputb_idx)
+                # print('---- inputB off index: \n', inputb_idx)
                 inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
-                print('---- inputB off + on index: \n', inputb_idx)
+                # print('---- inputB off + on index: \n', inputb_idx)
                 inputb.append(tf.gather(self.feat_tensor[i], inputb_idx))
                 labelb.append(tf.gather(self.label_tensor[i], inputb_idx))
-                # inputa.append(tf.concat(one_au_inputa, 0))
-                # inputb.append(tf.concat(one_au_inputb, 0))
-                # labela.append(tf.concat(one_au_labela, 0))
-                # labelb.append(tf.concat(one_au_labelb, 0))
         inputa = tf.convert_to_tensor(inputa)
         inputb = tf.convert_to_tensor(inputb)
         labela = tf.convert_to_tensor(labela)
