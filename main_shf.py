@@ -213,7 +213,7 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
 
 
 def main():
-    os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+    os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
     # config = tf.ConfigProto()
     # config.gpu_options.allow_growth = True
     # config.gpu_options.per_process_gpu_memory_fraction = 0.4
