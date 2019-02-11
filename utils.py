@@ -304,7 +304,11 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
         for au in aus:
             f = open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r')
             lines = f.readlines()[:4845]
-            all_labels_per_subj.append([binary_intensity(float(line.split(',')[1].split('\n')[0])) for line in lines])
+            labels_per_subj_per_au = [binary_intensity(float(line.split(',')[1].split('\n')[0])) for line in lines]
+            if len(labels_per_subj_per_au) < 4845:
+                labels_per_subj_per_au.append(-1)
+            all_labels_per_subj.append(labels_per_subj_per_au)
+
             # for dataframe
             on_intensity_info = [i for i in range(len(lines)) if
                                  (float(lines[i].split(',')[1].split('\n')[0]) > 0) and (
