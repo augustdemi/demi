@@ -22,12 +22,6 @@ class DataGenerator(object):
         Args:
             num_samples_per_class: num samples to generate per class in one batch
         """
-        self.num_samples_per_class = FLAGS.update_batch_size * 2
-        self.num_classes = FLAGS.num_classes
-        self.img_size = config.get('img_size', (160, 240))
-        self.dim_input = np.prod(self.img_size)
-        self.weight_dim = 300
-        self.total_num_au = 8
 
         data_folder = FLAGS.datadir
         subjects = os.listdir(data_folder)
@@ -42,18 +36,14 @@ class DataGenerator(object):
         subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
 
-    def make_data_tensor(self):
         feat_vec, labels, on_info_df, off_info_df = get_all_feature_w_all_labels(self.feature_files, self.label_folder)
 
-        #################################### make tensor ###############################
-        self.feat_tensor = tf.convert_to_tensor(feat_vec)
-        self.label_tensor = tf.convert_to_tensor(labels)
+        self.feat_vec = feat_vec
+        self.labels = labels
         self.on_info_df = on_info_df
         self.off_info_df = off_info_df
 
-        # return feat_tensor, label_tensor, on_info_df, off_info_df
-
-    def shuffle_data_tensor(self, seed, kshot, aus):
+    def shuffle_data(self, seed, kshot, aus):
         inputa = []
         inputb = []
         labela = []
@@ -81,20 +71,16 @@ class DataGenerator(object):
                 half_off_frame = int(len(selected_off_frame_idx[i]) / 2)
                 half_on_frame = int(len(selected_on_frame_idx[i]) / 2)
                 inputa_idx = selected_off_frame_idx[i][:half_off_frame]
-                # print('---- inputA off index: \n', len(inputa_idx))
                 inputa_idx.extend(selected_on_frame_idx[i][:half_on_frame])
-                # print('---- inputA off + on index: \n', len(inputa_idx))
-                inputa.append(tf.gather(self.feat_tensor[i], inputa_idx))
-                labela.append(tf.gather(self.label_tensor[i], inputa_idx))
+                inputa.append(self.feat_vec[i][inputa_idx])
+                labela.append(self.labels[i][inputa_idx])
 
                 inputb_idx = selected_off_frame_idx[i][half_off_frame:]
-                # print('---- inputB off index: \n', inputb_idx)
                 inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
-                # print('---- inputB off + on index: \n', inputb_idx)
-                inputb.append(tf.gather(self.feat_tensor[i], inputb_idx))
-                labelb.append(tf.gather(self.label_tensor[i], inputb_idx))
-        inputa = tf.convert_to_tensor(inputa)
-        inputb = tf.convert_to_tensor(inputb)
-        labela = tf.convert_to_tensor(labela)
-        labelb = tf.convert_to_tensor(labelb)
+                inputb.append(self.feat_vec[i][inputb_idx])
+                labelb.append(self.labels[i][inputb_idx])
+        inputa = np.array(inputa)
+        inputb = np.array(inputb)
+        labela = np.array(labela)
+        labelb = np.array(labelb)
         return inputa, inputb, labela, labelb
