@@ -81,13 +81,13 @@ class DataGenerator(object):
             print('>>> selected_off_frame_idx: ', selected_off_frame_idx)
 
             for i in range(FLAGS.meta_batch_size):
-                # print('-------------------------------------------------------- subject ', i)
+                print('-------------------------------------------------------- subject ', i)
                 half_off_frame = int(len(selected_off_frame_idx[i]) / 2)
                 half_on_frame = int(len(selected_on_frame_idx[i]) / 2)
                 inputa_idx = selected_off_frame_idx[i][:half_off_frame]
-                # print('---- inputA off index: \n', inputa_idx)
+                print('---- inputA off index: \n', len(inputa_idx))
                 inputa_idx.extend(selected_on_frame_idx[i][:half_on_frame])
-                # print('---- inputA off + on index: \n', inputa_idx)
+                print('---- inputA off + on index: \n', len(inputa_idx))
                 inputa.append(tf.gather(self.feat_tensor[i], inputa_idx))
                 labela.append(tf.gather(self.label_tensor[i], inputa_idx))
 
