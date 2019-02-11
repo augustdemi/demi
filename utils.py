@@ -314,8 +314,6 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
             all_au_on_intensity_info.append(on_intensity_info)
             all_au_off_intensity_info.append(off_intensity_info)
         all_labels_per_subj = np.transpose(np.array(all_labels_per_subj), (1, 0))
-        print('!!!!!!!!!!!!')
-        print('all_labels_per_subj', all_labels_per_subj.shape)
         all_subject_labels.append(all_labels_per_subj)
         # for dataframe
         all_subject_on_intensity_info.append(all_au_on_intensity_info)
@@ -323,6 +321,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
     all_subject_features = np.array(all_subject_features)
     all_subject_labels = np.array(all_subject_labels)
     print('===================')
+    print("--- z_arr len:", len(all_subject_features[0][0]))
     print('all_subject_features: ', all_subject_features.shape)
     print('all_subject_labels: ', all_subject_labels.shape)
     all_subject_on_intensity_info = np.array(all_subject_on_intensity_info)  # 14*8
