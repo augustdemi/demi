@@ -36,18 +36,12 @@ class MAML:
         self.forward = self.forward_fc
         self.construct_weights = self.getWeightVar
 
-    def construct_model(self, input_tensors=None, prefix='metatrain_'):
+    def construct_model(self, input_tensors=None):
         # a: training data for inner gradient, b: test data for meta gradient
-        if input_tensors is None:
-            self.inputa = tf.placeholder(tf.float32)
-            self.inputb = tf.placeholder(tf.float32)
-            self.labela = tf.placeholder(tf.float32)
-            self.labelb = tf.placeholder(tf.float32)
-        else:
-            self.inputa = input_tensors['inputa']
-            self.inputb = input_tensors['inputb']
-            self.labela = input_tensors['labela']
-            self.labelb = input_tensors['labelb']
+        self.inputa = input_tensors['inputa']
+        self.inputb = input_tensors['inputb']
+        self.labela = input_tensors['labela']
+        self.labelb = input_tensors['labelb']
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
 

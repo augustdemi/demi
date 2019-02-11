@@ -164,7 +164,7 @@ print('z', z.shape)
 # print('h_decoded2', h_decoded2.shape)
 print('x_decoded_mean', x_decoded_mean.shape)
 print('==============================')
-out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1) # 위에서만든 layer로 디코더 실행. 근데 사실상 이 디코더에 오기까지 오리지날 트레인 x를 인코드하는거부터 시작됨. vae.
+out_0 = EE.networks.decoder(x_decoded_mean, shape, norm=1)
 
 
 def vae_loss(img, rec):

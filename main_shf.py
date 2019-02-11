@@ -122,17 +122,14 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
         if itr % FLAGS.shuffle_batch == 0:
             print('=============================================================shuffle data, iteration:', itr)
-            inputa, inputb, labela, labelb = data_generator.shuffle_data_tensor(itr, FLAGS.update_batch_size, aus)
-            print(inputa)
-            print(inputb)
-            print(labela)
-            print(labelb)
-            print(labelb.eval())
 
-            feed_dict = {model.inputa: inputa.eval(),
-                         model.inputb: inputb.eval(),
-                         model.labela: labela.eval(),
-                         model.labelb: labelb.eval(), model.meta_lr: FLAGS.meta_lr}
+            inputa, inputb, labela, labelb = data_generator.shuffle_data(itr, FLAGS.update_batch_size, aus)
+
+            feed_dict = {model.inputa: inputa,
+                         model.inputb: inputb,
+                         model.labela: labela,
+                         model.labelb: labelb, model.meta_lr: FLAGS.meta_lr}
+
 
         if itr <= 1000:
             SAVE_INTERVAL = 100
@@ -149,7 +146,7 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
         input_tensors.extend([model.fast_weight_w])
         input_tensors.extend([model.fast_weight_b])
         result = sess.run(input_tensors, feed_dict)
-        del inputa, inputb, labela, labelb
+
 
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
@@ -216,26 +213,27 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
 
 
 def main():
-    os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
-    data_generator = DataGenerator()
+    os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+    # config = tf.ConfigProto()
+    # config.gpu_options.allow_growth = True
+    # config.gpu_options.per_process_gpu_memory_fraction = 0.4
 
-    dim_output = data_generator.num_classes
-    dim_input = data_generator.dim_input
-    data_generator.make_data_tensor()
+    data_generator = DataGenerator()
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     seed = 0
-    inputa, inputb, labela, labelb = data_generator.shuffle_data_tensor(seed, FLAGS.update_batch_size, aus)
+    inputa, inputb, labela, labelb = data_generator.shuffle_data(seed, FLAGS.update_batch_size, aus)
 
     print('>>>>>>> inputa shape: ', inputa.shape)
     print('>>>>>>> labela shape: ', labela.shape)
-    # (aus*subjects, 2K, latent_dim)
-    # (aus*subjects, 2K, au)
-    metatrain_input_tensors = {'inputa': inputa, 'inputb': inputb, 'labela': labela, 'labelb': labelb}
+    # inputa = (aus*subjects, 2K, latent_dim)
+    # labela = (aus*subjects, 2K, au)
+    metatrain_input_tensors = {'inputa': tf.convert_to_tensor(inputa), 'inputb': tf.convert_to_tensor(inputb),
+                               'labela': tf.convert_to_tensor(labela), 'labelb': tf.convert_to_tensor(labelb)}
 
-    # pred_weights = data_generator.pred_weights
-    model = MAML(dim_input, dim_output)
-    model.construct_model(input_tensors=metatrain_input_tensors, prefix='metatrain_')
+    dim_input = np.prod((160, 240))  # img size
+    model = MAML(dim_input, FLAGS.num_classes)
+    model.construct_model(input_tensors=metatrain_input_tensors)
     model.summ_op = tf.summary.merge_all()
 
     saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=20)
