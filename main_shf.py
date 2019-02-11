@@ -143,6 +143,7 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
         input_tensors.extend([model.fast_weight_w])
         input_tensors.extend([model.fast_weight_b])
         result = sess.run(input_tensors, feed_dict)
+        del inputa, inputb, labela, labelb
 
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
