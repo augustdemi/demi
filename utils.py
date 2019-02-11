@@ -281,7 +281,8 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
             line = line.split(',')
             frame_idx = int(line[1].split('frame')[1])
             feat_vec = np.array([float(elt) for elt in line[2:]])
-            one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
+            if frame_idx < 4845:
+                one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
         one_subject_features = np.array(one_subject_features)
         one_subject_features = three_layers.model_final_latent_feat.predict(one_subject_features)
         all_subject_features.append(one_subject_features)
