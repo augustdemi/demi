@@ -323,6 +323,11 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
     print('===================')
     print("--- z_arr len:", len(all_subject_features[0][0]))
     print('all_subject_features: ', all_subject_features.shape)
+    print('@@@@@@@@@@@@@@@@@@@@@')
+    for elt in all_subject_labels:
+        print(elt.shape)
+        print('------------------------')
+    print('@@@@@@@@@@@@@@@@@@@@@')
     print('all_subject_labels: ', all_subject_labels.shape)
     all_subject_on_intensity_info = np.array(all_subject_on_intensity_info)  # 14*8
     all_subject_off_intensity_info = np.array(all_subject_off_intensity_info)
