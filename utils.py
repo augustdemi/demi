@@ -272,6 +272,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
     three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
     print('---- get feature vec')
+    existing_frames_in_feat_vec = []
     for feature_file in feature_files:
         print(feature_file.split('/')[-1])
         f = open(feature_file, 'r')
@@ -280,6 +281,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
         for line in lines:
             line = line.split(',')
             frame_idx = int(line[1].split('frame')[1])
+            existing_frames_in_feat_vec.append(frame_idx)
             feat_vec = np.array([float(elt) for elt in line[2:]])
             if frame_idx < 4845:
                 one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
@@ -304,8 +306,11 @@ def get_all_feature_w_all_labels(feature_files, label_paths):
             lines = f.readlines()[:4845]
             all_labels_per_subj.append([binary_intensity(float(line.split(',')[1].split('\n')[0])) for line in lines])
             # for dataframe
-            on_intensity_info = [int(i) for i in range(len(lines)) if float(lines[i].split(',')[1].split('\n')[0]) > 0]
-            off_intensity_info = [int(i) for i in range(4845) if i not in on_intensity_info]
+            on_intensity_info = [i for i in range(len(lines)) if
+                                 (float(lines[i].split(',')[1].split('\n')[0]) > 0) and (
+                                 i in existing_frames_in_feat_vec)]
+            off_intensity_info = [i for i in range(4845) if
+                                  (i not in on_intensity_info) and (i in existing_frames_in_feat_vec)]
             all_au_on_intensity_info.append(on_intensity_info)
             all_au_off_intensity_info.append(off_intensity_info)
         all_labels_per_subj = np.transpose(np.array(all_labels_per_subj), (1, 0))
