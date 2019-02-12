@@ -22,7 +22,7 @@ class MAML:
         self.dim_input = dim_input
         self.dim_output = dim_output
         self.update_lr = FLAGS.update_lr
-        self.meta_lr = tf.placeholder_with_default(FLAGS.meta_lr, ())
+        self.meta_lr = FLAGS.meta_lr
         self.classification = False
         self.weight_dim = 300
         self.total_num_au = 8

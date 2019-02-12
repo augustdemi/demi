@@ -111,25 +111,19 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
-    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
-                 model.inputb: metatrain_input_tensors['inputb'].eval(),
-                 model.labela: metatrain_input_tensors['labela'].eval(),
-                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
+    feed_dict = {}
 
     print('Done initializing, starting training.')
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-        if itr % FLAGS.shuffle_batch == 0:
+        if FLAGS.shuffle_batch > 0 and itr % FLAGS.shuffle_batch == 0:
             print('=============================================================shuffle data, iteration:', itr)
-
             inputa, inputb, labela, labelb = data_generator.shuffle_data(itr, FLAGS.update_batch_size, aus)
-
             feed_dict = {model.inputa: inputa,
                          model.inputb: inputb,
                          model.labela: labela,
                          model.labelb: labelb, model.meta_lr: FLAGS.meta_lr}
-
 
         if itr <= 1000:
             SAVE_INTERVAL = 100
@@ -146,7 +140,6 @@ def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_m
         input_tensors.extend([model.fast_weight_w])
         input_tensors.extend([model.fast_weight_b])
         result = sess.run(input_tensors, feed_dict)
-
 
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
@@ -221,8 +214,7 @@ def main():
     data_generator = DataGenerator()
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-    seed = 0
-    inputa, inputb, labela, labelb = data_generator.shuffle_data(seed, FLAGS.update_batch_size, aus)
+    inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed, FLAGS.update_batch_size, aus)
 
     print('>>>>>>> inputa shape: ', inputa.shape)
     print('>>>>>>> labela shape: ', labela.shape)
@@ -309,24 +301,6 @@ def main():
         saver.restore(sess, model_file)
         print("updated weights from ckpt: ", sess.run('model/b1:0'))
 
-    elif FLAGS.model.startswith('s4'):
-        from feature_layers import feature_layer
-        three_layers = feature_layer(10, 1)
-        print('FLAGS.base_vae_model: ', FLAGS.base_vae_model)
-        three_layers.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
-        w = three_layers.model_intensity.layers[-1].get_weights()[0]
-        b = three_layers.model_intensity.layers[-1].get_weights()[1]
-        print('s2 b: ', b)
-        print('s2 w: ', w)
-        print('-----------------------------------------------------------------')
-        with tf.variable_scope("model", reuse=True) as scope:
-            scope.reuse_variables()
-            b1 = tf.get_variable("b1", [1, 2]).assign(np.array(b))
-            w1 = tf.get_variable("w1", [300, 1, 2]).assign(np.array(w))
-            sess.run(b1)
-            sess.run(w1)
-        print("after: ", sess.run('model/b1:0'))
-        print("after: ", sess.run('model/w1:0'))
     if not FLAGS.all_sub_model:
         trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
             FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
