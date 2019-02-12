@@ -78,6 +78,7 @@ flags.DEFINE_string('vae_model_to_test', '', 'vae model dir from robert code')
 flags.DEFINE_float('lambda1', 0, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 flags.DEFINE_string('opti', '', 'optimizer : adam or adadelta')
+flags.DEFINE_bool('check_sample', False, 'check selected samples')
 
 
 def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with the whole rest frames
