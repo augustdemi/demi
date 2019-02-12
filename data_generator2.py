@@ -47,12 +47,11 @@ class DataGenerator(object):
                 self.metatrain_character_folders.extend(subject_folders[
                                                         FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + num_subjects])
 
-    def make_data_tensor(self, kshot_seed, train=True):
-        if train:
-            print("===================================make_data_tensor in daga_generator2")
-            print(">>>>>>> sampling seed: ", kshot_seed)
-            folders = self.metatrain_character_folders
-            print(">>>>>>> train folders: ", folders)
+    def make_data_tensor(self, kshot_seed):
+        print("===================================make_data_tensor in daga_generator2")
+        print(">>>>>>> sampling seed: ", kshot_seed)
+        folders = self.metatrain_character_folders
+        print(">>>>>>> train folders: ", folders)
 
         # make list of files
         print('Generating filenames')

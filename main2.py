@@ -101,7 +101,8 @@ flags.DEFINE_integer('shuffle_batch', 1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 flags.DEFINE_string('adaptation', "", 'adaptation way: inner or outer')
 
-def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr=0):
+
+def train(model, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 10
     SAVE_INTERVAL = 5000
@@ -109,24 +110,9 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
-    data_generator = DataGenerator()
-
-    feed_dict = {model.inputa: metatrain_input_tensors['inputa'].eval(),
-                 model.inputb: metatrain_input_tensors['inputb'].eval(),
-                 model.labela: metatrain_input_tensors['labela'].eval(),
-                 model.labelb: metatrain_input_tensors['labelb'].eval(), model.meta_lr: FLAGS.meta_lr}
-
     print('Done initializing, starting training.')
 
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
-        if itr % FLAGS.shuffle_batch == 0:
-            print('=============================================================shuffle data, iteration:', itr)
-            inputa, inputb, labela, labelb = data_generator.make_data_tensor(itr)
-            feed_dict = {model.inputa: inputa.eval(),
-                         model.inputb: inputb.eval(),
-                         model.labela: labela.eval(),
-                         model.labelb: labelb.eval(), model.meta_lr: FLAGS.meta_lr}
-
         if itr <= 1000:
             SAVE_INTERVAL = 100
         elif itr <= 5000:
@@ -141,12 +127,12 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
 
         input_tensors.extend([model.fast_weight_w])
         input_tensors.extend([model.fast_weight_b])
-        result = sess.run(input_tensors, feed_dict)
+        result = sess.run(input_tensors, {})
 
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
 
-        if FLAGS.train_test:
+        if FLAGS.train_test and itr == FLAGS.metatrain_iterations:
             local_model_dir = FLAGS.keep_train_dir + '/adaptation.' + FLAGS.adaptation + '.kshot' + str(
                 FLAGS.update_batch_size) + '.update_lr' + str(
                 FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
@@ -191,9 +177,7 @@ def train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume
             else:
                 print(">>>>>>>>>>>>>> check adaptation method: inner or outer but given ", FLAGS.adaptation)
 
-
-
-        elif (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
+        elif not FLAGS.train_test and ((itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations)):
             w = sess.run('model/w1:0')
             print("================================================ iter:", itr)
             print()
@@ -219,7 +203,7 @@ def main():
 
     # pred_weights = data_generator.pred_weights
     model = MAML(dim_input, dim_output)
-    model.construct_model(input_tensors=metatrain_input_tensors)
+    model.construct_model(metatrain_input_tensors)
     model.summ_op = tf.summary.merge_all()
 
     saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES), max_to_keep=20)
@@ -320,7 +304,7 @@ def main():
 
     print("================================================================================")
 
-    train(model, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr)
+    train(model, saver, sess, trained_model_dir, resume_itr)
 
     end_time = datetime.now()
     elapse = end_time - start_time
