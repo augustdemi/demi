@@ -70,7 +70,8 @@ class DataGenerator(object):
                 import pickle
                 data_source = 'test' if FLAGS.train_test else 'train'
                 out = open(
-                    '/home/ml1323/project/robert_code/new/check_labels/' + data_source + '/' + FLAGS.update_batch_size + 'shot.' + au + ".pkl",
+                    '/home/ml1323/project/robert_code/new/check_labels/' + data_source + '/' + str(
+                        FLAGS.update_batch_size) + 'shot.' + au + ".pkl",
                     'wb')
                 pickle.dump({'off': selected_off_frame_idx,
                              'on': selected_on_frame_idx}, out, protocol=2)
