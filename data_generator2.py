@@ -66,7 +66,7 @@ class DataGenerator(object):
                                                                                       FLAGS.feature_path,
                                                                                       kshot_seed,
                                                                                       nb_samples=FLAGS.update_batch_size * 2,
-                                                                                      check_samples=FLAGS.check_sample)
+                                                                                      check_sample=FLAGS.check_sample)
             # Split data into a/b
             half_off_img = int(len(off_imgs) / 2)
             half_on_img = int(len(on_imgs) / 2)
