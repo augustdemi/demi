@@ -62,9 +62,11 @@ class DataGenerator(object):
         # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
         for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
             # random.shuffle(sampled_character_folders)
-            off_imgs, on_imgs, off_labels, on_labels = get_kshot_feature_w_all_labels(sub_folder, FLAGS.feature_path,
+            off_imgs, on_imgs, off_labels, on_labels = get_kshot_feature_w_all_labels(sub_folder,
+                                                                                      FLAGS.feature_path,
                                                                                       kshot_seed,
-                                                                                      nb_samples=FLAGS.update_batch_size * 2)
+                                                                                      nb_samples=FLAGS.update_batch_size * 2,
+                                                                                      check_samples=FLAGS.check_sample)
             # Split data into a/b
             half_off_img = int(len(off_imgs) / 2)
             half_on_img = int(len(on_imgs) / 2)

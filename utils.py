@@ -172,7 +172,7 @@ def get_kshot_feature(kshot_path, feat_path, seed, nb_samples=None, validate=Fal
     return [elt[1] for elt in off_random_frames_n_features], [elt[1] for elt in on_random_frames_n_features]
 
 
-def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samples=None):
+def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samples=None, check_sample=False):
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
     subject = kshot_path.split('/')[-1]
@@ -236,6 +236,12 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
     # print("label: ", labels[1])
     # print('num of on_images: ', len(on_random_frames_n_features))
     # print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
+
+    if check_sample:
+        import pickle
+        out = open('/home/ml1323/project/robert_code/new/check_labels/seed' + sampling_seed + ".pkl", 'wb')
+        pickle.dump({'off': [elt[0] for elt in off_random_frames_n_features],
+                     'on': [elt[0] for elt in on_random_frames_n_features]}, out, protocol=2)
 
     off_frames_idx = [int(elt[0].split('frame')[1]) for elt in off_random_frames_n_features]
     on_frames_idx = [int(elt[0].split('frame')[1]) for elt in on_random_frames_n_features]
