@@ -66,6 +66,15 @@ class DataGenerator(object):
                 selected_off_frame_idx.append(random.sample(each_subj_idx, needed_num_samples))
             # print('>>> selected_off_frame_idx: ', selected_off_frame_idx)
 
+            if FLAGS.check_sample:
+                import pickle
+                data_source = 'test' if FLAGS.train_test else 'train'
+                out = open(
+                    '/home/ml1323/project/robert_code/new/check_labels/' + data_source + '/' + FLAGS.update_batch_size + 'shot.' + au + ".pkl",
+                    'wb')
+                pickle.dump({'off': selected_off_frame_idx,
+                             'on': selected_on_frame_idx}, out, protocol=2)
+
             for i in range(FLAGS.meta_batch_size):
                 # print('-------------------------------------------------------- subject ', i)
                 half_off_frame = int(len(selected_off_frame_idx[i]) / 2)

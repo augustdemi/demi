@@ -101,7 +101,7 @@ flags.DEFINE_integer('shuffle_batch', 1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
 flags.DEFINE_string('adaptation', "", 'adaptation way: inner or outer')
 flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/", 'label_dir')
-
+flags.DEFINE_bool('check_sample', False, 'check frame idx of samples')
 
 def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
