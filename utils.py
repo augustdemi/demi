@@ -239,7 +239,9 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
 
     if check_sample:
         import pickle
-        out = open('/home/ml1323/project/robert_code/new/check_labels/' + subject + ".pkl", 'wb')
+        out = open(
+            '/home/ml1323/project/robert_code/new/check_labels/' + kshot_path.split('/')[-2] + '/' + subject + ".pkl",
+            'wb')
         pickle.dump({'off': [elt[0] for elt in off_random_frames_n_features],
                      'on': [elt[0] for elt in on_random_frames_n_features]}, out, protocol=2)
 
