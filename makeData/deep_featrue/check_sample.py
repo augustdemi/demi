@@ -14,7 +14,8 @@ for subject in test_subjects:
     frames = []
     for file in one_subj_files:
         contents = pickle.load(open(path + file, 'rb'), encoding='latin1')
-        frames.extend(list(contents.values()))
+        frames.extend(contents['off'])
+        frames.extend(contents['on'])
     frames = set(frames)
     num_frame.update({subject: len(frames)})
 print(num_frame)
