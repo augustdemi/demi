@@ -1,32 +1,7 @@
-"""
---train=False --test_set=True --subject_idx=14 --num_classes=2 --datasource=disfa --metatrain_iterations=10 --meta_batch_size=14 --update_batch_size=1 --update_lr=0.4 --num_updates=5 --logdir=logs/disfa/
-Usage Instructions:
-    10-shot sinusoid:
-        python main.py --datasource=sinusoid --logdir=logs/sine/ --metatrain_iterations=70000 --norm=None --update_batch_size=10
 
-    10-shot sinusoid baselines:
-        python main.py --datasource=sinusoid --logdir=logs/sine/ --pretrain_iterations=70000 --metatrain_iterations=0 --norm=None --update_batch_size=10 --baseline=oracle
-        python main.py --datasource=sinusoid --logdir=logs/sine/ --pretrain_iterations=70000 --metatrain_iterations=0 --norm=None --update_batch_size=10
-
-    5-way, 1-shot omniglot:
-
-    20-way, 1-shot omniglot:
-        python main.py --datasource=omniglot --metatrain_iterations=40000 --meta_batch_size=16 --update_batch_size=1 --num_classes=20 --update_lr=0.1 --num_updates=5 --logdir=logs/omniglot20way/
-
-    5-way 1-shot mini imagenet:
-        python main.py --datasource=miniimagenet --metatrain_iterations=60000 --meta_batch_size=4 --update_batch_size=1 --update_lr=0.01 --num_updates=5 --num_classes=5 --logdir=logs/miniimagenet1shot/ --num_filters=32 --max_pool=True
-
-    5-way 5-shot mini imagenet:
-        python main.py --datasource=miniimagenet --metatrain_iterations=60000 --meta_batch_size=4 --update_batch_size=5 --update_lr=0.01 --num_updates=5 --num_classes=5 --logdir=logs/miniimagenet5shot/ --num_filters=32 --max_pool=True
-
-    To run evaluation, use the '--train=False' flag and the '--test_set=True' flag to use the test set.
-
-    For omniglot and miniimagenet training, acquire the dataset online, put it in the correspoding data directory, and see the python script instructions in that directory to preprocess the data.
-"""
 import numpy as np
 import tensorflow as tf
 
-from EmoEstimator.utils.evaluate import print_summary
 from data_generator_shf import DataGenerator
 from maml_shf import MAML
 from tensorflow.python.platform import flags
@@ -39,13 +14,11 @@ start_time = datetime.now()
 FLAGS = flags.FLAGS
 
 ## Dataset/method options
-flags.DEFINE_string('datasource', 'disfa', 'sinusoid or omniglot or miniimagenet')
 flags.DEFINE_integer('num_classes', 2, 'number of classes used in classification (e.g. 5-way classification).')
 # oracle means task id is input (only suitable for sinusoid)
 flags.DEFINE_string('baseline', None, 'oracle, or None')
 
 ## Training options
-flags.DEFINE_integer('pretrain_iterations', 0, 'number of pre-training iterations.')
 flags.DEFINE_integer('metatrain_iterations', 100,
                      'number of metatraining iterations.')  # 15k for omniglot, 50k for sinusoid
 flags.DEFINE_integer('meta_batch_size', 1, 'number of tasks sampled per meta-update')
@@ -66,15 +39,11 @@ flags.DEFINE_bool('resume', True, 'resume training if there is a model available
 flags.DEFINE_bool('train', True, 'True to train, False to test.')
 flags.DEFINE_integer('test_iter', -1, 'iteration to load model (-1 for latest model)')
 flags.DEFINE_integer('num_test_pts', 1, 'number of iteration to increase the test points')
-flags.DEFINE_bool('test_set', False, 'Set to true to test on the the test set, False for the validation set.')
-flags.DEFINE_integer('subject_idx', -1, 'subject index to test')
 flags.DEFINE_integer('train_update_batch_size', -1,
                      'number of examples used for gradient update during training (use if you want to test with a different number).')
 flags.DEFINE_float('train_update_lr', -1,
                    'value of inner gradient step step during training. (use if you want to test with a different value)')  # 0.1 for omniglot
 
-flags.DEFINE_bool('init_weight', True, 'Initialize weights from the base model')
-flags.DEFINE_bool('train_train', False, 're-train model with the train')
 flags.DEFINE_bool('train_test', False, 're-train model with the test set')
 
 # for train, train_test
@@ -83,7 +52,6 @@ flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 # for train_test, test_test
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
-flags.DEFINE_integer('local_subj', 0, 'local weight subject')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
 flags.DEFINE_integer('weight_seed', 0, 'seed for initial weight')
 flags.DEFINE_integer('num_au', 8, 'number of AUs used to make AE')
@@ -91,8 +59,6 @@ flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_string('feature_path', "", 'path for feature vector')
-flags.DEFINE_bool('temp_train', False, 'test the test set with train-model')
-flags.DEFINE_bool('all_sub_model', True, 'model is trained with all train/test tasks')
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
