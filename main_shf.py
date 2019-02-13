@@ -206,7 +206,7 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                     y_lab_all.append(y_lab)
                     y_hat_all.append(y_hat)
                     out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
-                    f1_score = out['data'][5].split('\r')
+                    f1_score = out['data'][5][0].split('\r')
                     f1_scores.append([float(elt) for elt in f1_score])
 
     if FLAGS.evaluate:
@@ -267,11 +267,6 @@ def main():
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
 
-    print("================================================================================")
-    print('initial weights norm: ', np.linalg.norm(sess.run('model/w1:0')))
-    print('initial last weights: ', sess.run('model/w1:0')[-1])
-    print('initial bias: ', sess.run('model/b1:0'))
-    print("================================================================================")
 
     ################## Train ##################
 
@@ -295,8 +290,6 @@ def main():
 
     elif FLAGS.adaptation:  # adaptation 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
         model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
-        print(">>>>> base_model_dir: ", FLAGS.keep_train_dir)
-
         if FLAGS.test_iter > 0:
             files = os.listdir(model_file[:model_file.index('model')])
             if 'model' + str(FLAGS.test_iter) + '.index' in files:
