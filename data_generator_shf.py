@@ -111,7 +111,7 @@ class DataGenerator(object):
         inputb = np.array(inputb)
         labela = np.array(labela)
         labelb = np.array(labelb)
-        all_used_frame_set = set(all_used_frame_set)
+        all_used_frame_set = list(set(all_used_frame_set))
         return inputa, inputb, labela, labelb, all_used_frame_set
 
     def same_random_data(self, seed, kshot, aus):
