@@ -132,7 +132,6 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
-    feed_dict = {}
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     y_lab_all = []
     y_hat_all = []
@@ -142,21 +141,15 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
         print("subject_idx: ", subject_idx)
         print("===============================================================================")
 
-        if FLAGS.same_random:
-            print('[sampling way: same random]')
-            inputa, inputb, labela, labelb, all_used_frame_set = data_generator.same_random_data(FLAGS.kshot_seed,
-                                                                                                 FLAGS.update_batch_size,
-                                                                                                 aus)
-        else:
-            print('[sampling way: per subject and au different samples]')
-            inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
+        print('>>>>>> sampling way: inputa = inputb')
+        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data(FLAGS.kshot_seed,
                                                                                              FLAGS.update_batch_size,
                                                                                              aus)
 
-            feed_dict = {model.inputa: inputa,
-                         model.inputb: inputb,
-                         model.labela: labela,
-                         model.labelb: labelb}
+        feed_dict = {model.inputa: inputa,
+                     model.inputb: inputb,
+                     model.labela: labela,
+                     model.labelb: labelb}
         print('Done initializing, starting training.')
         for itr in range(1, FLAGS.metatrain_iterations + 1):
             input_tensors = [model.train_op]
@@ -259,10 +252,7 @@ def main():
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
 
-    print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
-
     resume_itr = 0
-
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
 
@@ -295,7 +285,7 @@ def main():
                 model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
                 print(">>>> model_file2: ", model_file)
 
-        print("2. Restoring model weights from " + model_file)
+        print(">>>> Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
         print("updated bias from ckpt: ", sess.run('model/b1:0'))
     print("================================================================================")
