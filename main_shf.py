@@ -149,8 +149,10 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                                                                                              FLAGS.update_batch_size,
                                                                                              aus)
 
-            feed_dict = {'inputa': inputa, 'inputb': inputb,
-                         'labela': labela, 'labelb': labelb}
+            feed_dict = {model.inputa: inputa,
+                         model.inputb: inputb,
+                         model.labela: labela,
+                         model.labelb: labelb}
         print('Done initializing, starting training.')
         for itr in range(1, FLAGS.metatrain_iterations + 1):
             input_tensors = [model.train_op]
