@@ -4,8 +4,8 @@ import numpy as np
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('s', const=0, type=int, help='subject start idx to evaluate')
-parser.add_argument('n', const=12, type=int, help='number of test tasks to evaluate')
+parser.add_argument('s', nargs='?', const=0, type=int, help='subject start idx to evaluate')
+parser.add_argument('n', nargs='?', const=12, type=int, help='number of test tasks to evaluate')
 parser.add_argument('path', type=str, help='where predicted file saved')
 
 args = parser.parse_args()
