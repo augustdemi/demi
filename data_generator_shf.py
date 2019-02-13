@@ -94,6 +94,7 @@ class DataGenerator(object):
                 labela.append(self.labels[i][inputa_idx])
 
                 if FLAGS.adaptation:
+                    print(">>>>>>>>> adaptation, same inputb as inputa")
                     inputb.append(self.feat_vec[i][inputa_idx])
                     labelb.append(self.labels[i][inputa_idx])
                 else:
