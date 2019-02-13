@@ -135,6 +135,6 @@ class DataGenerator(object):
                 os.mkdir(save_path)
             save_path = os.path.join(save_path, test_subjects[FLAGS.sbjt_start_idx] + ".pkl")
             out = open(save_path, 'wb')
-            pickle.dump({frames_to_select}, out, protocol=2)
+            pickle.dump(frames_to_select, out, protocol=2)
 
         return inputa, inputb, labela, labelb
