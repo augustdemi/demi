@@ -225,6 +225,8 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                         eval_vec.append(feat_vec)
                         eval_frame.append(frame_idx)
             y_lab = data_generator.labels[0][eval_frame]
+            y_lab = np.array([np.eye(2)[label] for label in y_lab])
+
             y_hat = three_layers.model_intensity.predict(eval_vec)
             print('ylab shape: ', y_lab.shape)
             print('yhatshape: ', y_hat.shape)
