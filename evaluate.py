@@ -1,21 +1,14 @@
 import pickle
 from EmoEstimator.utils.evaluate import print_summary
 import numpy as np
-import argparse
+import sys
 
-parser = argparse.ArgumentParser()
-parser.add_argument('s', nargs='?', const=0, type=int, help='subject start idx to evaluate')
-parser.add_argument('n', nargs='?', const=12, type=int, help='number of test tasks to evaluate')
-parser.add_argument('p', type=str, help='where predicted file saved')
-
-args = parser.parse_args()
-print(args.accumulate(args.integers))
-
+path = sys.argv[1]
 y_lab_all = []
 y_hat_all = []
 f1_scores = []
-for subject_idx in range(args.s, args.s + args.n):
-    file = pickle.load(open(args.p + 'predicted_subject' + str(subject_idx) + '.pkl', 'rb'), encoding='latin1')
+for subject_idx in range(12):
+    file = pickle.load(open(path + 'predicted_subject' + str(subject_idx) + '.pkl', 'rb'), encoding='latin1')
     y_lab = file['y_lab']
     y_hat = file['y_hat']
     out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
