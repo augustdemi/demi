@@ -148,8 +148,7 @@ class DataGenerator(object):
             print('==== au: ', au)
             one_au_one_subject_on_frame_indices = self.on_info_df[au][subject_idx]
             random.seed(seed)
-            selected_on_frame_idx = random.sample(one_au_one_subject_on_frame_indices,
-                                                  min(kshot, int(len(one_au_one_subject_on_frame_indices) / 2)))
+            selected_on_frame_idx = random.sample(one_au_one_subject_on_frame_indices, kshot)
             print('-- selected_on_frame_idx: ', selected_on_frame_idx)
 
             one_au_one_subject_off_frame_indices = self.off_info_df[au][subject_idx]
@@ -171,7 +170,8 @@ class DataGenerator(object):
                 out = open(save_path, 'wb')
                 pickle.dump({'off': selected_off_frame_idx,
                              'on': selected_on_frame_idx}, out, protocol=2)
-
+            print(self.feat_vec.shape)
+            print(subject_idx)
             inputa.append(self.feat_vec[subject_idx][selected_off_frame_idx])
             labela.append(self.labels[subject_idx][selected_off_frame_idx])
             if FLAGS.evaluate:
