@@ -48,6 +48,7 @@ class DataGenerator(object):
         inputb = []
         labela = []
         labelb = []
+        all_used_frame_set = []
         for au in aus:
             # print('==================== au: ', au)
             one_au_all_subjects_on_frame_indices = self.on_info_df[au]
@@ -102,11 +103,16 @@ class DataGenerator(object):
                     inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
                     inputb.append(self.feat_vec[i][inputb_idx])
                     labelb.append(self.labels[i][inputb_idx])
+
+                if FLAGS.evaluate:
+                    all_used_frame_set.extend(selected_on_frame_idx[0])
+                    all_used_frame_set.extend(selected_off_frame_idx[0])
         inputa = np.array(inputa)
         inputb = np.array(inputb)
         labela = np.array(labela)
         labelb = np.array(labelb)
-        return inputa, inputb, labela, labelb
+        all_used_frame_set = set(all_used_frame_set)
+        return inputa, inputb, labela, labelb, all_used_frame_set
 
     def same_random_data(self, seed, kshot, aus):
         inputa = []
@@ -137,4 +143,4 @@ class DataGenerator(object):
             out = open(save_path, 'wb')
             pickle.dump(frames_to_select, out, protocol=2)
 
-        return inputa, inputb, labela, labelb
+        return inputa, inputb, labela, labelb, frames_to_select
