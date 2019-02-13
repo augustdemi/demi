@@ -93,10 +93,14 @@ class DataGenerator(object):
                 inputa.append(self.feat_vec[i][inputa_idx])
                 labela.append(self.labels[i][inputa_idx])
 
-                inputb_idx = selected_off_frame_idx[i][half_off_frame:]
-                inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
-                inputb.append(self.feat_vec[i][inputb_idx])
-                labelb.append(self.labels[i][inputb_idx])
+                if FLAGS.adaptation:
+                    inputb.append(self.feat_vec[i][inputa_idx])
+                    labelb.append(self.labels[i][inputa_idx])
+                else:
+                    inputb_idx = selected_off_frame_idx[i][half_off_frame:]
+                    inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
+                    inputb.append(self.feat_vec[i][inputb_idx])
+                    labelb.append(self.labels[i][inputb_idx])
         inputa = np.array(inputa)
         inputb = np.array(inputb)
         labela = np.array(labela)
