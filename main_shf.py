@@ -209,7 +209,8 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
             eval_data = data_generator.feat_vec[0][[i for i in range(4845) if i not in all_used_frame_set]]
             w = sess.run('model/w1:0')
             b = sess.run('model/b1:0')
-            pred = eval_data * w + b
+            pred = np.tensordot(eval_data, axes=1) + b
+            print(pred.shape)
             y_hat = softmax(pred)
             print(y_hat.shape)
             print(y_hat)
