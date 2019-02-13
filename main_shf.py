@@ -221,7 +221,7 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                     line = line.split(',')
                     frame_idx = int(line[1].split('frame')[1])
                     if frame_idx not in all_used_frame_set and frame_idx < 4845:
-                        feat_vec = np.array([float(elt) for elt in line[2:]])
+                        feat_vec = [float(elt) for elt in line[2:]]
                         eval_vec.append(feat_vec)
                         eval_frame.append(frame_idx)
             y_lab = data_generator.labels[0][eval_frame]
