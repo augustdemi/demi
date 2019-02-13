@@ -15,7 +15,7 @@ y_lab_all = []
 y_hat_all = []
 f1_scores = []
 for subject_idx in range(args.s, args.s + args.n):
-    file = pickle.load(open(args.path + 'predicted_' + str(subject_idx) + '.pkl', 'rb'), encoding='latin1')
+    file = pickle.load(open(args.path + 'predicted_subject' + str(subject_idx) + '.pkl', 'rb'), encoding='latin1')
     y_lab = file['y_lab']
     y_hat = file['y_hat']
     out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
