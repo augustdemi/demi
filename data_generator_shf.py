@@ -71,12 +71,12 @@ class DataGenerator(object):
                                  'SN029', 'SN030',
                                  'SN031', 'SN032']
                 import pickle
-                data_source = 'test' if FLAGS.train_test else 'train'
+                data_source = 'test' if FLAGS.adaptation else 'train'
                 save_path = '/home/ml1323/project/robert_code/new/check_labels/' + data_source + '/' + str(
                     FLAGS.update_batch_size) + 'shot'
                 if not os.path.exists(save_path):
                     os.mkdir(save_path)
-                if FLAGS.train_test:
+                if FLAGS.adaptation:
                     save_path = os.path.join(save_path, test_subjects[FLAGS.sbjt_start_idx] + '_' + au + ".pkl")
                 else:
                     save_path = os.path.join(save_path, au + ".pkl")
