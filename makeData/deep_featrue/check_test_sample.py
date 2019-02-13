@@ -19,8 +19,8 @@ for subject in test_subjects:
         contents = pickle.load(open(path + file, 'rb'), encoding='latin1')
         print('off: ', contents['off'])
         print('on: ', contents['on'])
-        frames.extend(contents['off'])
-        frames.extend(contents['on'])
+        frames.extend(contents['off'][0])
+        frames.extend(contents['on'][0])
     frames = set(frames)
     num_frame.update({subject: len(frames)})
     # with open(path + 'statistics.csv', 'w') as f:
