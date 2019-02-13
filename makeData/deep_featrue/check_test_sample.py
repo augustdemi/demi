@@ -9,9 +9,9 @@ test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 
 
 num_frame = {}
 
-for subject_idx in range(13):
+for subject_idx in range(13, 13):
     print('=================== subject_idx: ', subject_idx)
-    one_subj_files = [f for f in files if f.startswith(subject_idx)]
+    one_subj_files = [f for f in files if f.startswith(str(subject_idx) + '_')]
     frames = []
     for file in one_subj_files:
         print('-----------------------------')
