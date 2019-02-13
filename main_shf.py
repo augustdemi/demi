@@ -1,14 +1,16 @@
 
 import numpy as np
 import tensorflow as tf
+from datetime import datetime
+import os
+import pickle
 
 from data_generator_shf import DataGenerator
 from maml_shf import MAML
 from tensorflow.python.platform import flags
-from datetime import datetime
-import os
+from feature_layers import feature_layer
+from EmoEstimator.utils.evaluate import print_summary
 
-import pickle
 
 start_time = datetime.now()
 FLAGS = flags.FLAGS
@@ -48,6 +50,7 @@ flags.DEFINE_float('train_update_lr', -1,
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 
 # for train_test, test_test
+flags.DEFINE_integer('num_test_task', 1, 'num of test tasks to adapt or evaluate')
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
@@ -125,114 +128,85 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test_each_subject(w, b, test_sbj_idx):  # In case when test the model with the whole rest frames
-    batch_size = 10
-    from feature_layers import feature_layer
-    three_layers = feature_layer(batch_size, FLAGS.num_au)
-    print("!!!!!!!!!!!!!!!!!!")
-    print(w.shape)
-    print("!!!!!!!!!!!!!!!!!!")
-
-    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
-
-    test_subjects = os.listdir(FLAGS.testset_dir)
-    test_subjects.sort()
-
-    test_subject = test_subjects[test_sbj_idx]
-
-    print("====================> subject: ", test_subject)
-    data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
-    test_features = data['test_features']
-    y_hat = three_layers.model_intensity.predict(test_features)
-    if FLAGS.au_idx < 8:
-        lab = data['lab'][:, FLAGS.au_idx]
-        y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
-    else:
-        y_lab = data['lab']
-    return y_hat, y_lab
-
-
 def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
     feed_dict = {}
-    print('Done initializing, starting training.')
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
+    y_lab_all = []
+    y_hat_all = []
+    for subject_idx in range(FLAGS.sbjt_start_idx, FLAGS.num_test_task):
+        print("================================================ subject_idx: ", subject_idx)
+        if FLAGS.same_random:
+            print('>>>>>> sampling way: same random')
+            inputa, inputb, labela, labelb, all_used_frame_set = data_generator.same_random_data(FLAGS.kshot_seed,
+                                                                                                 FLAGS.update_batch_size,
+                                                                                                 aus)
+        else:
+            print('>>>>>> sampling way: per subject and au different samples')
+            inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
+                                                                                             FLAGS.update_batch_size,
+                                                                                             aus)
 
-    for itr in range(1, FLAGS.metatrain_iterations + 1):
-        input_tensors = [model.train_op]
-        input_tensors.extend([model.fast_weight_w])
-        input_tensors.extend([model.fast_weight_b])
-        result = sess.run(input_tensors, feed_dict)
+            feed_dict = {'inputa': inputa, 'inputb': inputb,
+                         'labela': labela, 'labelb': labelb}
+        print('Done initializing, starting training.')
+        for itr in range(1, FLAGS.metatrain_iterations + 1):
+            input_tensors = [model.train_op]
+            result = sess.run(input_tensors, feed_dict)
 
-        if itr == FLAGS.metatrain_iterations:
-            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation.' + FLAGS.adaptation + '.kshot' + str(
-                FLAGS.update_batch_size) + '.update_lr' + str(
-                FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
-                FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
-                FLAGS.metatrain_iterations) + '.opti' + FLAGS.opti
-            if not os.path.exists(adapted_model_dir):
-                os.makedirs(adapted_model_dir)
-            print("================================================ iter:", itr)
-            if FLAGS.adaptation.startswith('outer'):
+            if itr == FLAGS.metatrain_iterations:
+                adapted_model_dir = FLAGS.keep_train_dir + '/adaptation.' + FLAGS.adaptation + '.kshot' + str(
+                    FLAGS.update_batch_size) + '.update_lr' + str(
+                    FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+                    FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+                    FLAGS.metatrain_iterations) + '.opti' + FLAGS.opti
+                if not os.path.exists(adapted_model_dir):
+                    os.makedirs(adapted_model_dir)
+                print("================================================ iter:", itr)
                 out = open(adapted_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
                 weights_to_save = {}
                 weights_to_save.update({'w': sess.run('model/w1:0')})
                 weights_to_save.update({'b': sess.run('model/b1:0')})
                 pickle.dump(weights_to_save, out, protocol=2)
                 out.close()
-            elif FLAGS.adaptation.startswith('inner'):
-                assert (FLAGS.metatrain_iterations == 1)
-                fast_w = np.array(result[-2])
-                fast_b = np.array(result[-1])
-                print("fast_w shape: ", fast_w.shape)
-                print("fast_b shape: ", fast_b.shape)
-                print("================================================================================")
-                print('>>>>>> Global bias: ', sess.run('model/b1:0'))
-                for i in range(FLAGS.meta_batch_size):
-                    print('>>>>>>  subject : ', i)
-                    out = open(adapted_model_dir + '/subject' + str(i) + ".pkl", 'wb')
-                    weights_to_save = {}
-                    weights_to_save.update({'w': fast_w[:, i]})
-                    weights_to_save.update({'b': fast_b[:, i]})
-                    pickle.dump(weights_to_save, out, protocol=2)
-                    out.close()
-            else:
-                print(">>>>>>>>>>>>>> check adaptation method: inner or outer but given ", FLAGS.adaptation)
-            if FLAGS.evaluate:
-                w = sess.run('model/w1:0')
-                b = sess.run('model/b1:0')
-                print("!!!!!!!!!!!!!!!!!!")
-                print(w.shape)
-                print("!!!!!!!!!!!!!!!!!!")
-                from feature_layers import feature_layer
-                three_layers = feature_layer(10, FLAGS.num_au)
-                three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
-                subjects = os.listdir(FLAGS.datadir)
-                subjects.sort()
-                eval_vec = []
-                eval_frame = []
-                print('evaluate ', subjects[FLAGS.sbjt_start_idx])
-                with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        line = line.split(',')
-                        frame_idx = int(line[1].split('frame')[1])
-                        if frame_idx not in all_used_frame_set and frame_idx < 4845:
-                            feat_vec = [float(elt) for elt in line[2:]]
-                            eval_vec.append(feat_vec)
-                            eval_frame.append(frame_idx)
-                y_lab = data_generator.labels[0][eval_frame]
-                y_lab = np.array([np.eye(2)[label] for label in y_lab])
+                if FLAGS.evaluate:
+                    w = sess.run('model/w1:0')
+                    b = sess.run('model/b1:0')
+                    print("!!!!!!!!!!!!!!!!!!")
+                    print(w.shape)
+                    print("!!!!!!!!!!!!!!!!!!")
+                    three_layers = feature_layer(10, FLAGS.num_au)
+                    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
-                y_hat = three_layers.model_intensity.predict(eval_vec)
-                print('ylab shape: ', y_lab.shape)
-                print('yhatshape: ', y_hat.shape)
-
-                from EmoEstimator.utils.evaluate import print_summary
-                out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
+                    subjects = os.listdir(FLAGS.datadir)
+                    subjects.sort()
+                    eval_vec = []
+                    eval_frame = []
+                    print('evaluate ', subjects[FLAGS.sbjt_start_idx])
+                    with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
+                        lines = f.readlines()
+                        for line in lines:
+                            line = line.split(',')
+                            frame_idx = int(line[1].split('frame')[1])
+                            if frame_idx not in all_used_frame_set and frame_idx < 4845:
+                                feat_vec = [float(elt) for elt in line[2:]]
+                                eval_vec.append(feat_vec)
+                                eval_frame.append(frame_idx)
+                    y_lab = data_generator.labels[0][eval_frame]
+                    y_lab = np.array([np.eye(2)[label] for label in y_lab])
+                    y_hat = three_layers.model_intensity.predict(eval_vec)
+                    print('y_lab shape: ', y_lab.shape)
+                    print('y_hatshape: ', y_hat.shape)
+                    y_lab_all.append(y_lab)
+                    y_hat_all.append(y_hat)
+                    out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
+    if FLAGS.evaluate:
+        print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
+        print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
+        print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/" + "/test.txt")
 
 
 def main():
