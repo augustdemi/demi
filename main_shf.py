@@ -201,21 +201,33 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
             else:
                 print(">>>>>>>>>>>>>> check adaptation method: inner or outer but given ", FLAGS.adaptation)
         if FLAGS.evaluate:
-            def softmax(x):
-                """Compute softmax values for each sets of scores in x."""
-                e_x = np.exp(x - np.max(x))
-                return e_x / e_x.sum(axis=0)
-
-            eval_data = data_generator.feat_vec[0][[i for i in range(4845) if i not in all_used_frame_set]]
             w = sess.run('model/w1:0')
             b = sess.run('model/b1:0')
-            pred = np.tensordot(eval_data, w, axes=1) + b
-            print(pred.shape)
-            y_hat = softmax(pred)
-            print(y_hat.shape)
-            print(y_hat)
+            print("!!!!!!!!!!!!!!!!!!")
+            print(w.shape)
+            print("!!!!!!!!!!!!!!!!!!")
+            from feature_layers import feature_layer
+            three_layers = feature_layer(10, FLAGS.num_au)
+            three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
+
+            subjects = os.listdir(FLAGS.datadir)
+            subject = subjects.sort()[FLAGS.subj_start_idx]
+            eval_vec = []
+            eval_frame = []
+            with open(os.path.join(FLAGS.datadir, subject), 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    line = line.split(',')
+                    frame_idx = int(line[1].split('frame')[1])
+                    if frame_idx not in all_used_frame_set and frame_idx < 4845:
+                        feat_vec = np.array([float(elt) for elt in line[2:]])
+                        eval_vec.append(feat_vec)
+                        eval_frame.append(frame_idx)
+            y_lab = data_generator.labels[0][eval_frame]
+            y_hat = three_layers.model_intensity.predict(eval_vec)
+
             from EmoEstimator.utils.evaluate import print_summary
-            out = print_summary(result[0], result[1], log_dir="./logs/result/" + "/test.txt")
+            out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
 
 
 def main():
