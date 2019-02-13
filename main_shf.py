@@ -44,8 +44,6 @@ flags.DEFINE_integer('train_update_batch_size', -1,
 flags.DEFINE_float('train_update_lr', -1,
                    'value of inner gradient step step during training. (use if you want to test with a different value)')  # 0.1 for omniglot
 
-flags.DEFINE_bool('train_test', False, 're-train model with the test set')
-
 # for train, train_test
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 
@@ -65,7 +63,7 @@ flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_string('opti', '', 'optimizer : adam or adadelta')
 flags.DEFINE_integer('shuffle_batch', -1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
-flags.DEFINE_string('adaptation', "", 'adaptation way: inner or outer')
+flags.DEFINE_string('adaptation', None, 'adaptation way: inner or outer')
 flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/", 'label_dir')
 flags.DEFINE_bool('check_sample', False, 'check frame idx of samples')
 
@@ -111,52 +109,41 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
         if (itr % SUMMARY_INTERVAL == 0):
             train_writer.add_summary(result[1], itr)
 
-        if FLAGS.train_test:
-            local_model_dir = FLAGS.keep_train_dir + '/adaptation.' + FLAGS.adaptation + '.kshot' + str(
-                FLAGS.update_batch_size) + '.update_lr' + str(
-                FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
-                FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
-                FLAGS.metatrain_iterations) + '.opti' + FLAGS.opti
-            if not os.path.exists(local_model_dir):
-                os.makedirs(local_model_dir)
-            print("================================================ iter:", itr)
-            print('>>>>>>  subject : ', FLAGS.sbjt_start_idx)
-            if FLAGS.adaptation.startswith('outer'):
-                w = sess.run('model/w1:0')
-                print()
-                print("= weight norm:", np.linalg.norm(w))
-                print("= last weight :", w[-1])
-                print("= b :", sess.run('model/b1:0'))
-                print("= w shape :", sess.run('model/w1:0').shape)
-
-                out = open(local_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-                weights_to_save = {}
-                weights_to_save.update({'w': sess.run('model/w1:0')})
-                weights_to_save.update({'b': sess.run('model/b1:0')})
-                pickle.dump(weights_to_save, out, protocol=2)
-                out.close()
-            elif FLAGS.adaptation.startswith('inner'):
-                assert (FLAGS.metatrain_iterations == 1)
-                # save local weight at the last iteration
-                print(">>>>>>>>>>>>>> local save !! : ", itr)
-                fast_w = np.array(result[-2])
-                fast_b = np.array(result[-1])
-                print("fast_w shape: ", fast_w.shape)
-                print("fast_b shape: ", fast_b.shape)
-                print("================================================================================")
-                print('>>>>>> Global bias: ', sess.run('model/b1:0'))
-                for i in range(FLAGS.meta_batch_size):
-                    print('>>>>>>  subject : ', i)
-                    out = open(local_model_dir + '/subject' + str(i) + ".pkl", 'wb')
+        if FLAGS.adaptation:
+            if itr == FLAGS.metatrain_iterations:
+                adapted_model_dir = FLAGS.keep_train_dir + '/adaptation.' + FLAGS.adaptation + '.kshot' + str(
+                    FLAGS.update_batch_size) + '.update_lr' + str(
+                    FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+                    FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+                    FLAGS.metatrain_iterations) + '.opti' + FLAGS.opti
+                if not os.path.exists(adapted_model_dir):
+                    os.makedirs(adapted_model_dir)
+                print("================================================ iter:", itr)
+                if FLAGS.adaptation.startswith('outer'):
+                    out = open(adapted_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
                     weights_to_save = {}
-                    weights_to_save.update({'w': fast_w[:, i]})
-                    weights_to_save.update({'b': fast_b[:, i]})
+                    weights_to_save.update({'w': sess.run('model/w1:0')})
+                    weights_to_save.update({'b': sess.run('model/b1:0')})
                     pickle.dump(weights_to_save, out, protocol=2)
                     out.close()
-            else:
-                print(">>>>>>>>>>>>>> check adaptation method: inner or outer but given ", FLAGS.adaptation)
-
-
+                elif FLAGS.adaptation.startswith('inner'):
+                    assert (FLAGS.metatrain_iterations == 1)
+                    fast_w = np.array(result[-2])
+                    fast_b = np.array(result[-1])
+                    print("fast_w shape: ", fast_w.shape)
+                    print("fast_b shape: ", fast_b.shape)
+                    print("================================================================================")
+                    print('>>>>>> Global bias: ', sess.run('model/b1:0'))
+                    for i in range(FLAGS.meta_batch_size):
+                        print('>>>>>>  subject : ', i)
+                        out = open(adapted_model_dir + '/subject' + str(i) + ".pkl", 'wb')
+                        weights_to_save = {}
+                        weights_to_save.update({'w': fast_w[:, i]})
+                        weights_to_save.update({'b': fast_b[:, i]})
+                        pickle.dump(weights_to_save, out, protocol=2)
+                        out.close()
+                else:
+                    print(">>>>>>>>>>>>>> check adaptation method: inner or outer but given ", FLAGS.adaptation)
 
         elif (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
@@ -223,7 +210,6 @@ def main():
 
     ################## Train ##################
 
-    # train_train or train_test
     if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
@@ -236,7 +222,6 @@ def main():
                 files = os.listdir(model_file[:model_file.index('model')])
                 if 'model' + str(FLAGS.test_iter) + '.index' in files:
                     model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                    print(">>>> model_file2: ", model_file)
             print("1. Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
             b = sess.run('model/b1:0').tolist()
@@ -245,7 +230,7 @@ def main():
             resume_itr = int(model_file[ind1 + 5:])
             print('resume_itr: ', resume_itr)
 
-    elif FLAGS.train_test:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
+    elif FLAGS.adaptation:  # adaptation 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
         resume_itr = 0
         print('resume_itr: ', resume_itr)
         model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
@@ -259,9 +244,7 @@ def main():
 
         print("2. Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
-        print("updated weights from ckpt: ", sess.run('model/b1:0'))
-
-
+        print("updated bias from ckpt: ", sess.run('model/b1:0'))
     print("================================================================================")
 
     train(model, data_generator, saver, sess, trained_model_dir, resume_itr)
