@@ -144,7 +144,7 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
         print('>>>>>> sampling way: inputa = inputb')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data(FLAGS.kshot_seed,
                                                                                              FLAGS.update_batch_size,
-                                                                                             aus)
+                                                                                             aus, subject_idx)
 
         feed_dict = {model.inputa: inputa,
                      model.inputb: inputb,
@@ -223,7 +223,7 @@ def main():
         print('>>>>>> sampling way: inputa = inputb')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data(FLAGS.kshot_seed,
                                                                                              FLAGS.update_batch_size,
-                                                                                             aus)
+                                                                                             aus, 0)
     else:
         print('>>>>>> sampling way: inputa != inputb')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
