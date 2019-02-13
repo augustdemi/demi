@@ -66,7 +66,7 @@ flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
 flags.DEFINE_string('opti', '', 'optimizer : adam or adadelta')
 flags.DEFINE_integer('shuffle_batch', -1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
-flags.DEFINE_string('adaptation', None, 'adaptation way: inner or outer')
+flags.DEFINE_bool('adaptation', False, 'adaptation or not')
 flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/", 'label_dir')
 flags.DEFINE_bool('check_sample', False, 'check frame idx of samples')
 flags.DEFINE_bool('same_random', False, 'check frame idx of samples')
@@ -206,8 +206,7 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                     y_lab_all.append(y_lab)
                     y_hat_all.append(y_hat)
                     out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
-                    f1_score = out['data'][5][0].split('\r')
-                    f1_scores.append([float(elt) for elt in f1_score])
+                    f1_scores.append(out['data'][5])
 
     if FLAGS.evaluate:
         print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
@@ -227,13 +226,13 @@ def main():
     data_generator = DataGenerator()
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-    if FLAGS.same_random:
-        print('>>>>>> sampling way: same random')
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.same_random_data(FLAGS.kshot_seed,
+    if FLAGS.adaptation:
+        print('>>>>>> sampling way: inputa = inputb')
+        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data(FLAGS.kshot_seed,
                                                                                              FLAGS.update_batch_size,
                                                                                              aus)
     else:
-        print('>>>>>> sampling way: per subject and au different samples')
+        print('>>>>>> sampling way: inputa != inputb')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
                                                                                          FLAGS.update_batch_size, aus)
 
