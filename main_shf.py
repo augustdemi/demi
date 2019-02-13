@@ -168,7 +168,7 @@ def main():
     data_generator = DataGenerator()
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-    inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed, FLAGS.update_batch_size, aus)
+    inputa, inputb, labela, labelb = data_generator.same_random_data(FLAGS.kshot_seed, FLAGS.update_batch_size, aus)
 
     print('>>>>>>> inputa shape: ', inputa.shape)
     print('>>>>>>> labela shape: ', labela.shape)

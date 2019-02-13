@@ -107,3 +107,34 @@ class DataGenerator(object):
         labela = np.array(labela)
         labelb = np.array(labelb)
         return inputa, inputb, labela, labelb
+
+    def same_random_data(self, seed, kshot, aus):
+        inputa = []
+        labela = []
+
+        frames_to_select = random.sample(range(len(self.feat_vec[0])), kshot)
+        for _ in aus:
+            inputa.append(self.feat_vec[0][frames_to_select])
+            labela.append(self.labels[0][frames_to_select])
+        inputa = np.array(inputa)
+        inputb = np.array(inputa)
+        labela = np.array(labela)
+        labelb = np.array(labela)
+
+        print(frames_to_select)
+        print(labela)
+
+        if FLAGS.check_sample:
+            test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 'SN027', 'SN028',
+                             'SN029', 'SN030',
+                             'SN031', 'SN032']
+            import pickle
+            save_path = '/home/ml1323/project/robert_code/new/check_labels/test/' + str(
+                FLAGS.update_batch_size) + 'shot_same_random'
+            if not os.path.exists(save_path):
+                os.mkdir(save_path)
+            save_path = os.path.join(save_path, test_subjects[FLAGS.sbjt_start_idx] + ".pkl")
+            out = open(save_path, 'wb')
+            pickle.dump({frames_to_select}, out, protocol=2)
+
+        return inputa, inputb, labela, labelb
