@@ -136,15 +136,19 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     y_lab_all = []
     y_hat_all = []
+    f1_scores = []
     for subject_idx in range(FLAGS.sbjt_start_idx, FLAGS.num_test_task):
-        print("================================================ subject_idx: ", subject_idx)
+        print("===============================================================================")
+        print("subject_idx: ", subject_idx)
+        print("===============================================================================")
+
         if FLAGS.same_random:
-            print('>>>>>> sampling way: same random')
+            print('[sampling way: same random]')
             inputa, inputb, labela, labelb, all_used_frame_set = data_generator.same_random_data(FLAGS.kshot_seed,
                                                                                                  FLAGS.update_batch_size,
                                                                                                  aus)
         else:
-            print('>>>>>> sampling way: per subject and au different samples')
+            print('[sampling way: per subject and au different samples]')
             inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
                                                                                              FLAGS.update_batch_size,
                                                                                              aus)
@@ -177,9 +181,6 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                 if FLAGS.evaluate:
                     w = sess.run('model/w1:0')
                     b = sess.run('model/b1:0')
-                    print("!!!!!!!!!!!!!!!!!!")
-                    print(w.shape)
-                    print("!!!!!!!!!!!!!!!!!!")
                     three_layers = feature_layer(10, FLAGS.num_au)
                     three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
@@ -187,8 +188,8 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                     subjects.sort()
                     eval_vec = []
                     eval_frame = []
-                    print('evaluate ', subjects[FLAGS.sbjt_start_idx])
-                    with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
+                    print(' << evaluate feature vec >> : ', subjects[subject_idx])
+                    with open(os.path.join(FLAGS.datadir, subjects[subject_idx]), 'r') as f:
                         lines = f.readlines()
                         for line in lines:
                             line = line.split(',')
@@ -205,9 +206,15 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                     y_lab_all.append(y_lab)
                     y_hat_all.append(y_hat)
                     out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
+                    f1_score = out['data'][5].split('\r')
+                    f1_scores.append([float(elt) for elt in f1_score])
+
     if FLAGS.evaluate:
         print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
         print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
+        print('-------------------- avg --------------------')
+        print(np.average(f1_scores, axis=0))
+        print('---------------- concatenated ---------------')
         print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/" + "/test.txt")
 
 
