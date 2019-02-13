@@ -200,39 +200,39 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                     out.close()
             else:
                 print(">>>>>>>>>>>>>> check adaptation method: inner or outer but given ", FLAGS.adaptation)
-        if FLAGS.evaluate:
-            w = sess.run('model/w1:0')
-            b = sess.run('model/b1:0')
-            print("!!!!!!!!!!!!!!!!!!")
-            print(w.shape)
-            print("!!!!!!!!!!!!!!!!!!")
-            from feature_layers import feature_layer
-            three_layers = feature_layer(10, FLAGS.num_au)
-            three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
+            if FLAGS.evaluate:
+                w = sess.run('model/w1:0')
+                b = sess.run('model/b1:0')
+                print("!!!!!!!!!!!!!!!!!!")
+                print(w.shape)
+                print("!!!!!!!!!!!!!!!!!!")
+                from feature_layers import feature_layer
+                three_layers = feature_layer(10, FLAGS.num_au)
+                three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
-            subjects = os.listdir(FLAGS.datadir)
-            subjects.sort()
-            eval_vec = []
-            eval_frame = []
-            print('evaluate ', subjects[FLAGS.sbjt_start_idx])
-            with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
-                lines = f.readlines()
-                for line in lines:
-                    line = line.split(',')
-                    frame_idx = int(line[1].split('frame')[1])
-                    if frame_idx not in all_used_frame_set and frame_idx < 4845:
-                        feat_vec = [float(elt) for elt in line[2:]]
-                        eval_vec.append(feat_vec)
-                        eval_frame.append(frame_idx)
-            y_lab = data_generator.labels[0][eval_frame]
-            y_lab = np.array([np.eye(2)[label] for label in y_lab])
+                subjects = os.listdir(FLAGS.datadir)
+                subjects.sort()
+                eval_vec = []
+                eval_frame = []
+                print('evaluate ', subjects[FLAGS.sbjt_start_idx])
+                with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        line = line.split(',')
+                        frame_idx = int(line[1].split('frame')[1])
+                        if frame_idx not in all_used_frame_set and frame_idx < 4845:
+                            feat_vec = [float(elt) for elt in line[2:]]
+                            eval_vec.append(feat_vec)
+                            eval_frame.append(frame_idx)
+                y_lab = data_generator.labels[0][eval_frame]
+                y_lab = np.array([np.eye(2)[label] for label in y_lab])
 
-            y_hat = three_layers.model_intensity.predict(eval_vec)
-            print('ylab shape: ', y_lab.shape)
-            print('yhatshape: ', y_hat.shape)
+                y_hat = three_layers.model_intensity.predict(eval_vec)
+                print('ylab shape: ', y_lab.shape)
+                print('yhatshape: ', y_hat.shape)
 
-            from EmoEstimator.utils.evaluate import print_summary
-            out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
+                from EmoEstimator.utils.evaluate import print_summary
+                out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
 
 
 def main():
@@ -245,16 +245,15 @@ def main():
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     if FLAGS.same_random:
+        print('>>>>>> sampling way: same random')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.same_random_data(FLAGS.kshot_seed,
                                                                                              FLAGS.update_batch_size,
                                                                                              aus)
     else:
+        print('>>>>>> sampling way: per subject and au different samples')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
                                                                                          FLAGS.update_batch_size, aus)
 
-
-    print('>>>>>>> inputa shape: ', inputa.shape)
-    print('>>>>>>> labela shape: ', labela.shape)
     # inputa = (aus*subjects, 2K, latent_dim)
     # labela = (aus*subjects, 2K, au)
     metatrain_input_tensors = {'inputa': tf.convert_to_tensor(inputa), 'inputb': tf.convert_to_tensor(inputb),
