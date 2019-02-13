@@ -1,4 +1,3 @@
-
 import numpy as np
 import tensorflow as tf
 from datetime import datetime
@@ -9,7 +8,6 @@ from data_generator_shf import DataGenerator
 from maml_shf import MAML
 from tensorflow.python.platform import flags
 from feature_layers import feature_layer
-from EmoEstimator.utils.evaluate import print_summary
 
 
 start_time = datetime.now()
@@ -50,7 +48,6 @@ flags.DEFINE_float('train_update_lr', -1,
 flags.DEFINE_integer('sbjt_start_idx', 0, 'starting subject index')
 
 # for train_test, test_test
-flags.DEFINE_integer('num_test_task', 1, 'num of test tasks to adapt or evaluate')
 flags.DEFINE_string('keep_train_dir', None,
                     'directory to read already trained model when training the model again with test set')
 flags.DEFINE_integer('kshot_seed', 0, 'seed for k shot sampling')
@@ -127,87 +124,61 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             out.close()
             saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
-
 def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
-    aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-    y_lab_all = []
-    y_hat_all = []
-    f1_scores = []
-    for subject_idx in range(FLAGS.sbjt_start_idx, FLAGS.num_test_task):
-        print("===============================================================================")
-        print("subject_idx: ", subject_idx)
-        print("===============================================================================")
+    feed_dict = {}
+    print('Done initializing, starting training.')
 
-        print('>>>>>> sampling way: inputa = inputb')
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data(FLAGS.kshot_seed,
-                                                                                             FLAGS.update_batch_size,
-                                                                                             aus, subject_idx)
+    for itr in range(1, FLAGS.metatrain_iterations + 1):
+        input_tensors = [model.train_op]
+        input_tensors.extend([model.fast_weight_w])
+        input_tensors.extend([model.fast_weight_b])
+        result = sess.run(input_tensors, feed_dict)
 
-        feed_dict = {model.inputa: inputa,
-                     model.inputb: inputb,
-                     model.labela: labela,
-                     model.labelb: labelb}
-        print('Done initializing, starting training.')
-        for itr in range(1, FLAGS.metatrain_iterations + 1):
-            input_tensors = [model.train_op]
-            result = sess.run(input_tensors, feed_dict)
+        if itr == FLAGS.metatrain_iterations:
+            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation.kshot' + str(
+                FLAGS.update_batch_size) + '.update_lr' + str(
+                FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+                FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+                FLAGS.metatrain_iterations) + '.opti' + FLAGS.opti
+            if not os.path.exists(adapted_model_dir):
+                os.makedirs(adapted_model_dir)
+            print("================================================ iter {}, subject {}".format(itr,
+                                                                                                FLAGS.sbjt_start_idx))
+            w = sess.run('model/w1:0')
+            b = sess.run('model/b1:0')
+            print('adapted bias: ', b)
+            out = open(adapted_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+            pickle.dump({'w': w, 'b': b}, out, protocol=2)
+            out.close()
+            if FLAGS.evaluate:
+                three_layers = feature_layer(10, FLAGS.num_au)
+                three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
-            if itr == FLAGS.metatrain_iterations:
-                adapted_model_dir = FLAGS.keep_train_dir + '/adaptation.kshot' + str(
-                    FLAGS.update_batch_size) + '.update_lr' + str(
-                    FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
-                    FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
-                    FLAGS.metatrain_iterations) + '.opti' + FLAGS.opti
-                if not os.path.exists(adapted_model_dir):
-                    os.makedirs(adapted_model_dir)
-                print("================================================ iter:", itr)
-                out = open(adapted_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-                weights_to_save = {}
-                weights_to_save.update({'w': sess.run('model/w1:0')})
-                weights_to_save.update({'b': sess.run('model/b1:0')})
-                pickle.dump(weights_to_save, out, protocol=2)
+                subjects = os.listdir(FLAGS.datadir)
+                subjects.sort()
+                eval_vec = []
+                eval_frame = []
+                print('evaluate vec ', subjects[FLAGS.sbjt_start_idx])
+                with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        line = line.split(',')
+                        frame_idx = int(line[1].split('frame')[1])
+                        if frame_idx not in all_used_frame_set and frame_idx < 4845:
+                            feat_vec = [float(elt) for elt in line[2:]]
+                            eval_vec.append(feat_vec)
+                            eval_frame.append(frame_idx)
+                y_lab = data_generator.labels[0][eval_frame]
+                y_lab = np.array([np.eye(2)[label] for label in y_lab])
+                y_hat = three_layers.model_intensity.predict(eval_vec)
+                print('y_lab shape: ', y_lab.shape)
+                print('y_hat shape: ', y_hat.shape)
+                out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat}, out, protocol=2)
                 out.close()
-
-                if FLAGS.evaluate:
-                    w = sess.run('model/w1:0')
-                    b = sess.run('model/b1:0')
-                    three_layers = feature_layer(10, FLAGS.num_au)
-                    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
-
-                    subjects = os.listdir(FLAGS.datadir)
-                    subjects.sort()
-                    eval_vec = []
-                    eval_frame = []
-                    print(' << evaluate feature vec >> : ', subjects[subject_idx])
-                    with open(os.path.join(FLAGS.datadir, subjects[subject_idx]), 'r') as f:
-                        lines = f.readlines()
-                        for line in lines:
-                            line = line.split(',')
-                            frame_idx = int(line[1].split('frame')[1])
-                            if frame_idx not in all_used_frame_set and frame_idx < 4845:
-                                feat_vec = [float(elt) for elt in line[2:]]
-                                eval_vec.append(feat_vec)
-                                eval_frame.append(frame_idx)
-                    y_lab = data_generator.labels[0][eval_frame]
-                    y_lab = np.array([np.eye(2)[label] for label in y_lab])
-                    y_hat = three_layers.model_intensity.predict(eval_vec)
-                    print('y_lab shape: ', y_lab.shape)
-                    print('y_hatshape: ', y_hat.shape)
-                    y_lab_all.append(y_lab)
-                    y_hat_all.append(y_hat)
-                    out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
-                    f1_scores.append(out['data'][5])
-
-    if FLAGS.evaluate:
-        print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
-        print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
-        print('-------------------- avg --------------------')
-        print(np.average(f1_scores, axis=0))
-        print('---------------- concatenated ---------------')
-        print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/" + "/test.txt")
 
 
 def main():
@@ -223,11 +194,12 @@ def main():
         print('>>>>>> sampling way: inputa = inputb')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data(FLAGS.kshot_seed,
                                                                                              FLAGS.update_batch_size,
-                                                                                             aus, 0)
+                                                                                             aus)
     else:
         print('>>>>>> sampling way: inputa != inputb')
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                                         FLAGS.update_batch_size, aus)
+                                                                                         FLAGS.update_batch_size)
+
 
     # inputa = (aus*subjects, 2K, latent_dim)
     # labela = (aus*subjects, 2K, au)
@@ -252,10 +224,18 @@ def main():
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
 
+    print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
+
     resume_itr = 0
+
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
 
+    print("================================================================================")
+    print('initial weights norm: ', np.linalg.norm(sess.run('model/w1:0')))
+    print('initial last weights: ', sess.run('model/w1:0')[-1])
+    print('initial bias: ', sess.run('model/b1:0'))
+    print("================================================================================")
 
     ################## Train ##################
 
@@ -279,13 +259,14 @@ def main():
 
     elif FLAGS.adaptation:  # adaptation 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
         model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
+
         if FLAGS.test_iter > 0:
             files = os.listdir(model_file[:model_file.index('model')])
             if 'model' + str(FLAGS.test_iter) + '.index' in files:
                 model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
                 print(">>>> model_file2: ", model_file)
 
-        print(">>>> Restoring model weights from " + model_file)
+        print("--- Restoring model weights from " + model_file)
         saver.restore(sess, model_file)
         print("updated bias from ckpt: ", sess.run('model/b1:0'))
     print("================================================================================")

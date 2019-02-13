@@ -140,18 +140,18 @@ class DataGenerator(object):
 
         return inputa, inputb, labela, labelb, frames_to_select
 
-    def sample_test_data(self, seed, kshot, aus, subject_idx):
+    def sample_test_data(self, seed, kshot, aus):
         inputa = []
         labela = []
         all_used_frame_set = []
         for au in aus:
             print('==== au: ', au)
-            one_au_one_subject_on_frame_indices = self.on_info_df[au][subject_idx]
+            one_au_one_subject_on_frame_indices = self.on_info_df[au][0]
             random.seed(seed)
             selected_on_frame_idx = random.sample(one_au_one_subject_on_frame_indices, kshot)
             print('-- selected_on_frame_idx: ', selected_on_frame_idx)
 
-            one_au_one_subject_off_frame_indices = self.off_info_df[au][subject_idx]
+            one_au_one_subject_off_frame_indices = self.off_info_df[au][0]
             needed_num_samples = 2 * kshot - len(selected_on_frame_idx)
             random.seed(seed)
             selected_off_frame_idx = random.sample(one_au_one_subject_off_frame_indices, needed_num_samples)
@@ -170,10 +170,8 @@ class DataGenerator(object):
                 out = open(save_path, 'wb')
                 pickle.dump({'off': selected_off_frame_idx,
                              'on': selected_on_frame_idx}, out, protocol=2)
-            print(self.feat_vec.shape)
-            print(subject_idx)
-            inputa.append(self.feat_vec[subject_idx][selected_off_frame_idx])
-            labela.append(self.labels[subject_idx][selected_off_frame_idx])
+            inputa.append(self.feat_vec[0][selected_off_frame_idx])
+            labela.append(self.labels[0][selected_off_frame_idx])
             if FLAGS.evaluate:
                 all_used_frame_set.extend(selected_on_frame_idx)
                 all_used_frame_set.extend(selected_off_frame_idx)
