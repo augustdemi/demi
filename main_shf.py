@@ -224,18 +224,9 @@ def main():
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
         FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
 
-    print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
-
     resume_itr = 0
-
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
-
-    print("================================================================================")
-    print('initial weights norm: ', np.linalg.norm(sess.run('model/w1:0')))
-    print('initial last weights: ', sess.run('model/w1:0')[-1])
-    print('initial bias: ', sess.run('model/b1:0'))
-    print("================================================================================")
 
     ################## Train ##################
 
