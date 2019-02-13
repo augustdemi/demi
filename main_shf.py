@@ -211,11 +211,11 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
             three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
 
             subjects = os.listdir(FLAGS.datadir)
-            subject = subjects.sort()[FLAGS.sbjt_start_idx]
+            subjects.sort()
             eval_vec = []
             eval_frame = []
-            print('evaluate ', subject)
-            with open(os.path.join(FLAGS.datadir, subject), 'r') as f:
+            print('evaluate ', subjects[FLAGS.sbjt_start_idx])
+            with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
                 lines = f.readlines()
                 for line in lines:
                     line = line.split(',')
