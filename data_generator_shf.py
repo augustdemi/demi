@@ -171,11 +171,13 @@ class DataGenerator(object):
                 out = open(save_path, 'wb')
                 pickle.dump({'off': selected_off_frame_idx,
                              'on': selected_on_frame_idx}, out, protocol=2)
-            inputa.append(self.feat_vec[0][selected_off_frame_idx])
-            labela.append(self.labels[0][selected_off_frame_idx])
+
+            selected_idx = selected_off_frame_idx
+            selected_idx.extend(selected_on_frame_idx)
+            inputa.append(self.feat_vec[0][selected_idx])
+            labela.append(self.labels[0][selected_idx])
             if FLAGS.evaluate:
-                all_used_frame_set.extend(selected_on_frame_idx)
-                all_used_frame_set.extend(selected_off_frame_idx)
+                all_used_frame_set.extend(selected_idx)
         inputa = np.array(inputa)
         labela = np.array(labela)
         all_used_frame_set = list(set(all_used_frame_set))
