@@ -67,9 +67,9 @@ class DataGenerator(object):
             print('>>> selected_off_frame_idx: ', selected_off_frame_idx)
 
             if FLAGS.check_sample:
-                test_subjects = ['SN001', 'SN002', 'SN003', 'SN004', 'SN005', 'SN006', 'SN007', 'SN008', 'SN009',
-                                 'SN010', 'SN011',
-                                 'SN012', 'SN013', 'SN016']
+                test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 'SN027', 'SN028',
+                                 'SN029', 'SN030',
+                                 'SN031', 'SN032']
                 import pickle
                 data_source = 'test' if FLAGS.train_test else 'train'
                 save_path = '/home/ml1323/project/robert_code/new/check_labels/' + data_source + '/' + str(
