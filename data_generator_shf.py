@@ -148,7 +148,8 @@ class DataGenerator(object):
             print('==== au: ', au)
             one_au_one_subject_on_frame_indices = self.on_info_df[au][0]
             random.seed(seed)
-            selected_on_frame_idx = random.sample(one_au_one_subject_on_frame_indices, kshot)
+            selected_on_frame_idx = random.sample(one_au_one_subject_on_frame_indices,
+                                                  min(kshot, len(one_au_one_subject_on_frame_indices)))
             print('-- selected_on_frame_idx: ', selected_on_frame_idx)
 
             one_au_one_subject_off_frame_indices = self.off_info_df[au][0]
