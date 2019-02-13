@@ -116,7 +116,7 @@ class feature_layer:
     def loadWeight_m0(self, vae_model_name, w, b, au_index=-1):
 
         trained_model = VAE((160, 240, 1), self.batch_size, self.TOTAL_AU).model_train
-        print(">>>>>>>>> model loaded from ", vae_model_name)
+        print("-- model loaded from ", vae_model_name)
         trained_model.load_weights(vae_model_name + '.h5')
         #### get weight
         layer_dict_whole_vae = dict([(layer.name, layer) for layer in trained_model.layers])
