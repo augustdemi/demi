@@ -3,13 +3,19 @@ import os
 
 aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
-label_root_path = '/home/ml1323/project/robert_data/DISFA/label/'
+label_root_path = 'D:/연구/프로젝트/label/'
 
 subjects = os.listdir(label_root_path)
 binary_intensity = lambda lab: 1 if lab > 0 else 0
 
 ratio_mat = []
 
+# subjects = subjects[:2]
+training_subjects = ['SN001', 'SN002', 'SN003', 'SN004', 'SN005', 'SN006', 'SN007', 'SN008', 'SN009', 'SN010', 'SN011',
+                     'SN012', 'SN013', 'SN016']
+subjects = training_subjects
+# subjects = [sub for sub in subjects if sub not in training_subjects]
+print(subjects)
 for pau in aus:
     occur = {}
     for au in aus:
@@ -41,10 +47,40 @@ for pau in aus:
                     occur[au] += num_on_intensities
                     # print(occur)
 
-    print('>>>>>>>> total:', occur)
+    print(pau, '>>>>>>>> total:', occur)
 
-    ratio = np.array(list(occur.values())) / occur[pau]
-    ratio_mat.append(ratio)
+    ratio = []
+    for au in aus:
+        ratio.append(occur[au])
+    ratio = np.array(ratio) / occur[pau]
+    ratio_mat.append(ratio.round(decimals=2))
     print(ratio)
 
+ratio_mat = np.array(ratio_mat)
 print(ratio_mat)
+
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+im = ax.imshow(ratio_mat, cmap="YlGnBu")
+
+# We want to show all ticks...
+ax.set_xticks(np.arange(len(aus)))
+ax.set_yticks(np.arange(len(aus)))
+# ... and label them with the respective list entries
+ax.set_xticklabels(aus)
+ax.set_yticklabels(aus)
+
+# Rotate the tick labels and set their alignment.
+plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+         rotation_mode="anchor")
+
+# Loop over data dimensions and create text annotations.
+for i in range(len(aus)):
+    for j in range(len(aus)):
+        text = ax.text(j, i, ratio_mat[i, j],
+                       ha="center", va="center", color="r")
+
+ax.set_title("p(au_j=1 | au_i=1) for all samples in training set. (i =row, j=column)")
+fig.tight_layout()
+plt.show()

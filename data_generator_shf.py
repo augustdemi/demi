@@ -86,23 +86,18 @@ class DataGenerator(object):
                              'on': selected_on_frame_idx}, out, protocol=2)
 
             for i in range(FLAGS.meta_batch_size):
-                # print('-------------------------------------------------------- subject ', i)
+                # split selected idx into two for inputa / inputb
                 half_off_frame = int(len(selected_off_frame_idx[i]) / 2)
                 half_on_frame = int(len(selected_on_frame_idx[i]) / 2)
                 inputa_idx = selected_off_frame_idx[i][:half_off_frame]
                 inputa_idx.extend(selected_on_frame_idx[i][:half_on_frame])
                 inputa.append(self.feat_vec[i][inputa_idx])
                 labela.append(self.labels[i][inputa_idx])
-
-                if FLAGS.adaptation:
-                    print("---- adaptation, same inputb as inputa ----")
-                    inputb.append(self.feat_vec[i][inputa_idx])
-                    labelb.append(self.labels[i][inputa_idx])
-                else:
-                    inputb_idx = selected_off_frame_idx[i][half_off_frame:]
-                    inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
-                    inputb.append(self.feat_vec[i][inputb_idx])
-                    labelb.append(self.labels[i][inputb_idx])
+                # select inputa / inputb
+                inputb_idx = selected_off_frame_idx[i][half_off_frame:]
+                inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
+                inputb.append(self.feat_vec[i][inputb_idx])
+                labelb.append(self.labels[i][inputb_idx])
 
                 if FLAGS.evaluate:
                     all_used_frame_set.extend(selected_on_frame_idx[0])
@@ -144,3 +139,49 @@ class DataGenerator(object):
             pickle.dump(frames_to_select, out, protocol=2)
 
         return inputa, inputb, labela, labelb, frames_to_select
+
+    def sample_test_data(self, seed, kshot, aus):
+        inputa = []
+        labela = []
+        all_used_frame_set = []
+        for au in aus:
+            print('==== au: ', au)
+            one_au_all_subjects_on_frame_indices = self.on_info_df[au]
+            selected_on_frame_idx = []
+            for each_subj_idx in one_au_all_subjects_on_frame_indices:
+                random.seed(seed)
+                selected_on_frame_idx.append(random.sample(each_subj_idx, min(kshot, int(len(each_subj_idx) / 2))))
+            print('-- selected_on_frame_idx: ', selected_on_frame_idx)
+
+            one_au_all_subjects_off_frame_indices = self.off_info_df[au]
+            selected_off_frame_idx = []
+            for i in range(len(one_au_all_subjects_off_frame_indices)):
+                each_subj_idx = one_au_all_subjects_off_frame_indices[i]
+                needed_num_samples = 2 * kshot - len(selected_on_frame_idx[i])
+                random.seed(seed)
+                selected_off_frame_idx.append(random.sample(each_subj_idx, needed_num_samples))
+            print('-- selected_off_frame_idx: ', selected_off_frame_idx)
+
+            if FLAGS.check_sample:
+                import pickle
+                save_path = '/home/ml1323/project/robert_code/new/check_labels/test/' + str(
+                    FLAGS.update_batch_size) + 'shot'
+                if not os.path.exists(save_path):
+                    os.mkdir(save_path)
+                test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 'SN027', 'SN028',
+                                 'SN029', 'SN030',
+                                 'SN031', 'SN032']
+                save_path = os.path.join(save_path, test_subjects[FLAGS.sbjt_start_idx] + '_' + au + ".pkl")
+                out = open(save_path, 'wb')
+                pickle.dump({'off': selected_off_frame_idx,
+                             'on': selected_on_frame_idx}, out, protocol=2)
+
+            inputa.append(self.feat_vec[0][selected_off_frame_idx[0]])
+            labela.append(self.labels[0][selected_off_frame_idx[0]])
+            if FLAGS.evaluate:
+                all_used_frame_set.extend(selected_on_frame_idx[0])
+                all_used_frame_set.extend(selected_off_frame_idx[0])
+        inputa = np.array(inputa)
+        labela = np.array(labela)
+        all_used_frame_set = list(set(all_used_frame_set))
+        return inputa, inputa, labela, labela, all_used_frame_set
