@@ -103,7 +103,8 @@ flags.DEFINE_string('adaptation', "", 'adaptation way: inner or outer')
 flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/", 'label_dir')
 flags.DEFINE_bool('check_sample', False, 'check frame idx of samples')
 
-def train(model, data_generator, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr=0):
+
+def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
     SUMMARY_INTERVAL = 10
     SAVE_INTERVAL = 5000
@@ -259,17 +260,11 @@ def main():
     # train_train or train_test
     if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
         model_file = None
-        if FLAGS.model.startswith('m2'):
-            trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
-                FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-                FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
         print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
-
+        print(">>>> model_file1: ", model_file)
         w = None
         b = None
-        print(">>>> model_file1: ", model_file)
-
         if model_file:
             if FLAGS.test_iter > 0:
                 files = os.listdir(model_file[:model_file.index('model')])
@@ -278,14 +273,13 @@ def main():
                     print(">>>> model_file2: ", model_file)
             print("1. Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
-            w = sess.run('model/w1:0').tolist()
             b = sess.run('model/b1:0').tolist()
-            print("updated weights from ckpt: ", np.array(b))
+            print("updated bias from ckpt: ", np.array(b))
             ind1 = model_file.index('model')
             resume_itr = int(model_file[ind1 + 5:])
             print('resume_itr: ', resume_itr)
 
-    elif FLAGS.train_test or FLAGS.train_train:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
+    elif FLAGS.train_test:  # train_test의 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
         resume_itr = 0
         print('resume_itr: ', resume_itr)
         model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
@@ -301,14 +295,10 @@ def main():
         saver.restore(sess, model_file)
         print("updated weights from ckpt: ", sess.run('model/b1:0'))
 
-    if not FLAGS.all_sub_model:
-        trained_model_dir = 'sbjt' + str(FLAGS.sbjt_start_idx) + '.ubs_' + str(
-            FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-            FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
 
     print("================================================================================")
 
-    train(model, data_generator, metatrain_input_tensors, saver, sess, trained_model_dir, resume_itr)
+    train(model, data_generator, saver, sess, trained_model_dir, resume_itr)
 
     end_time = datetime.now()
     elapse = end_time - start_time

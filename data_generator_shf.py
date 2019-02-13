@@ -55,7 +55,7 @@ class DataGenerator(object):
             for each_subj_idx in one_au_all_subjects_on_frame_indices:
                 random.seed(seed)
                 selected_on_frame_idx.append(random.sample(each_subj_idx, 2 * min(kshot, int(len(each_subj_idx) / 2))))
-            # print('>>> selected_on_frame_idx: ', selected_on_frame_idx)
+            print('>>> selected_on_frame_idx: ', selected_on_frame_idx)
 
             one_au_all_subjects_off_frame_indices = self.off_info_df[au]
             selected_off_frame_idx = []
@@ -64,9 +64,12 @@ class DataGenerator(object):
                 needed_num_samples = 4 * kshot - len(selected_on_frame_idx[i])
                 random.seed(seed)
                 selected_off_frame_idx.append(random.sample(each_subj_idx, needed_num_samples))
-            # print('>>> selected_off_frame_idx: ', selected_off_frame_idx)
+            print('>>> selected_off_frame_idx: ', selected_off_frame_idx)
 
             if FLAGS.check_sample:
+                test_subjects = ['SN001', 'SN002', 'SN003', 'SN004', 'SN005', 'SN006', 'SN007', 'SN008', 'SN009',
+                                 'SN010', 'SN011',
+                                 'SN012', 'SN013', 'SN016']
                 import pickle
                 data_source = 'test' if FLAGS.train_test else 'train'
                 save_path = '/home/ml1323/project/robert_code/new/check_labels/' + data_source + '/' + str(
@@ -74,7 +77,7 @@ class DataGenerator(object):
                 if not os.path.exists(save_path):
                     os.mkdir(save_path)
                 if FLAGS.train_test:
-                    save_path = os.path.join(save_path, str(FLAGS.sbjt_start_idx) + '_' + au + ".pkl")
+                    save_path = os.path.join(save_path, test_subjects[FLAGS.sbjt_start_idx] + '_' + au + ".pkl")
                 else:
                     save_path = os.path.join(save_path, au + ".pkl")
                 out = open(save_path, 'wb')
