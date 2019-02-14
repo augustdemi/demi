@@ -161,7 +161,8 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                 subjects.sort()
                 eval_vec = []
                 eval_frame = []
-                print('evaluate vec ', subjects[FLAGS.sbjt_start_idx])
+                print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
+                print('-- num of used samples: ', len(all_used_frame_set))
                 with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
                     lines = f.readlines()
                     for line in lines:
@@ -177,7 +178,7 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                 print('y_lab shape: ', y_lab.shape)
                 print('y_hat shape: ', y_hat.shape)
                 out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat}, out, protocol=2)
+                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'used_samples': all_used_frame_set}, out, protocol=2)
                 out.close()
 
 
