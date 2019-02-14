@@ -42,7 +42,7 @@ for seed in range(int(max_seed)):
     all_seed_avg.append(avg)
     print('---------------- concatenated ---------------')
     out = print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/" + "/test.txt")
-    long = out['data'][5]
+    long = list(out['data'][5])
     long.append(np.average(long))
     print(long)
     all_seed_long.append(np.round(long))
