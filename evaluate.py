@@ -12,7 +12,7 @@ all_seed_avg = []
 all_seed_long = []
 
 for seed in range(int(max_seed)):
-    path += iter + '/' + kshot + 'kshot/seed' + seed
+    path += iter + '/' + kshot + 'kshot/seed' + str(seed)
     y_lab_all = []
     y_hat_all = []
     f1_scores = []
