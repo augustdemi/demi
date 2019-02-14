@@ -9,12 +9,13 @@ max_seed = sys.argv[2]
 iter = sys.argv[3]
 
 all_seed_info = []
-all_seed_long = []
 
 
 for seed in range(int(max_seed)):
     print("")
-    print("==================== seed {} ====================".format(seed))
+    print("============================================================")
+    print("seed " + seed)
+    print("============================================================")
     print("")
     path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
     y_lab_all = []
@@ -52,10 +53,10 @@ for seed in range(int(max_seed)):
     all_seed_info.append(f1_scores_per_seed)
 
 std_avg = np.std([elt[-2] for elt in all_seed_info])
-std_long = np.std([elt[-1] for elt in all_seed_long])
+std_long = np.std([elt[-1] for elt in all_seed_info])
 
 mean_avg = np.mean([elt[-2] for elt in all_seed_info])
-mean_long = np.mean([elt[-1] for elt in all_seed_long])
+mean_long = np.mean([elt[-1] for elt in all_seed_info])
 
 print("=======================================")
 print('mean_avg: ', mean_avg)
