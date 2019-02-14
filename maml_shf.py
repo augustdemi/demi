@@ -187,21 +187,27 @@ class MAML:
             self.fast_weight_b = []
             for i in range(self.total_num_au):
                 self.au_idx = i
+                #
+                #     if FLAGS.adaptation:
+                #         print('adaptation, do not split input data')
+                #         inputa = self.inputa
+                #         inputb = self.inputa
+                #         labela = self.labela
+                #         labelb = self.labela
+                #     else:
+                #         inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
+                #                                                            -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
+                #         inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
+                #         labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
+                #                                                            -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
+                #         labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
-                if FLAGS.adaptation:
-                    print('adaptation, do not split input data')
-                    inputa = self.inputa
-                    inputb = self.inputa
-                    labela = self.labela
-                    labelb = self.labela
-                else:
-                    inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
-                                                                       -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
-                    inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
-                    labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
-                                                                       -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
-                    labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
-
+                inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
+                                                                   -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
+                inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
+                labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
+                                                                   -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
+                labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
                 print("=========================================================")
                 print("used inputa shape in one au learning: ", inputa.shape)
                 print("used labela shape in one au learning: ", labela.shape)
@@ -257,29 +263,16 @@ class MAML:
 
         opt = tf.train.AdadeltaOptimizer(1.0)
         if FLAGS.opti.startswith('adam'):
-            opt = tf.train.AdamOptimizer(self.meta_lr)
-        if FLAGS.opti.startswith('adadelta'):
-            print('------------- optimized with ADADELTA')
-            self.metatrain_op0 = opt.minimize(self.total_losses[0])
-            self.metatrain_op1 = opt.minimize(self.total_losses[1])
-            self.metatrain_op2 = opt.minimize(self.total_losses[2])
-            self.metatrain_op3 = opt.minimize(self.total_losses[3])
-            self.metatrain_op4 = opt.minimize(self.total_losses[4])
-            self.metatrain_op5 = opt.minimize(self.total_losses[5])
-            self.metatrain_op6 = opt.minimize(self.total_losses[6])
-            self.metatrain_op7 = opt.minimize(self.total_losses[7])
-        elif FLAGS.opti.startswith('adam'):
             print('------------- optimized with ADAM - lr: ', self.meta_lr)
-            self.metatrain_op0 = opt.minimize(self.total_losses[0])
-            self.metatrain_op1 = opt.minimize(self.total_losses[1])
-            self.metatrain_op2 = opt.minimize(self.total_losses[2])
-            self.metatrain_op3 = opt.minimize(self.total_losses[3])
-            self.metatrain_op4 = opt.minimize(self.total_losses[4])
-            self.metatrain_op5 = opt.minimize(self.total_losses[5])
-            self.metatrain_op6 = opt.minimize(self.total_losses[6])
-            self.metatrain_op7 = opt.minimize(self.total_losses[7])
-        else:
-            print('------------- optimizer should be adam or adadelta but given: ', FLAGS.opti)
+            opt = tf.train.AdamOptimizer(self.meta_lr)
+        self.metatrain_op0 = opt.minimize(self.total_losses[0])
+        self.metatrain_op1 = opt.minimize(self.total_losses[1])
+        self.metatrain_op2 = opt.minimize(self.total_losses[2])
+        self.metatrain_op3 = opt.minimize(self.total_losses[3])
+        self.metatrain_op4 = opt.minimize(self.total_losses[4])
+        self.metatrain_op5 = opt.minimize(self.total_losses[5])
+        self.metatrain_op6 = opt.minimize(self.total_losses[6])
+        self.metatrain_op7 = opt.minimize(self.total_losses[7])
 
         self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1, self.metatrain_op2, self.metatrain_op3,
                                  self.metatrain_op4, self.metatrain_op5, self.metatrain_op6, self.metatrain_op7)
