@@ -11,7 +11,7 @@ iter = sys.argv[3]
 all_seed_avg = []
 all_seed_long = []
 
-for seed in range(max_seed):
+for seed in range(int(max_seed)):
     path += iter + '/' + kshot + 'kshot/seed' + seed
     y_lab_all = []
     y_hat_all = []
