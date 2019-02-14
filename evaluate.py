@@ -8,7 +8,7 @@ kshot = sys.argv[1]
 max_seed = sys.argv[2]
 iter = sys.argv[3]
 
-all_seed_avg = []
+all_seed_info = []
 all_seed_long = []
 
 
@@ -19,7 +19,7 @@ for seed in range(int(max_seed)):
     path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
     y_lab_all = []
     y_hat_all = []
-    f1_scores = []
+    f1_scores_per_seed = []
     for subject_idx in range(13):
         print("=============================subject_idx: ", subject_idx)
         file = pickle.load(open(path + '/predicted_subject' + str(subject_idx) + '.pkl', 'rb'), encoding='latin1')
@@ -29,34 +29,38 @@ for seed in range(int(max_seed)):
         y_hat_all.append(y_hat)
         out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
         f1_score = list(out['data'][5])
+        # add avg throughout all AUs as the last elt
         f1_score.append(np.average(f1_score))
-        f1_scores.append(np.round(f1_score))
+        # stack each subject's f1-score
+        f1_scores_per_seed.append(f1_score)
         print("-- num of samples:", len(file['used_samples']))
 
     print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
     print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
 
     print('-------------------- avg --------------------')
-    avg = np.round(np.average(f1_scores, axis=0), 2)
-    print(avg)
-    all_seed_avg.append(avg)
+    averaged_f1 = np.average(f1_scores_per_seed, axis=0)
+    print(averaged_f1)
     print('---------------- concatenated ---------------')
     out = print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/" + "/test.txt")
-    long = list(out['data'][5])
-    long.append(np.average(long))
-    print(long)
-    all_seed_long.append(np.round(long))
+    long_f1 = list(out['data'][5])
+    # add avg throughout all AUs as the last elt
+    long_f1.append(np.average(long_f1))
+    print(long_f1)
+    f1_scores_per_seed.append(averaged_f1)
+    f1_scores_per_seed.append(long_f1)
+    all_seed_info.append(f1_scores_per_seed)
 
-std_avg = np.std([elt[-1] for elt in all_seed_avg])
+std_avg = np.std([elt[-2] for elt in all_seed_info])
 std_long = np.std([elt[-1] for elt in all_seed_long])
 
-mean_avg = np.mean([elt[-1] for elt in all_seed_avg])
+mean_avg = np.mean([elt[-2] for elt in all_seed_info])
 mean_long = np.mean([elt[-1] for elt in all_seed_long])
 
 print("=======================================")
 print('mean_avg: ', mean_avg)
 print('std_avg: ', std_avg)
-print("---------------------------------------")
+print("---------------------------------------") 
 print('mean_long: ', mean_long)
 print('std_long: ', std_long)
 print("=======================================")
