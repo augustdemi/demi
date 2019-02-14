@@ -14,7 +14,7 @@ all_seed_info = []
 for seed in range(int(max_seed)):
     print("")
     print("============================================================")
-    print("seed " + seed)
+    print("seed " + str(seed))
     print("============================================================")
     print("")
     path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
