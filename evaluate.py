@@ -11,7 +11,7 @@ path += iter + '/' + kshot + 'kshot/seed' + seed
 y_lab_all = []
 y_hat_all = []
 f1_scores = []
-for subject_idx in range(12):
+for subject_idx in range(13):
     print("=============================subject_idx: ", subject_idx)
     file = pickle.load(open(path + '/predicted_subject' + str(subject_idx) + '.pkl', 'rb'), encoding='latin1')
     y_lab = file['y_lab']
