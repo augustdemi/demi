@@ -52,11 +52,11 @@ for seed in range(int(max_seed)):
     f1_scores_per_seed.append(long_f1)
     all_seed_info.append(f1_scores_per_seed)
 
-std_avg = np.std([elt[-2] for elt in all_seed_info])
-std_long = np.std([elt[-1] for elt in all_seed_info])
+std_avg = np.std([elt[:][-2] for elt in all_seed_info])
+std_long = np.std([elt[:][-1] for elt in all_seed_info])
 
-mean_avg = np.mean([elt[-2] for elt in all_seed_info])
-mean_long = np.mean([elt[-1] for elt in all_seed_info])
+mean_avg = np.mean([elt[:][-2] for elt in all_seed_info])
+mean_long = np.mean([elt[:][-1] for elt in all_seed_info])
 
 print("=======================================")
 print('mean_avg: ', np.round(mean_avg, 2))
@@ -65,3 +65,4 @@ print("---------------------------------------")
 print('mean_long: ', np.round(mean_long, 2))
 print('std_long: ', np.round(std_long, 2))
 print("=======================================")
+print([elt[:][-1] for elt in all_seed_info])
