@@ -46,17 +46,17 @@ for seed in range(int(max_seed)):
     out = print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/" + "/test.txt")
     long_f1 = list(out['data'][5])
     # add avg throughout all AUs as the last elt
-    long_f1.append(np.average(long_f1))
+    long_f1.append(np.average(long_f1), axis=0)
     print(long_f1)
     f1_scores_per_seed.append(averaged_f1)
     f1_scores_per_seed.append(long_f1)
     all_seed_info.append(f1_scores_per_seed)
 
-std_avg = np.std([elt[:][-2] for elt in all_seed_info])
-std_long = np.std([elt[:][-1] for elt in all_seed_info])
+std_avg = np.std([elt[:][-2] for elt in all_seed_info], axis=0)
+std_long = np.std([elt[:][-1] for elt in all_seed_info], axis=0)
 
-mean_avg = np.mean([elt[:][-2] for elt in all_seed_info])
-mean_long = np.mean([elt[:][-1] for elt in all_seed_info])
+mean_avg = np.mean([elt[:][-2] for elt in all_seed_info], axis=0)
+mean_long = np.mean([elt[:][-1] for elt in all_seed_info], axis=0)
 
 print("=======================================")
 print('mean_avg: ', np.round(mean_avg, 2))
