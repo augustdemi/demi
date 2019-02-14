@@ -188,7 +188,12 @@ class MAML:
             for i in range(self.total_num_au):
                 self.au_idx = i
 
-                if not FLAGS.adaptation:
+                if FLAGS.adaptation:
+                    inputa = self.inputa
+                    inputb = self.inputb
+                    labela = self.labela
+                    labelb = self.labelb
+                else:
                     inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
                                                                        -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
                     inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
