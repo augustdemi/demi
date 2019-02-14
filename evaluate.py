@@ -48,15 +48,15 @@ for seed in range(int(max_seed)):
     all_seed_long.append(np.round(long))
 
 std_avg = np.std([elt[-1] for elt in all_seed_avg])
-std_long = np.std([elt[-1] for elt in all_seed_avg])
+std_long = np.std([elt[-1] for elt in all_seed_long])
 
-mean_avg = np.mean([elt[-1] for elt in all_seed_long])
+mean_avg = np.mean([elt[-1] for elt in all_seed_avg])
 mean_long = np.mean([elt[-1] for elt in all_seed_long])
 
 print("=======================================")
 print('mean_avg: ', mean_avg)
 print('std_avg: ', std_avg)
 print("---------------------------------------")
-print('mean_long: ', mean_avg)
-print('std_long: ', std_avg)
+print('mean_long: ', mean_long)
+print('std_long: ', std_long)
 print("=======================================")
