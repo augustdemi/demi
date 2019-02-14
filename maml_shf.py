@@ -189,10 +189,13 @@ class MAML:
                 self.au_idx = i
 
                 if FLAGS.adaptation:
-                    inputa = self.inputa
-                    inputb = self.inputb
-                    labela = self.labela
-                    labelb = self.labelb
+                    print('adaptation, do not split input data')
+                    inputa = tf.reshape(self.inputa,
+                                        (1, self.inputa.shape[0] * self.inputa.shape[1], self.inputa.shape[2]))
+                    inputb = inputa
+                    labela = tf.reshape(self.labela,
+                                        (1, self.labela.shape[0] * self.labela.shape[1], self.labela.shape[2]))
+                    labelb = labela
                 else:
                     inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
                                                                        -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
@@ -254,9 +257,8 @@ class MAML:
         tf.summary.scalar('co+ce_AU26', self.total_losses[7])
         tf.summary.scalar('co+ce_total', tf.reduce_sum(self.total_losses) / tf.to_float(self.total_num_au))
 
-        if FLAGS.opti.startswith('adadelta'):
-            opt = tf.train.AdadeltaOptimizer(1.0)
-        elif FLAGS.opti.startswith('adadelta'):
+        opt = tf.train.AdadeltaOptimizer(1.0)
+        if FLAGS.opti.startswith('adam'):
             opt = tf.train.AdamOptimizer(self.meta_lr)
         if FLAGS.opti.startswith('adadelta'):
             print('------------- optimized with ADADELTA')
