@@ -3,10 +3,11 @@ from EmoEstimator.utils.evaluate import print_summary
 import numpy as np
 import sys
 
-path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation/update_lr0.008.metalr0.008.lambda0.01.num_updates1.meta_iter100/'
+path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation/update_lr0.008.metalr0.008.lambda0.01.num_updates1.meta_iter'
 kshot = sys.argv[1]
 seed = sys.argv[2]
-path += path + kshot + 'kshot/seed' + seed
+iter = sys.argv[3]
+path += iter + '/' + kshot + 'kshot/seed' + seed
 y_lab_all = []
 y_hat_all = []
 f1_scores = []
