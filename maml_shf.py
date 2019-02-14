@@ -187,17 +187,19 @@ class MAML:
             self.fast_weight_b = []
             for i in range(self.total_num_au):
                 self.au_idx = i
-                inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
-                                                                   -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
-                inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
-                labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
-                                                                   -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
-                labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
-                # print('--------------------for sub0, labelb of au', i)
-                # print(labelb.shape)
-                # print(sess.run(labelb)[0][:])
+                if not FLAGS.adaptation:
+                    inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
+                                                                       -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
+                    inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
+                    labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
+                                                                       -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
+                    labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
+                print("=========================================================")
+                print("used inputa shape in one au learning: ", inputa.shape)
+                print("used labela shape in one au learning: ", labela.shape)
+                print("=========================================================")
                 fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, predict_b = tf.map_fn(
                     task_metalearn,
                     elems=(inputa, inputb, labela, labelb),
@@ -208,11 +210,6 @@ class MAML:
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
-                # print('--------------------for sub0, predict_b of au', i)
-                # print(predict_b.shape)
-                # sess.run(tf.global_variables_initializer())
-                # print(sess.run(predict_b)[0][:])
-                # print('================================================')
         # 8*14 --> 8*1 (make each 1*14 into 1*1)
         self.total_losses = [tf.reduce_sum(self.task_total_losses[k]) / tf.to_float(FLAGS.meta_batch_size) for k in
                              range(self.total_num_au)]
@@ -253,25 +250,29 @@ class MAML:
         tf.summary.scalar('co+ce_total', tf.reduce_sum(self.total_losses) / tf.to_float(self.total_num_au))
 
         if FLAGS.opti.startswith('adadelta'):
+            opt = tf.train.AdadeltaOptimizer(1.0)
+        elif FLAGS.opti.startswith('adadelta'):
+            opt = tf.train.AdamOptimizer(self.meta_lr)
+        if FLAGS.opti.startswith('adadelta'):
             print('------------- optimized with ADADELTA')
-            self.metatrain_op0 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[0])
-            self.metatrain_op1 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[1])
-            self.metatrain_op2 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[2])
-            self.metatrain_op3 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[3])
-            self.metatrain_op4 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[4])
-            self.metatrain_op5 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[5])
-            self.metatrain_op6 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[6])
-            self.metatrain_op7 = tf.train.AdadeltaOptimizer(1.0).minimize(self.total_losses[7])
+            self.metatrain_op0 = opt.minimize(self.total_losses[0])
+            self.metatrain_op1 = opt.minimize(self.total_losses[1])
+            self.metatrain_op2 = opt.minimize(self.total_losses[2])
+            self.metatrain_op3 = opt.minimize(self.total_losses[3])
+            self.metatrain_op4 = opt.minimize(self.total_losses[4])
+            self.metatrain_op5 = opt.minimize(self.total_losses[5])
+            self.metatrain_op6 = opt.minimize(self.total_losses[6])
+            self.metatrain_op7 = opt.minimize(self.total_losses[7])
         elif FLAGS.opti.startswith('adam'):
             print('------------- optimized with ADAM - lr: ', self.meta_lr)
-            self.metatrain_op0 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[0])
-            self.metatrain_op1 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[1])
-            self.metatrain_op2 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[2])
-            self.metatrain_op3 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[3])
-            self.metatrain_op4 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[4])
-            self.metatrain_op5 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[5])
-            self.metatrain_op6 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[6])
-            self.metatrain_op7 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[7])
+            self.metatrain_op0 = opt.minimize(self.total_losses[0])
+            self.metatrain_op1 = opt.minimize(self.total_losses[1])
+            self.metatrain_op2 = opt.minimize(self.total_losses[2])
+            self.metatrain_op3 = opt.minimize(self.total_losses[3])
+            self.metatrain_op4 = opt.minimize(self.total_losses[4])
+            self.metatrain_op5 = opt.minimize(self.total_losses[5])
+            self.metatrain_op6 = opt.minimize(self.total_losses[6])
+            self.metatrain_op7 = opt.minimize(self.total_losses[7])
         else:
             print('------------- optimizer should be adam or adadelta but given: ', FLAGS.opti)
 
