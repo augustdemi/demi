@@ -28,9 +28,9 @@ for seed in range(int(max_seed)):
         y_lab_all.append(y_lab)
         y_hat_all.append(y_hat)
         out = print_summary(y_hat, y_lab, log_dir="./logs/result/" + "/test.txt")
-        f1_score = out['data'][5]
+        f1_score = list(out['data'][5])
         f1_score.append(np.average(f1_score))
-        f1_scores.append(out['data'][5])
+        f1_scores.append(np.round(f1_score))
         print("-- num of samples:", len(file['used_samples']))
 
     print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
@@ -42,10 +42,10 @@ for seed in range(int(max_seed)):
     all_seed_avg.append(avg)
     print('---------------- concatenated ---------------')
     out = print_summary(np.vstack(y_hat_all), np.vstack(y_lab_all), log_dir="./logs/result/" + "/test.txt")
-    long = np.round(out['data'][5], 2)
+    long = out['data'][5]
     long.append(np.average(long))
     print(long)
-    all_seed_long.append(long)
+    all_seed_long.append(np.round(long))
 
 std_avg = np.std([elt[-1] for elt in all_seed_avg])
 std_long = np.std([elt[-1] for elt in all_seed_long])
