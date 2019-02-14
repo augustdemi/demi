@@ -190,12 +190,10 @@ class MAML:
 
                 if FLAGS.adaptation:
                     print('adaptation, do not split input data')
-                    inputa = tf.reshape(self.inputa,
-                                        (1, self.inputa.shape[0] * self.inputa.shape[1], self.inputa.shape[2]))
-                    inputb = inputa
-                    labela = tf.reshape(self.labela,
-                                        (1, self.labela.shape[0] * self.labela.shape[1], self.labela.shape[2]))
-                    labelb = labela
+                    inputa = self.inputa
+                    inputb = self.inputa
+                    labela = self.labela
+                    labelb = self.labela
                 else:
                     inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
                                                                        -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
