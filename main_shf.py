@@ -190,15 +190,15 @@ def main():
     data_generator = DataGenerator()
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-    if FLAGS.adaptation:
-        print('>>>>>> sampling way: inputa = inputb')
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data2(FLAGS.kshot_seed,
-                                                                                              FLAGS.update_batch_size,
-                                                                                              aus)
-    else:
-        print('>>>>>> sampling way: inputa != inputb')
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                                         FLAGS.update_batch_size)
+    # if FLAGS.adaptation:
+    #     print('>>>>>> sampling way: inputa = inputb')
+    #     inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data2(FLAGS.kshot_seed,
+    #                                                                                           FLAGS.update_batch_size,
+    #                                                                                           aus)
+    # else:
+    print('>>>>>> sampling way: inputa != inputb')
+    inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
+                                                                                     FLAGS.update_batch_size)
 
 
     # inputa = (aus*subjects, 2K, latent_dim)
