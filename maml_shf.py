@@ -187,27 +187,27 @@ class MAML:
             self.fast_weight_b = []
             for i in range(self.total_num_au):
                 self.au_idx = i
-                #
-                #     if FLAGS.adaptation:
-                #         print('adaptation, do not split input data')
-                #         inputa = self.inputa
-                #         inputb = self.inputa
-                #         labela = self.labela
-                #         labelb = self.labela
-                #     else:
-                #         inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
-                #                                                            -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
-                #         inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
-                #         labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
-                #                                                            -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
-                #         labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
 
-                inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
-                                                                   -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
-                inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
-                labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
-                                                                   -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
-                labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
+                if FLAGS.adaptation:
+                    print('adaptation, do not split input data')
+                    inputa = self.inputa
+                    inputb = self.inputa
+                    labela = self.labela
+                    labelb = self.labela
+                else:
+                    inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
+                                                                       -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
+                    inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
+                    labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
+                                                                       -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
+                    labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
+
+                # inputa = tf.slice(self.inputa, [i * batch, 0, 0], [batch, -1,
+                #                                                    -1])  ##(aus*subjects, 2K, latent_dim)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, latent_dim)
+                # inputb = tf.slice(self.inputb, [i * batch, 0, 0], [batch, -1, -1])
+                # labela = tf.slice(self.labela, [i * batch, 0, 0], [batch, -1,
+                #                                                    -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
+                # labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
                 print("=========================================================")
                 print("used inputa shape in one au learning: ", inputa.shape)
                 print("used labela shape in one au learning: ", labela.shape)
