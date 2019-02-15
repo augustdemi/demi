@@ -198,7 +198,7 @@ def main():
     # else:
     print('>>>>>> sampling way: inputa != inputb')
     inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                                     FLAGS.update_batch_size)
+                                                                                     FLAGS.update_batch_size, aus)
 
 
     # inputa = (aus*subjects, 2K, latent_dim)
