@@ -34,7 +34,6 @@ for seed in range(int(max_seed)):
         f1_score.append(np.average(f1_score))
         # stack each subject's f1-score
         f1_scores_per_seed.append(f1_score)
-        print("-- num of samples:", len(file['used_samples']))
 
     print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)
     print(">> y_hat_all shape:", np.vstack(y_hat_all).shape)
