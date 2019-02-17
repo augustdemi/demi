@@ -124,7 +124,8 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             out.close()
             saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
-def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
+
+def test(model, sess, trained_model_dir, data_generator):
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
@@ -161,13 +162,12 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                 eval_vec = []
                 eval_frame = []
                 print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
-                print('-- num of used samples: ', len(all_used_frame_set))
                 with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
                     lines = f.readlines()
                     for line in lines:
                         line = line.split(',')
                         frame_idx = int(line[1].split('frame')[1])
-                        if frame_idx not in all_used_frame_set and frame_idx < 4845:
+                        if frame_idx in data_generator.test_b_frame and frame_idx < 4845:
                             feat_vec = [float(elt) for elt in line[2:]]
                             eval_vec.append(feat_vec)
                             eval_frame.append(frame_idx)
@@ -177,7 +177,7 @@ def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
                 print('y_lab shape: ', y_lab.shape)
                 print('y_hat shape: ', y_hat.shape)
                 out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'used_samples': all_used_frame_set}, out, protocol=2)
+                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat}, out, protocol=2)
                 out.close()
 
 
@@ -192,13 +192,13 @@ def main():
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     if FLAGS.adaptation:
         print('>>>>>> sampling way: inputa = inputb')
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data2(FLAGS.kshot_seed,
-                                                                                              FLAGS.update_batch_size,
-                                                                                              aus)
+        inputa, inputb, labela, labelb = data_generator.sample_test_data(FLAGS.kshot_seed,
+                                                                         FLAGS.update_batch_size,
+                                                                         aus)
     else:
         print('>>>>>> sampling way: inputa != inputb')
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                                         FLAGS.update_batch_size, aus)
+        inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed,
+                                                                     FLAGS.update_batch_size, aus)
 
 
     # inputa = (aus*subjects, 2K, latent_dim)
@@ -265,7 +265,7 @@ def main():
     if FLAGS.adaptation:
         print("ADAPTATION")
         print("================================================================================")
-        test(model, sess, trained_model_dir, all_used_frame_set, data_generator)
+        test(model, sess, trained_model_dir, data_generator)
     else:
         print("TRAIN")
         print("================================================================================")
