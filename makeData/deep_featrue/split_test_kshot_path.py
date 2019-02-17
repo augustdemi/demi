@@ -24,7 +24,7 @@ for subject in test_subjects:
     ########### 그리곤 test_b셋에대해서 testset pickle값을 만들어 둬서 이 전체 데이터 셋에 대해서 evaluation할 것임.
 
     for au in all_au:
-        label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_" + au + ".txt"
+        label_path = "/home/ml1323/project/robert_data/DISFA/label/test/" + subject + "/" + subject + "_" + au + ".txt"
         intensities_for_one_au = []
         f = open(label_path, 'r')
         all_labels = f.readlines()
