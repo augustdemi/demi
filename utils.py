@@ -302,9 +302,10 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
     test_b_frame = []
     if test_split_seed > -1:
         random.seed(test_split_seed)
-        existing_frames_in_feat_vec = random.sample(existing_frames_in_feat_vec,
-                                                    int(len(existing_frames_in_feat_vec) / 2))
-        test_b_frame = [i for i in existing_frames_in_feat_vec if i not in existing_frames_in_feat_vec]
+        test_a_frame = random.sample(existing_frames_in_feat_vec,
+                                     int(len(existing_frames_in_feat_vec) / 2))
+        test_b_frame = [i for i in existing_frames_in_feat_vec if i not in test_a_frame]
+        existing_frames_in_feat_vec = test_a_frame
 
     binary_intensity = lambda lab: 1 if lab > 0 else 0
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
