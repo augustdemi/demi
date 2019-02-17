@@ -22,29 +22,28 @@ class DataGenerator(object):
         Args:
             num_samples_per_class: num samples to generate per class in one batch
         """
-        if not FLAGS.adaptation:
-            data_folder = FLAGS.datadir
-            subjects = os.listdir(data_folder)
-            subjects.sort()
-            subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
-            print('>>>>>>>>>>>>>> selected subjects from feat_vec: ', subjects)
-            self.feature_files = [os.path.join(data_folder, subject) for subject in subjects]
+        data_folder = FLAGS.datadir
+        subjects = os.listdir(data_folder)
+        subjects.sort()
+        subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        print('>>>>>>>>>>>>>> selected subjects from feat_vec: ', subjects)
+        self.feature_files = [os.path.join(data_folder, subject) for subject in subjects]
 
-            label_folder = FLAGS.labeldir  # label_folder = '/home/ml1323/project/robert_data/DISFA/label/'
-            subjects = os.listdir(label_folder)
-            subjects.sort()
-            subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
-            self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
+        label_folder = FLAGS.labeldir  # label_folder = '/home/ml1323/project/robert_data/DISFA/label/'
+        subjects = os.listdir(label_folder)
+        subjects.sort()
+        subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
 
-            feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
-                                                                                                   self.label_folder,
-                                                                                                   test_split_seed=FLAGS.test_split_seed)
+        feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
+                                                                                               self.label_folder,
+                                                                                               test_split_seed=FLAGS.test_split_seed)
 
-            self.feat_vec = feat_vec
-            self.labels = labels
-            self.on_info_df = on_info_df
-            self.off_info_df = off_info_df
-            self.test_b_frame = test_b_frame
+        self.feat_vec = feat_vec
+        self.labels = labels
+        self.on_info_df = on_info_df
+        self.off_info_df = off_info_df
+        self.test_b_frame = test_b_frame
 
     def shuffle_data(self, seed, kshot, aus):
         inputa = []
