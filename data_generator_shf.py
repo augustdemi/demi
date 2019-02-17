@@ -44,6 +44,8 @@ class DataGenerator(object):
         self.on_info_df = on_info_df
         self.off_info_df = off_info_df
         self.test_b_frame = test_b_frame
+        print('========== will be used this test_b ===========')
+        print(test_b_frame)
 
     def shuffle_data(self, seed, kshot, aus):
         inputa = []

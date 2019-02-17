@@ -300,7 +300,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
 
     print('---- get label')
     test_b_frame = []
-    if test_split_seed > 0:
+    if test_split_seed > -1:
         random.seed(test_split_seed)
         existing_frames_in_feat_vec = random.sample(existing_frames_in_feat_vec,
                                                     int(len(existing_frames_in_feat_vec) / 2))
