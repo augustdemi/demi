@@ -66,7 +66,7 @@ flags.DEFINE_float('lambda2', 0.5, '')
 flags.DEFINE_bool('adaptation', False, 'adaptation or not')
 flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/", 'label_dir')
 flags.DEFINE_bool('check_sample', False, 'check frame idx of samples')
-flags.DEFINE_bool('same_random', False, 'check frame idx of samples')
+flags.DEFINE_integer('test_split_seed', -1, 'random seed for test set split')
 flags.DEFINE_bool('evaluate', False, 'evaluate or not')
 
 
