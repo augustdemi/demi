@@ -7,7 +7,7 @@ r_path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1
 kshot = sys.argv[1]
 max_seed = sys.argv[2]
 iter = sys.argv[3]
-
+splitseed = sys.argv[4]
 all_seed_info = []
 
 
@@ -17,7 +17,7 @@ for seed in range(int(max_seed)):
     print("seed " + str(seed))
     print("============================================================")
     print("")
-    path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
+    path = r_path + iter + '/splitseed' + splitseed + '/' + kshot + 'shot/seed' + str(seed)
     y_lab_all = []
     y_hat_all = []
     f1_scores_per_seed = []
