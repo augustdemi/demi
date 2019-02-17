@@ -142,8 +142,8 @@ def test(model, sess, trained_model_dir, data_generator):
             adapted_model_dir = FLAGS.keep_train_dir + '/adaptation/update_lr' + str(
                 FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
                 FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
-                FLAGS.metatrain_iterations) + '/' + str(FLAGS.update_batch_size) + 'shot/splitseed' + str(
-                FLAGS.test_split_seed) + '/kseed' + str(FLAGS.kshot_seed)
+                FLAGS.metatrain_iterations) + '/splitseed' + str(
+                FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
             if not os.path.exists(adapted_model_dir):
                 os.makedirs(adapted_model_dir)
             print("================================================ iter {}, subject {}".format(itr,
