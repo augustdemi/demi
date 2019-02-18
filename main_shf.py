@@ -178,7 +178,16 @@ def test(model, sess, trained_model_dir, data_generator):
                             feat_vec = [float(elt) for elt in line[2:]]
                             eval_vec.append(feat_vec)
                             eval_frame.append(frame_idx)
-                y_lab = data_generator.labels[0][eval_frame]
+                print('--------------------------------------------------')
+                print('evaluation frames: ')
+                print(eval_frame)
+                print('--------------------------------------------------')
+
+                y_lab = data_generator.labels[eval_frame]
+                print('y_lab')
+                print(y_lab)
+                print('--------------------------------------------------')
+
                 y_lab = np.array([np.eye(2)[label] for label in y_lab])
                 y_hat = three_layers.model_intensity.predict(eval_vec)
                 print('y_lab shape: ', y_lab.shape)
