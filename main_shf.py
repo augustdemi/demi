@@ -56,7 +56,7 @@ flags.DEFINE_integer('num_au', 8, 'number of AUs used to make AE')
 flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
-flags.DEFINE_string('kshot_path', "", 'kshot csv path')
+flags.DEFINE_string('feature_path', "", 'path for feature vector')
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
@@ -66,7 +66,7 @@ flags.DEFINE_float('lambda2', 0.5, '')
 flags.DEFINE_bool('adaptation', False, 'adaptation or not')
 flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/", 'label_dir')
 flags.DEFINE_bool('check_sample', False, 'check frame idx of samples')
-flags.DEFINE_integer('test_split_seed', -1, 'random seed for test set split')
+flags.DEFINE_bool('same_random', False, 'check frame idx of samples')
 flags.DEFINE_bool('evaluate', False, 'evaluate or not')
 
 
@@ -125,7 +125,7 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
+def test(model, sess, trained_model_dir, all_used_frame_set, data_generator):
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
@@ -142,8 +142,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             adapted_model_dir = FLAGS.keep_train_dir + '/adaptation/update_lr' + str(
                 FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
                 FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
-                FLAGS.metatrain_iterations) + '/splitseed' + str(
-                FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
+                FLAGS.metatrain_iterations) + '/' + str(FLAGS.update_batch_size) + 'kshot/seed' + str(FLAGS.kshot_seed)
             if not os.path.exists(adapted_model_dir):
                 os.makedirs(adapted_model_dir)
             print("================================================ iter {}, subject {}".format(itr,
@@ -182,6 +181,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                 pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'used_samples': all_used_frame_set}, out, protocol=2)
                 out.close()
 
+
 def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
     # config = tf.ConfigProto()
@@ -198,14 +198,14 @@ def main():
                                                                                              aus)
     else:
         print('>>>>>> sampling way: inputa != inputb')
-        inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                     FLAGS.update_batch_size, aus)
+        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
+                                                                                         FLAGS.update_batch_size)
 
 
     # inputa = (aus*subjects, 2K, latent_dim)
     # labela = (aus*subjects, 2K, au)
-    metatrain_input_tensors = {'inputa': tf.convert_to_tensor(inputa), 'inputb': tf.convert_to_tensor(inputa),
-                               'labela': tf.convert_to_tensor(labela), 'labelb': tf.convert_to_tensor(labela)}
+    metatrain_input_tensors = {'inputa': tf.convert_to_tensor(inputa), 'inputb': tf.convert_to_tensor(inputb),
+                               'labela': tf.convert_to_tensor(labela), 'labelb': tf.convert_to_tensor(labelb)}
 
     dim_input = np.prod((160, 240))  # img size
     model = MAML(dim_input, FLAGS.num_classes)
@@ -266,7 +266,7 @@ def main():
     if FLAGS.adaptation:
         print("ADAPTATION")
         print("================================================================================")
-        test(model, sess, trained_model_dir, data_generator, all_used_frame_set)
+        test(model, sess, trained_model_dir, all_used_frame_set, data_generator)
     else:
         print("TRAIN")
         print("================================================================================")

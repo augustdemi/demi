@@ -4,7 +4,8 @@ import os
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from utils import get_all_feature_w_all_labels, test
+from utils import get_all_feature_w_all_labels
+from feature_layers import feature_layer
 import random
 
 FLAGS = flags.FLAGS
@@ -21,6 +22,7 @@ class DataGenerator(object):
         Args:
             num_samples_per_class: num samples to generate per class in one batch
         """
+
         data_folder = FLAGS.datadir
         subjects = os.listdir(data_folder)
         subjects.sort()
@@ -34,28 +36,19 @@ class DataGenerator(object):
         subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
 
-        # if FLAGS.adaptation:
-        #     self.inputa, self.labela, self.labels = test(FLAGS.kshot_path, self.feature_files[0], self.label_folder[0],
-        #                                                  FLAGS.kshot_seed, subjects[0], FLAGS.update_batch_size)
-        #
-        # else:
-        feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
-                                                                                               self.label_folder,
-                                                                                               test_split_seed=FLAGS.test_split_seed)
+        feat_vec, labels, on_info_df, off_info_df = get_all_feature_w_all_labels(self.feature_files, self.label_folder)
 
         self.feat_vec = feat_vec
         self.labels = labels
         self.on_info_df = on_info_df
         self.off_info_df = off_info_df
-        self.test_b_frame = test_b_frame
-        print('========== will be used this test_b ===========', len(test_b_frame))
-        print(test_b_frame)
 
     def shuffle_data(self, seed, kshot, aus):
         inputa = []
         inputb = []
         labela = []
         labelb = []
+        all_used_frame_set = []
         for au in aus:
             # print('==================== au: ', au)
             one_au_all_subjects_on_frame_indices = self.on_info_df[au]
@@ -106,11 +99,16 @@ class DataGenerator(object):
                 inputb.append(self.feat_vec[i][inputb_idx])
                 labelb.append(self.labels[i][inputb_idx])
 
+                if FLAGS.evaluate:
+                    all_used_frame_set.extend(selected_on_frame_idx[0])
+                    all_used_frame_set.extend(selected_off_frame_idx[0])
         inputa = np.array(inputa)
         inputb = np.array(inputb)
         labela = np.array(labela)
         labelb = np.array(labelb)
-        return inputa, inputb, labela, labelb
+        all_used_frame_set = list(set(all_used_frame_set))
+        return inputa, inputb, labela, labelb, all_used_frame_set
+
 
     def sample_test_data(self, seed, kshot, aus):
         inputa = []
@@ -155,7 +153,7 @@ class DataGenerator(object):
         all_used_frame_set = list(set(all_used_frame_set))
         return inputa, inputa, labela, labela, all_used_frame_set
 
-    def sample_test_data_use_other_aus(self, seed, kshot, aus):
+    def sample_test_data2(self, seed, kshot, aus):
         inputa = []
         labela = []
         selected_frame_all = []
@@ -197,4 +195,3 @@ class DataGenerator(object):
         inputa = np.array(inputa)
         labela = np.array(labela)
         return inputa, inputa, labela, labela, selected_frame_all
-
