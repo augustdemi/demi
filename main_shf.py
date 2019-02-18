@@ -166,7 +166,7 @@ def test(model, sess, trained_model_dir, data_generator):
 
                 with open(os.path.join('/home/ml1323/project/robert_data/DISFA/kshot_path_0217/seed1/test_b',
                                        subjects[FLAGS.sbjt_start_idx].split('.')[0], 'file_path.csv'), 'r') as f:
-                    test_b = [int(elt.path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for elt in
+                    test_b = [int(elt.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for elt in
                               f.readline().split(',')]
 
                 with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
