@@ -266,7 +266,7 @@ def main():
     if FLAGS.adaptation:
         print("ADAPTATION")
         print("================================================================================")
-        test(model, sess, trained_model_dir, data_generator)
+        test(model, sess, trained_model_dir, data_generator, all_used_frame_set)
     else:
         print("TRAIN")
         print("================================================================================")
