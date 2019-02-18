@@ -367,18 +367,17 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
 
 
 def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
-    from feature_layers import feature_layer
-
     print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
     print(">>>>>>>>>>>>>>>>> feat_path: ", feat_path)
     print(">>>>>>>>>>>>>>>>> kshot_path: ", kshot_path)
     print(">>>>>>>>>>>>>>>>> subject: ", subject)
+    from feature_layers import feature_layer
     three_layers = feature_layer(10, FLAGS.num_au)
     three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
-
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-    labels = ['off', 'on']  # off = 0, on =1
 
+    #### save all label info ####
+    labels = ['off', 'on']  # off = 0, on =1
     binary_intensity = lambda lab: 1 if lab > 0 else 0
     all_label_info_per_subj = []
     for au in aus:
@@ -388,18 +387,20 @@ def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
             all_label_info_per_subj.append(labels_per_subj_per_au)
     all_label_info_per_subj = np.transpose(np.array(all_label_info_per_subj), (1, 0))
 
-    # check count of existing samples per off / on
+    #### save all resnet feat ####
+    f = open(feat_path, 'r')
+    lines = f.readlines()
+    all_feat_data = {}  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
+    for line in lines:
+        line = line.split(',')
+        all_feat_data.update({int(line[1].split('frame')[1]): line[2:]})  # key = frame, value = feature vector
+
+    # for each au, save on/off frames of this subject
     all_aus_feat_vec = []
     all_aus_labels = []
     for au in aus:
         frames_n_features_per_au = []
         for label in labels:
-            f = open(feat_path, 'r')
-            lines = f.readlines()
-            all_feat_data = {}  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
-            for line in lines:
-                line = line.split(',')
-                all_feat_data.update({int(line[1].split('frame')[1]): line[2:]})  # key = frame, value = feature vector
             # on/off 이미지를 구분해 놓은 csv파일로부터 라벨별 이미지 경로 읽어와( au, subject별 on 혹은 off 이미지)
             img_path_list = open(os.path.join(kshot_path, au, subject, label, 'file_path.csv')).readline().split(',')
             frame_n_feature_per_label = []

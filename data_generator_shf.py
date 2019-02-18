@@ -5,7 +5,6 @@ import tensorflow as tf
 
 from tensorflow.python.platform import flags
 from utils import get_all_feature_w_all_labels, test
-from feature_layers import feature_layer
 import random
 
 FLAGS = flags.FLAGS
