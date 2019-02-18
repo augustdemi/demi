@@ -178,7 +178,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                 print('y_lab shape: ', y_lab.shape)
                 print('y_hat shape: ', y_hat.shape)
                 out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat}, out, protocol=2)
+                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
                 out.close()
 
 
