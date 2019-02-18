@@ -4,6 +4,7 @@ import numpy as np
 import sys
 
 r_path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation/update_lr0.008.metalr0.008.lambda0.01.num_updates1.meta_iter'
+# r_path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation/update_lr0.008.metalr0.008.lambda0.01.num_updates1.meta_iter'
 kshot = sys.argv[1]
 max_seed = sys.argv[2]
 iter = sys.argv[3]
@@ -17,7 +18,9 @@ for seed in range(int(max_seed)):
     print("seed " + str(seed))
     print("============================================================")
     print("")
-    path = r_path + iter + '/splitseed' + splitseed + '/' + kshot + 'shot/seed' + str(seed)
+    # path = r_path + iter + '/splitseed' + splitseed + '/' + kshot + 'shot/seed' + str(seed)
+    path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
+
     y_lab_all = []
     y_hat_all = []
     f1_scores_per_seed = []
