@@ -112,10 +112,10 @@ class DataGenerator(object):
         labelb = np.array(labelb)
         return inputa, inputb, labela, labelb
 
-
     def sample_test_data(self, seed, kshot, aus):
         inputa = []
         labela = []
+        all_used_frame_set = []
         for au in aus:
             print('==== au: ', au)
             one_au_one_subject_on_frame_indices = self.on_info_df[au][0]
@@ -148,9 +148,12 @@ class DataGenerator(object):
             selected_idx.extend(selected_on_frame_idx)
             inputa.append(self.feat_vec[0][selected_idx])
             labela.append(self.labels[0][selected_idx])
+            if FLAGS.evaluate:
+                all_used_frame_set.extend(selected_idx)
         inputa = np.array(inputa)
         labela = np.array(labela)
-        return inputa, inputa, labela, labela
+        all_used_frame_set = list(set(all_used_frame_set))
+        return inputa, inputa, labela, labela, all_used_frame_set
 
     def sample_test_data_use_other_aus(self, seed, kshot, aus):
         inputa = []

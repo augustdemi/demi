@@ -125,7 +125,7 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
 
 
-def test(model, sess, trained_model_dir, data_generator):
+def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
     if FLAGS.log:
         train_writer = tf.summary.FileWriter(FLAGS.logdir + '/' + trained_model_dir, sess.graph)
 
@@ -163,39 +163,24 @@ def test(model, sess, trained_model_dir, data_generator):
                 eval_vec = []
                 eval_frame = []
                 print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
-
-                with open(os.path.join('/home/ml1323/project/robert_data/DISFA/kshot_path_0217/seed1/test_b',
-                                       subjects[FLAGS.sbjt_start_idx].split('.')[0], 'file_path.csv'), 'r') as f:
-                    test_b = [int(elt.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for elt in
-                              f.readline().split(',')]
-
+                print('-- num of used samples: ', len(all_used_frame_set))
                 with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
                     lines = f.readlines()
                     for line in lines:
                         line = line.split(',')
                         frame_idx = int(line[1].split('frame')[1])
-                        if frame_idx in test_b and frame_idx < 4845:
+                        if frame_idx not in all_used_frame_set and frame_idx < 4845:
                             feat_vec = [float(elt) for elt in line[2:]]
                             eval_vec.append(feat_vec)
                             eval_frame.append(frame_idx)
-                print('--------------------------------------------------')
-                print('evaluation frames: ')
-                print(eval_frame)
-                print('--------------------------------------------------')
-
-                y_lab = data_generator.labels[eval_frame]
-                print('y_lab')
-                print(y_lab)
-                print('--------------------------------------------------')
-
+                y_lab = data_generator.labels[0][eval_frame]
                 y_lab = np.array([np.eye(2)[label] for label in y_lab])
                 y_hat = three_layers.model_intensity.predict(eval_vec)
                 print('y_lab shape: ', y_lab.shape)
                 print('y_hat shape: ', y_hat.shape)
                 out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat}, out, protocol=2)
+                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'used_samples': all_used_frame_set}, out, protocol=2)
                 out.close()
-
 
 def main():
     os.environ["CUDA_VISIBLE_DEVICES"] = FLAGS.gpu
@@ -208,7 +193,9 @@ def main():
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     if FLAGS.adaptation:
         print('>>>>>> sampling way: inputa = inputb')
-        inputa, labela = data_generator.inputa, data_generator.labela
+        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data(FLAGS.kshot_seed,
+                                                                                             FLAGS.update_batch_size,
+                                                                                             aus)
     else:
         print('>>>>>> sampling way: inputa != inputb')
         inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed,
@@ -279,7 +266,7 @@ def main():
     if FLAGS.adaptation:
         print("ADAPTATION")
         print("================================================================================")
-        test(model, sess, trained_model_dir, data_generator)
+        test(model, sess, trained_model_dir, data_generator, all_used_frame_set)
     else:
         print("TRAIN")
         print("================================================================================")
