@@ -403,14 +403,14 @@ def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
             # on/off 이미지를 구분해 놓은 csv파일로부터 라벨별 이미지 경로 읽어와( au, subject별 on 혹은 off 이미지)
             img_path_list = open(os.path.join(kshot_path, au, subject, label, 'file_path.csv')).readline().split(',')
             frame_n_feature_per_label = []
-            try:
-                for path in img_path_list:
-                    frame = int(path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1])
-                    if frame < 4845:
-                        frame_n_feature_per_label.append((frame, all_feat_data[frame]))
-            except:
-                print('CHECK DATA FOR LABEL: ', kshot_path, label, ' - ', img_path_list)
-            frames_n_features_per_au.append(frame_n_feature_per_label)
+            # try:
+            for path in img_path_list:
+                frame = int(path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1])
+                if frame < 4845:
+                    frame_n_feature_per_label.append((frame, all_feat_data[frame]))
+                    # except:
+                    #     print('CHECK DATA FOR LABEL: ', kshot_path, label, ' - ', img_path_list)
+                    # frames_n_features_per_au.append(frame_n_feature_per_label)
 
         print('total off / on of ', au, ': ', len(frames_n_features_per_au[0]), len(frames_n_features_per_au[1]))
         # make the balance
