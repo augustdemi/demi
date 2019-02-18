@@ -44,7 +44,7 @@ class DataGenerator(object):
         self.on_info_df = on_info_df
         self.off_info_df = off_info_df
         self.test_b_frame = test_b_frame
-        print('========== will be used this test_b ===========')
+        print('========== will be used this test_b ===========', len(test_b_frame))
         print(test_b_frame)
 
     def shuffle_data(self, seed, kshot, aus):
@@ -52,7 +52,6 @@ class DataGenerator(object):
         inputb = []
         labela = []
         labelb = []
-        all_used_frame_set = []
         for au in aus:
             # print('==================== au: ', au)
             one_au_all_subjects_on_frame_indices = self.on_info_df[au]
@@ -103,15 +102,11 @@ class DataGenerator(object):
                 inputb.append(self.feat_vec[i][inputb_idx])
                 labelb.append(self.labels[i][inputb_idx])
 
-                if FLAGS.evaluate:
-                    all_used_frame_set.extend(selected_on_frame_idx[0])
-                    all_used_frame_set.extend(selected_off_frame_idx[0])
         inputa = np.array(inputa)
         inputb = np.array(inputb)
         labela = np.array(labela)
         labelb = np.array(labelb)
-        all_used_frame_set = list(set(all_used_frame_set))
-        return inputa, inputb, labela, labelb, all_used_frame_set
+        return inputa, inputb, labela, labelb
 
 
     def sample_test_data(self, seed, kshot, aus):
