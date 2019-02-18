@@ -370,12 +370,14 @@ def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
     from feature_layers import feature_layer
 
     print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
+    print(">>>>>>>>>>>>>>>>> feat_path: ", feat_path)
+    print(">>>>>>>>>>>>>>>>> kshot_path: ", kshot_path)
+    print(">>>>>>>>>>>>>>>>> subject: ", subject)
     three_layers = feature_layer(10, FLAGS.num_au)
     three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     labels = ['off', 'on']  # off = 0, on =1
-    print("!!!! subject: ", subject)
 
     binary_intensity = lambda lab: 1 if lab > 0 else 0
     all_label_info_per_subj = []
