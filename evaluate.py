@@ -17,7 +17,7 @@ for seed in range(int(max_seed)):
     print("seed " + str(seed))
     print("============================================================")
     print("")
-    path = r_path + iter + '/splitseed' + splitseed + '/' + kshot + 'shot/seed' + str(seed)
+    path = r_path + iter + '/splitseed' + splitseed + '/' + kshot + 'shot/kseed' + str(seed)
     # path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
 
     y_lab_all = []
