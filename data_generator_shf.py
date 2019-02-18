@@ -37,7 +37,7 @@ class DataGenerator(object):
 
         if FLAGS.adaptation:
             self.inputa, self.labela = test(FLAGS.kshot_path, self.feature_files[0], self.label_folder[0],
-                                            FLAGS.kshot_seed, nb_samples=FLAGS.update_batch_size)
+                                            FLAGS.kshot_seed, subjects[0], FLAGS.update_batch_size)
             print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             print(self.inputa.shape)
             print(self.labela.shape)

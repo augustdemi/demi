@@ -366,7 +366,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
     return all_subject_features, all_subject_labels, on_df, off_df, test_b_frame
 
 
-def test(kshot_path, feat_path, label_path, sampling_seed, nb_samples=None):
+def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
     from feature_layers import feature_layer
 
     print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
@@ -374,7 +374,6 @@ def test(kshot_path, feat_path, label_path, sampling_seed, nb_samples=None):
     three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-    subject = kshot_path.split('/')[-1]
     labels = ['off', 'on']  # off = 0, on =1
     print("!!!! subject: ", subject)
 
