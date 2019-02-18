@@ -449,7 +449,7 @@ def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
         off_sample_feat_vec = three_layers.model_final_latent_feat.predict(feat_vec)
         all_aus_feat_vec.append(feat_vec)
 
-    return np.array(off_sample_feat_vec), np.array(all_aus_labels)
+    return np.array(all_aus_feat_vec), np.array(all_aus_labels)
 
 
 
