@@ -56,7 +56,7 @@ flags.DEFINE_integer('num_au', 8, 'number of AUs used to make AE')
 flags.DEFINE_integer('au_idx', 8, 'au index to use in the given AE')
 flags.DEFINE_string('vae_model', './model_au_12.h5', 'vae model dir from robert code')
 flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
-flags.DEFINE_string('feature_path', "", 'path for feature vector')
+flags.DEFINE_string('kshot_path', "", 'kshot csv path')
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
 flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
@@ -193,9 +193,7 @@ def main():
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     if FLAGS.adaptation:
         print('>>>>>> sampling way: inputa = inputb')
-        inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                     FLAGS.update_batch_size,
-                                                                     aus)
+        inputa, labela = data_generator.inputa, data_generator.labela
     else:
         print('>>>>>> sampling way: inputa != inputb')
         inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed,
@@ -204,8 +202,8 @@ def main():
 
     # inputa = (aus*subjects, 2K, latent_dim)
     # labela = (aus*subjects, 2K, au)
-    metatrain_input_tensors = {'inputa': tf.convert_to_tensor(inputa), 'inputb': tf.convert_to_tensor(inputb),
-                               'labela': tf.convert_to_tensor(labela), 'labelb': tf.convert_to_tensor(labelb)}
+    metatrain_input_tensors = {'inputa': tf.convert_to_tensor(inputa), 'inputb': tf.convert_to_tensor(inputa),
+                               'labela': tf.convert_to_tensor(labela), 'labelb': tf.convert_to_tensor(labela)}
 
     dim_input = np.prod((160, 240))  # img size
     model = MAML(dim_input, FLAGS.num_classes)

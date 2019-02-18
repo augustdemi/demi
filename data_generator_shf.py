@@ -4,7 +4,7 @@ import os
 import tensorflow as tf
 
 from tensorflow.python.platform import flags
-from utils import get_all_feature_w_all_labels
+from utils import get_all_feature_w_all_labels, test
 from feature_layers import feature_layer
 import random
 
@@ -35,17 +35,26 @@ class DataGenerator(object):
         subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
 
-        feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
-                                                                                               self.label_folder,
-                                                                                               test_split_seed=FLAGS.test_split_seed)
+        if FLAGS.adaptation:
+            self.inputa, self.labela = test(FLAGS.kshot_path, self.feature_files[0], self.label_folder[0],
+                                            FLAGS.kshot_seed, nb_samples=FLAGS.update_batch_size)
+            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            print(self.inputa.shape)
+            print(self.labela.shape)
+            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
-        self.feat_vec = feat_vec
-        self.labels = labels
-        self.on_info_df = on_info_df
-        self.off_info_df = off_info_df
-        self.test_b_frame = test_b_frame
-        print('========== will be used this test_b ===========', len(test_b_frame))
-        print(test_b_frame)
+        else:
+            feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
+                                                                                                   self.label_folder,
+                                                                                                   test_split_seed=FLAGS.test_split_seed)
+
+            self.feat_vec = feat_vec
+            self.labels = labels
+            self.on_info_df = on_info_df
+            self.off_info_df = off_info_df
+            self.test_b_frame = test_b_frame
+            print('========== will be used this test_b ===========', len(test_b_frame))
+            print(test_b_frame)
 
     def shuffle_data(self, seed, kshot, aus):
         inputa = []
@@ -191,3 +200,19 @@ class DataGenerator(object):
         labela = np.array(labela)
         return inputa, inputa, labela, labela, selected_frame_all
 
+    def make_data_tensor(self, kshot_seed):
+        print("===================================make_data_tensor in daga_generator2")
+        print(">>>>>>> sampling seed: ", kshot_seed)
+        folders = self.metatrain_character_folders
+        print(">>>>>>> train folders: ", folders)
+
+        # make list of files
+        print('Generating filenames')
+        # To have totally different inputa and inputb, they should be sampled at the same time and then splitted.
+        for sub_folder in folders:  # 쓰일 task수만큼만 경로 만든다. 이 task들이 iteration동안 어차피 반복될거니까
+            # random.shuffle(sampled_character_folders)
+            off_imgs, on_imgs, off_labels, on_labels = test(sub_folder, FLAGS.feature_path,
+                                                            kshot_seed,
+                                                            nb_samples=FLAGS.update_batch_size)
+
+        return inputa_latent_feat_tensor, inputb_latent_feat_tensor, labelas_tensor, labelbs_tensor
