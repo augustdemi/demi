@@ -163,12 +163,17 @@ def test(model, sess, trained_model_dir, data_generator):
                 eval_vec = []
                 eval_frame = []
                 print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
+
+                with open(os.path.join(FLAGS.kshot_path, subjects[FLAGS.sbjt_start_idx]), 'file_path.csv', 'r') as f:
+                    test_b = [int(elt.path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for elt in
+                              f.readline().split(',')]
+
                 with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
                     lines = f.readlines()
                     for line in lines:
                         line = line.split(',')
                         frame_idx = int(line[1].split('frame')[1])
-                        if frame_idx in data_generator.test_b_frame and frame_idx < 4845:
+                        if frame_idx in test_b and frame_idx < 4845:
                             feat_vec = [float(elt) for elt in line[2:]]
                             eval_vec.append(feat_vec)
                             eval_frame.append(frame_idx)

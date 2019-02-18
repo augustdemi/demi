@@ -426,6 +426,8 @@ def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
         # 각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
         off_random_frames_n_features = sampler(frames_n_features_per_au[0], num_samples_to_select[0])
         print("-------------------------------")
+        print(au)
+        print("-------------------------------")
         print("label: ", labels[0])
         print('num of off_images: ', len(off_random_frames_n_features))
         print('off_frames: ', [elt[0] for elt in off_random_frames_n_features])
@@ -449,7 +451,7 @@ def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
         feat_vec = three_layers.model_final_latent_feat.predict(feat_vec)
         all_aus_feat_vec.append(feat_vec)
 
-    return np.array(all_aus_feat_vec), np.array(all_aus_labels)
+    return np.array(all_aus_feat_vec), np.array(all_aus_labels), all_label_info_per_subj
 
 
 

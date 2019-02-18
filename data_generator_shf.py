@@ -36,12 +36,8 @@ class DataGenerator(object):
         self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
 
         if FLAGS.adaptation:
-            self.inputa, self.labela = test(FLAGS.kshot_path, self.feature_files[0], self.label_folder[0],
-                                            FLAGS.kshot_seed, subjects[0], FLAGS.update_batch_size)
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-            print(self.inputa.shape)
-            print(self.labela.shape)
-            print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            self.inputa, self.labela, self.labels = test(FLAGS.kshot_path, self.feature_files[0], self.label_folder[0],
+                                                         FLAGS.kshot_seed, subjects[0], FLAGS.update_batch_size)
 
         else:
             feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
