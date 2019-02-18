@@ -446,7 +446,7 @@ def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
         feat_vec.extend([elt[1] for elt in on_random_frames_n_features])  # put on_features
         random.seed(0)
         random.shuffle(feat_vec)
-        off_sample_feat_vec = three_layers.model_final_latent_feat.predict(feat_vec)
+        feat_vec = three_layers.model_final_latent_feat.predict(feat_vec)
         all_aus_feat_vec.append(feat_vec)
 
     return np.array(all_aus_feat_vec), np.array(all_aus_labels)
