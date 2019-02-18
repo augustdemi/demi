@@ -36,12 +36,18 @@ class DataGenerator(object):
         subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
         self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
 
-        feat_vec, labels, on_info_df, off_info_df = get_all_feature_w_all_labels(self.feature_files, self.label_folder)
+        feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
+                                                                                               self.label_folder,
+                                                                                               FLAGS.test_split_seed)
 
         self.feat_vec = feat_vec
         self.labels = labels
         self.on_info_df = on_info_df
         self.off_info_df = off_info_df
+        self.test_b_frame = test_b_frame
+        print('========== will be used this test_b ===========')
+        print(len(test_b_frame))
+        print(test_b_frame)
 
     def shuffle_data(self, seed, kshot, aus):
         inputa = []
