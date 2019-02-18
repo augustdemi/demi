@@ -164,7 +164,7 @@ def test(model, sess, trained_model_dir, data_generator):
                 eval_frame = []
                 print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
 
-                with open(os.path.join(FLAGS.kshot_path, subjects[FLAGS.sbjt_start_idx]), 'file_path.csv', 'r') as f:
+                with open(os.path.join(FLAGS.kshot_path, subjects[FLAGS.sbjt_start_idx], 'file_path.csv'), 'r') as f:
                     test_b = [int(elt.path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1]) for elt in
                               f.readline().split(',')]
 
