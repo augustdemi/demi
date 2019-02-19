@@ -50,6 +50,7 @@ class DataGenerator(object):
         print(test_b_frame)
 
     def shuffle_data(self, seed, kshot, aus):
+        print('>>>>>> sampling way: inputa != inputb')
         inputa = []
         inputb = []
         labela = []
@@ -117,6 +118,7 @@ class DataGenerator(object):
 
 
     def sample_test_data(self, seed, kshot, aus):
+        print('>>>>>> sampling way: inputa = inputb')
         inputa = []
         labela = []
         all_used_frame_set = []
@@ -159,7 +161,7 @@ class DataGenerator(object):
         all_used_frame_set = list(set(all_used_frame_set))
         return inputa, inputa, labela, labela, all_used_frame_set
 
-    def sample_test_data2(self, seed, kshot, aus):
+    def sample_test_data_use_all(self, seed, kshot, aus):
         inputa = []
         labela = []
         selected_frame_all = []
