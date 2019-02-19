@@ -139,7 +139,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         result = sess.run(input_tensors, feed_dict)
 
         if itr == FLAGS.metatrain_iterations:
-            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_all/update_lr' + str(
+            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_double/update_lr' + str(
                 FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
                 FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
                 FLAGS.metatrain_iterations) + '/splitseed' + str(
@@ -192,14 +192,12 @@ def main():
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     if FLAGS.adaptation:
-        print('>>>>>> sampling way: inputa = inputb')
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data2(FLAGS.kshot_seed,
-                                                                                              FLAGS.update_batch_size,
-                                                                                              aus)
+        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
+                                                                                         FLAGS.update_batch_size,
+                                                                                         aus)
     else:
-        print('>>>>>> sampling way: inputa != inputb')
-        inputa, inputb, labela, labelb = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                     FLAGS.update_batch_size, aus)
+        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
+                                                                                         FLAGS.update_batch_size, aus)
 
 
     # inputa = (aus*subjects, 2K, latent_dim)
