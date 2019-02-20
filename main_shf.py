@@ -192,9 +192,9 @@ def main():
 
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     if FLAGS.adaptation:
-        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
-                                                                                         FLAGS.update_batch_size,
-                                                                                         aus)
+        inputa, inputb, labela, labelb, all_used_frame_set = data_generator.sample_test_data_use_all(FLAGS.kshot_seed,
+                                                                                                     FLAGS.update_batch_size,
+                                                                                                     aus)
     else:
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
                                                                                          FLAGS.update_batch_size, aus)
