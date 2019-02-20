@@ -90,7 +90,7 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             feed_dict = {model.inputa: inputa,
                          model.inputb: inputb,
                          model.labela: labela,
-                         model.labelb: labelb, model.meta_lr: FLAGS.meta_lr}
+                         model.labelb: labelb}
 
         if itr <= 1000:
             SAVE_INTERVAL = 100
