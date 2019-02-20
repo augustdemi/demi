@@ -86,7 +86,7 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
     for itr in range(resume_itr + 1, FLAGS.metatrain_iterations + 1):
         if FLAGS.shuffle_batch > 0 and itr % FLAGS.shuffle_batch == 0:
             print('=============================================================shuffle data, iteration:', itr)
-            inputa, inputb, labela, labelb = data_generator.shuffle_data(itr, FLAGS.update_batch_size, aus)
+            inputa, inputb, labela, labelb, _ = data_generator.shuffle_data(itr, FLAGS.update_batch_size, aus)
             feed_dict = {model.inputa: inputa,
                          model.inputb: inputb,
                          model.labela: labela,
