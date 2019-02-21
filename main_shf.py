@@ -139,7 +139,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         result = sess.run(input_tensors, feed_dict)
 
         if itr == FLAGS.metatrain_iterations:
-            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_double/update_lr' + str(
+            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_all/update_lr' + str(
                 FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
                 FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
                 FLAGS.metatrain_iterations) + '/splitseed' + str(
