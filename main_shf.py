@@ -59,7 +59,7 @@ flags.DEFINE_string('gpu', "0,1,2,3", 'vae model dir from robert code')
 flags.DEFINE_string('kshot_path', "", 'kshot csv path')
 flags.DEFINE_bool('meta_update', True, 'meta_update')
 flags.DEFINE_string('model', "", 'model name')
-flags.DEFINE_string('base_vae_model', "", 'base vae model to continue to train')
+flags.DEFINE_string('base_vae_model', None, 'base vae model to continue to train')
 flags.DEFINE_string('opti', '', 'optimizer : adam or adadelta')
 flags.DEFINE_integer('shuffle_batch', -1, '')
 flags.DEFINE_float('lambda2', 0.5, '')
@@ -131,7 +131,8 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
 
     feed_dict = {}
     print('Done initializing, starting training.')
-
+    w = sess.run('model/w1:0')
+    b = sess.run('model/b1:0')
     for itr in range(1, FLAGS.metatrain_iterations + 1):
         input_tensors = [model.train_op]
         input_tensors.extend([model.fast_weight_w])
@@ -150,36 +151,37 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                                                                                                 FLAGS.sbjt_start_idx))
             w = sess.run('model/w1:0')
             b = sess.run('model/b1:0')
-            print('adapted bias: ', b)
+            print('--- adapted bias: ', b)
             out = open(adapted_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
             pickle.dump({'w': w, 'b': b}, out, protocol=2)
             out.close()
-            if FLAGS.evaluate:
-                three_layers = feature_layer(10, FLAGS.num_au)
-                three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
+    if FLAGS.evaluate:
+        three_layers = feature_layer(10, FLAGS.num_au)
+        three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
+        print('--- loaded bias to be evaluated: ', b)
 
-                subjects = os.listdir(FLAGS.datadir)
-                subjects.sort()
-                eval_vec = []
-                eval_frame = []
-                print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
-                with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
-                    lines = f.readlines()
-                    for line in lines:
-                        line = line.split(',')
-                        frame_idx = int(line[1].split('frame')[1])
-                        if frame_idx in data_generator.test_b_frame and frame_idx < 4845:
-                            feat_vec = [float(elt) for elt in line[2:]]
-                            eval_vec.append(feat_vec)
-                            eval_frame.append(frame_idx)
-                y_lab = data_generator.labels[0][eval_frame]
-                y_lab = np.array([np.eye(2)[label] for label in y_lab])
-                y_hat = three_layers.model_intensity.predict(eval_vec)
-                print('y_lab shape: ', y_lab.shape)
-                print('y_hat shape: ', y_hat.shape)
-                out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
-                out.close()
+        subjects = os.listdir(FLAGS.datadir)
+        subjects.sort()
+        eval_vec = []
+        eval_frame = []
+        print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
+        with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.split(',')
+                frame_idx = int(line[1].split('frame')[1])
+                if frame_idx in data_generator.test_b_frame and frame_idx < 4845:
+                    feat_vec = [float(elt) for elt in line[2:]]
+                    eval_vec.append(feat_vec)
+                    eval_frame.append(frame_idx)
+        y_lab = data_generator.labels[0][eval_frame]
+        y_lab = np.array([np.eye(2)[label] for label in y_lab])
+        y_hat = three_layers.model_intensity.predict(eval_vec)
+        print('y_lab shape: ', y_lab.shape)
+        print('y_hat shape: ', y_hat.shape)
+        out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+        pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
+        out.close()
 
 
 def main():
@@ -248,17 +250,33 @@ def main():
             print('resume_itr: ', resume_itr)
 
     elif FLAGS.adaptation:  # adaptation 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
-        model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
+        if FLAGS.base_vae_model:
+            three_layers = feature_layer(10, 1)
+            print('FLAGS.base_vae_model: ', FLAGS.base_vae_model)
+            three_layers.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
+            w = three_layers.model_intensity.layers[-1].get_weights()[0]
+            b = three_layers.model_intensity.layers[-1].get_weights()[1]
+            print('bias from base_vae_model: ', b)
+            print('-----------------------------------------------------------------')
+            with tf.variable_scope("model", reuse=True) as scope:
+                scope.reuse_variables()
+                b1 = tf.get_variable("b1", [1, 2]).assign(np.array(b))
+                w1 = tf.get_variable("w1", [300, 1, 2]).assign(np.array(w))
+                sess.run(b1)
+                sess.run(w1)
+            print("updated bias from base_vae_model: ", sess.run('model/b1:0'))
+        else:
+            model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
 
-        if FLAGS.test_iter > 0:
-            files = os.listdir(model_file[:model_file.index('model')])
-            if 'model' + str(FLAGS.test_iter) + '.index' in files:
-                model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
-                print(">>>> model_file2: ", model_file)
+            if FLAGS.test_iter > 0:
+                files = os.listdir(model_file[:model_file.index('model')])
+                if 'model' + str(FLAGS.test_iter) + '.index' in files:
+                    model_file = model_file[:model_file.index('model')] + 'model' + str(FLAGS.test_iter)
+                    print(">>>> model_file2: ", model_file)
 
-        print("--- Restoring model weights from " + model_file)
-        saver.restore(sess, model_file)
-        print("updated bias from ckpt: ", sess.run('model/b1:0'))
+            print("--- Restoring model weights from " + model_file)
+            saver.restore(sess, model_file)
+            print("updated bias from MAML ckpt: ", sess.run('model/b1:0'))
     print("================================================================================")
 
     if FLAGS.adaptation:
