@@ -83,11 +83,13 @@ class DataGenerator(object):
                 half_on_frame = int(len(selected_on_frame_idx[i]) / 2)
                 inputa_idx = selected_off_frame_idx[i][:half_off_frame]
                 inputa_idx.extend(selected_on_frame_idx[i][:half_on_frame])
+                random.shuffle(inputa_idx)
                 inputa.append(self.feat_vec[i][inputa_idx])
                 labela.append(self.labels[i][inputa_idx])
                 # select inputa / inputb
                 inputb_idx = selected_off_frame_idx[i][half_off_frame:]
                 inputb_idx.extend(selected_on_frame_idx[i][half_on_frame:])
+                random.shuffle(inputb_idx)
                 inputb.append(self.feat_vec[i][inputb_idx])
                 labelb.append(self.labels[i][inputb_idx])
 
