@@ -264,7 +264,7 @@ def main():
                 w1 = tf.get_variable("w1", [300, FLAGS.num_au, 2]).assign(np.array(w))
                 sess.run(b1)
                 sess.run(w1)
-            print("updated bias from base_vae_model: ", sess.run('model/b1:0'))
+            print("uploaded bias from base_vae_model: ", sess.run('model/b1:0'))
         else:
             model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
 
