@@ -133,6 +133,14 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
     print('Done initializing, starting training.')
     w = sess.run('model/w1:0')
     b = sess.run('model/b1:0')
+    adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_base/update_lr' + str(
+        FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+        FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+        FLAGS.metatrain_iterations) + '/splitseed' + str(
+        FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
+    if not os.path.exists(adapted_model_dir):
+        os.makedirs(adapted_model_dir)
+
     for itr in range(1, FLAGS.metatrain_iterations + 1):
         input_tensors = [model.train_op]
         input_tensors.extend([model.fast_weight_w])
@@ -140,13 +148,6 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         result = sess.run(input_tensors, feed_dict)
 
         if itr == FLAGS.metatrain_iterations:
-            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_base/update_lr' + str(
-                FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
-                FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
-                FLAGS.metatrain_iterations) + '/splitseed' + str(
-                FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
-            if not os.path.exists(adapted_model_dir):
-                os.makedirs(adapted_model_dir)
             print("================================================ iter {}, subject {}".format(itr,
                                                                                                 FLAGS.sbjt_start_idx))
             w = sess.run('model/w1:0')
