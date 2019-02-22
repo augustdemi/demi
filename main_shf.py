@@ -68,7 +68,7 @@ flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/",
 flags.DEFINE_bool('check_sample', False, 'check frame idx of samples')
 flags.DEFINE_integer('test_split_seed', -1, 'random seed for test set split')
 flags.DEFINE_bool('evaluate', False, 'evaluate or not')
-
+flags.DEFINE_string('subject_index', '', 'subject indices to select')
 
 def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)

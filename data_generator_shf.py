@@ -26,7 +26,9 @@ class DataGenerator(object):
         data_folder = FLAGS.datadir
         subjects = os.listdir(data_folder)
         subjects.sort()
-        subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        subject_index = [int(elt) for elt in FLAGS.subject_index.split(',')]
+        print('>>>>>>>>>>>>>> subject index: ', subject_index)
+        subjects = subjects[subject_index]
         print('>>>>>>>>>>>>>> selected subjects from feat_vec: ', subjects)
         self.feature_files = [os.path.join(data_folder, subject) for subject in subjects]
 
