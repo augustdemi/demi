@@ -260,8 +260,8 @@ def main():
             print('-----------------------------------------------------------------')
             with tf.variable_scope("model", reuse=True) as scope:
                 scope.reuse_variables()
-                b1 = tf.get_variable("b1", [1, 2]).assign(np.array(b))
-                w1 = tf.get_variable("w1", [300, 1, 2]).assign(np.array(w))
+                b1 = tf.get_variable("b1", [FLAGS.num_au, 2]).assign(np.array(b))
+                w1 = tf.get_variable("w1", [300, FLAGS.num_au, 2]).assign(np.array(w))
                 sess.run(b1)
                 sess.run(w1)
             print("updated bias from base_vae_model: ", sess.run('model/b1:0'))
