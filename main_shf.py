@@ -253,7 +253,7 @@ def main():
         if FLAGS.base_vae_model:
             three_layers = feature_layer(10, 1)
             print('FLAGS.base_vae_model: ', FLAGS.base_vae_model)
-            three_layers.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
+            three_layers.loadWeight(FLAGS.base_vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
             w = three_layers.model_intensity.layers[-1].get_weights()[0]
             b = three_layers.model_intensity.layers[-1].get_weights()[1]
             print('bias from base_vae_model: ', b)
