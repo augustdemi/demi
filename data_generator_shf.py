@@ -27,15 +27,16 @@ class DataGenerator(object):
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_index = [int(elt) for elt in FLAGS.subject_index.split(',')]
+        FLAGS.meta_batch_size = len(subject_index)
         print('>>>>>>>>>>>>>> subject index: ', subject_index)
-        subjects = subjects[subject_index]
+        subjects = np.array(subjects)[subject_index]
         print('>>>>>>>>>>>>>> selected subjects from feat_vec: ', subjects)
         self.feature_files = [os.path.join(data_folder, subject) for subject in subjects]
 
         label_folder = FLAGS.labeldir  # label_folder = '/home/ml1323/project/robert_data/DISFA/label/'
         subjects = os.listdir(label_folder)
         subjects.sort()
-        subjects = subjects[FLAGS.sbjt_start_idx:FLAGS.sbjt_start_idx + FLAGS.meta_batch_size]
+        subjects = np.array(subjects)[subject_index]
         self.label_folder = [os.path.join(label_folder, subject) for subject in subjects]
 
         feat_vec, labels, on_info_df, off_info_df, test_b_frame = get_all_feature_w_all_labels(self.feature_files,
