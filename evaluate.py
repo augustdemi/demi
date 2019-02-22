@@ -3,12 +3,13 @@ from EmoEstimator.utils.evaluate import print_summary
 import numpy as np
 import sys
 
-r_path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation/update_lr0.008.metalr0.008.lambda0.01.num_updates1.meta_iter'
+#r_path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation_base/update_lr0.008.metalr0.008.lambda0.0.num_updates1.meta_iter'
+r_path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation_base/update_lr0.008.metalr0.008.lambda0.01.num_updates1.meta_iter'
 # r_path = '/home/ml1323/project/robert_code/new/disfa/seed0/m1_ce_0.01co_shuffle1_adadelta/cls_2.mbs_14.ubs_10.numstep1.updatelr0.01.metalr0.01/adaptation/update_lr0.008.metalr0.008.lambda0.01.num_updates1.meta_iter'
 kshot = sys.argv[1]
 max_seed = sys.argv[2]
 iter = sys.argv[3]
-# splitseed = sys.argv[4]
+splitseed = sys.argv[4]
 all_seed_info = []
 
 for seed in range(int(max_seed)):
@@ -17,8 +18,8 @@ for seed in range(int(max_seed)):
     print("seed " + str(seed))
     print("============================================================")
     print("")
-    # path = r_path + iter + '/splitseed' + splitseed + '/' + kshot + 'shot/kseed' + str(seed)
-    path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
+    path = r_path + iter + '/splitseed' + splitseed + '/' + kshot + 'shot/kseed' + str(seed)
+    #path = r_path + iter + '/' + kshot + 'kshot/seed' + str(seed)
 
     y_lab_all = []
     y_hat_all = []
@@ -36,7 +37,7 @@ for seed in range(int(max_seed)):
         f1_score.append(np.average(f1_score))
         # stack each subject's f1-score
         f1_scores_per_seed.append(f1_score)
-        print("-- num of samples:", len(file['used_samples']))
+        print("-- num of samples:", len(file['all_used_frame_set']))
 
 
     print(">> y_lab_all shape:", np.vstack(y_lab_all).shape)

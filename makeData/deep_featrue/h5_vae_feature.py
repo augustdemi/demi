@@ -5,9 +5,9 @@ import random
 
 # MAML을 위한 base model에서 쓰일 train/test 셋을 만들기위해 h5파일을 split함
 ############### img ############
-path = "/home/ml1323/project/robert_data/DISFA/deep_feature200/"
+path = "/home/ml1323/project/robert_data/DISFA/deep_feature200_dim2048/"
 # path = "D:/연구/프로젝트/DISFA/h5/"
-save_path = "/home/ml1323/project/robert_data/DISFA/h5_vae_feature/"
+save_path = "/home/ml1323/project/robert_data/DISFA/h5_vae_feature_dim2048/"
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
