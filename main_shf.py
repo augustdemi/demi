@@ -139,7 +139,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         result = sess.run(input_tensors, feed_dict)
 
         if itr == FLAGS.metatrain_iterations:
-            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_all/update_lr' + str(
+            adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_base/update_lr' + str(
                 FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
                 FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
                 FLAGS.metatrain_iterations) + '/splitseed' + str(
@@ -156,7 +156,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             out.close()
             if FLAGS.evaluate:
                 three_layers = feature_layer(10, FLAGS.num_au)
-                three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
+                three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
 
                 subjects = os.listdir(FLAGS.datadir)
                 subjects.sort()
