@@ -295,7 +295,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
                 if frame_idx < 4845:
                     one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
             one_subject_features = np.array(one_subject_features)
-            one_subject_features = three_layers.model_final_latent_feat.predict(one_subject_features)
+            # one_subject_features = three_layers.model_final_latent_feat.predict(one_subject_features)
             all_subject_features.append(one_subject_features)
 
     print('---- get label')
@@ -321,7 +321,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
         for au in aus:
             f = open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r')
             lines = f.readlines()[:4845]
-            labels_per_subj_per_au = [binary_intensity(float(line.split(',')[1].split('\n')[0])) for line in lines]
+            labels_per_subj_per_au = [binary_intensity(np.float32(line.split(',')[1].split('\n')[0])) for line in lines]
             if len(labels_per_subj_per_au) < 4845:
                 labels_per_subj_per_au.append(-1)
             all_labels_per_subj.append(labels_per_subj_per_au)

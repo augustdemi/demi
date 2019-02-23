@@ -24,7 +24,7 @@ class MAML:
         self.update_lr = FLAGS.update_lr
         self.meta_lr = FLAGS.meta_lr
         self.classification = False
-        self.weight_dim = 300
+        self.weight_dim = 2048
         self.total_num_au = 8
         self.num_classes = 2
         self.LAMBDA2 = FLAGS.lambda2
@@ -63,6 +63,8 @@ class MAML:
                 inputa, inputb, labela, labelb = inp  # input = (NK,latent_dim)  label = (NK, num of au, N), N = num of class
                 inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
                 inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
+                inputa = tf.cast(inputa, tf.float32)
+                inputb = tf.cast(inputb, tf.float32)
 
                 labela_ce = tf.one_hot(labela, self.num_classes)  # (NK,8,2)
                 labela_ce = tf.cast(labela_ce, tf.float32)[:, self.au_idx, :]  # (NK,1)
@@ -280,6 +282,7 @@ class MAML:
         var_x = inp[:, :, None]
 
         # matrix multiplication with dropout
+
         z = tf.reduce_sum(var_w * var_x, 1) + var_b
         # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
         # score = tf.nn.softmax(z)

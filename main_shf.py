@@ -133,11 +133,19 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
     print('Done initializing, starting training.')
     w = sess.run('model/w1:0')
     b = sess.run('model/b1:0')
-    adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_base/update_lr' + str(
-        FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
-        FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
-        FLAGS.metatrain_iterations) + '/splitseed' + str(
-        FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
+    if FLAGS.base_vae_model:
+        adapted_model_dir = FLAGS.keep_train_dir + '/adaptation_base/update_lr' + str(
+            FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+            FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+            FLAGS.metatrain_iterations) + '/splitseed' + str(
+            FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
+    else:
+        adapted_model_dir = FLAGS.keep_train_dir + '/adaptation/update_lr' + str(
+            FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+            FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+            FLAGS.metatrain_iterations) + '/splitseed' + str(
+            FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
+
     if not os.path.exists(adapted_model_dir):
         os.makedirs(adapted_model_dir)
 
@@ -267,6 +275,7 @@ def main():
                 sess.run(w1)
             print("uploaded bias from base_vae_model: ", sess.run('model/b1:0'))
         else:
+            print('checkpoint dir: ', FLAGS.keep_train_dir)
             model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
 
             if FLAGS.test_iter > 0:
