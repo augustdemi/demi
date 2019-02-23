@@ -99,6 +99,7 @@ def test_each_subject(w, b, sbjt_start_idx):  # In case when test the model with
     data = pickle.load(open(FLAGS.testset_dir + test_subject, "rb"), encoding='latin1')
     test_features = data['test_features']
     y_hat = three_layers.model_intensity.predict(test_features)
+    print(y_hat)
     if FLAGS.au_idx < 8:
         lab = data['lab'][:, FLAGS.au_idx]
         y_lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))

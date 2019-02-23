@@ -27,7 +27,6 @@ class DataGenerator(object):
         subjects = os.listdir(data_folder)
         subjects.sort()
         subject_index = [int(elt) for elt in FLAGS.subject_index.split(',')]
-        FLAGS.meta_batch_size = len(subject_index)
         print('>>>>>>>>>>>>>> subject index: ', subject_index)
         subjects = np.array(subjects)[subject_index]
         print('>>>>>>>>>>>>>> selected subjects from feat_vec: ', subjects)

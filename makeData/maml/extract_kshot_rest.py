@@ -8,7 +8,7 @@ import numpy as np
 # original_frame_path = "D:/연구/프로젝트/SN001/frames/"
 original_frame_path = "/home/ml1323/project/robert_data/DISFA/detected_disfa/"
 k_shot = 50
-au = "au25"
+au = "au26"
 for subject in os.listdir(original_frame_path):
     # subject = "SN001"
     ####### label ############

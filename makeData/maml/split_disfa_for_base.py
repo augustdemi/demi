@@ -20,7 +20,7 @@ train_index = np.array([1, 2, 3, 6, 7, 10, 15, 16, 17, 18, 20, 23, 24, 25])
 test_index = np.array([i for i in file_idx if i not in train_index])
 
 
-print("TRAIN:", files[train_index], "TEST:", files[test_index])
+print("TRAIN:", np.array(files)[train_index], "TEST:", np.array(files)[test_index])
 data_idx = {'train': train_index, 'test': test_index}
 for key in data_idx.keys():
     imgs = []

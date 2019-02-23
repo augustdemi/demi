@@ -2,16 +2,16 @@ import pickle
 import os
 import numpy as np
 
-kshot_path = "/home/ml1323/project/robert_data/DISFA/kshot_path/test_b/"
+kshot_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter_8au/test_b/"
 feat_path = "/home/ml1323/project/robert_data/DISFA/deep_feature200/"
-save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path/testset/"
+save_path = "/home/ml1323/project/robert_data/DISFA/kshot_path_filter_8au/testset/"
 if not os.path.exists(save_path): os.makedirs(save_path)
 
 subjects = os.listdir(kshot_path)
 subjects.sort()
 all_au = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
-for subject in subjects:
+for subject in subjects[1:]:
     subject_folder = os.path.join(kshot_path, subject)
     files = os.listdir(subject_folder)
     test_file_paths = open(os.path.join(kshot_path, subject, 'file_path.csv')).readline().split(',')

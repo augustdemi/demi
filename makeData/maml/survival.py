@@ -14,7 +14,7 @@ test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 
 for subject in test_subjects:
     data = pickle.load(open('/home/ml1323/project/robert_data/DISFA/new_dataset/testset/' + subject + '.pkl', "rb"),
                        encoding='latin1')
-    test_a_idx = [x.split('/')[9].split('.')[0].split('frame')[1] for x in data['test_file_names']]
+    test_a_idx = [int(x.split('/')[9].split('.')[0].split('frame')[1]) for x in data['test_file_names']]
     print(subject)
     print(test_a_idx)
 

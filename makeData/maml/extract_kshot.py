@@ -12,8 +12,8 @@ k_fold = 3
 for subject in os.listdir(original_frame_path):
     # subject = "SN001"
     ####### label ############
-    label_path= "D:/연구/프로젝트/DISFA/label/" + subject + "/" + subject + "_au12.txt"
-    # label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_au12.txt"
+    #label_path= "D:/연구/프로젝트/DISFA/label/" + subject + "/" + subject + "_au12.txt"
+    label_path = "/home/ml1323/project/robert_data/DISFA/label/" + subject + "/" + subject + "_au12.txt"
     intensities_for_one_au = []
     with open(label_path, 'r') as f:
         for line in f:
