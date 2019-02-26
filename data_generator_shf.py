@@ -1,11 +1,9 @@
 """ Code for loading data. """
 import numpy as np
 import os
-import tensorflow as tf
 
 from tensorflow.python.platform import flags
 from utils import get_all_feature_w_all_labels
-from feature_layers import feature_layer
 import random
 
 FLAGS = flags.FLAGS
