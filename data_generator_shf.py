@@ -131,10 +131,10 @@ class DataGenerator(object):
         import csv
         with open(save_path + '/subject' + FLAGS.subject_index + '_used.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(','.join([str(elt) for elt in selected_frame_all]))
+            writer.writerow(selected_frame_all)
         with open(save_path + '/subject' + FLAGS.subject_index + '_eval.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(','.join([str(elt) for elt in self.test_b_frame]))
+            writer.writerow(self.test_b_frame)
 
         for _ in aus:
             inputa.append(self.feat_vec[0][selected_frame_all])
