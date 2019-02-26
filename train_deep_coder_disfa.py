@@ -51,7 +51,6 @@ else:
     model_name = './' + args.saving_model + '.h5'
 
 batch_size = 32  # dont change it!
-log_dir_model = './model'
 latent_dim1 = 2048
 latent_dim2 = 500
 latent_dim3 = 300
@@ -188,8 +187,8 @@ model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
 model_deep_feature = K.models.Model([inp_0], [z_mean])
 
-sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
-sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
+sum_vac_disfa_dir = './base/sum_vac_disfa_dir/' + args.log_dir
+sum_mult_out_dir = './base/sum_mult_out_dir/' + args.log_dir
 
 if source_data != 'init':
     model_train.load_weights(args.restored_model + '.h5')
@@ -197,6 +196,8 @@ if source_data != 'init':
 
 if not os.path.exists(sum_vac_disfa_dir):
     os.makedirs(sum_vac_disfa_dir)
+if not os.path.exists(sum_mult_out_dir):
+    os.makedirs(sum_mult_out_dir)
 
 model_train.compile(
     optimizer=K.optimizers.Adadelta(
