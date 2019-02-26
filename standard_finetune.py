@@ -111,7 +111,7 @@ def pred_loss(y_true, y_pred):
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
-three_layers = feature_layer(batch_size, 1)
+three_layers = feature_layer(batch_size, args.num_au)
 
 import pickle
 
@@ -134,7 +134,7 @@ if args.logdir != '':
     print('--------------------------------')
     three_layers.loadWeight_pkl(args.restored_model, w, b)
 else:
-    three_layers.loadWeight(args.restored_model, au_index, num_au_for_rm=args.num_au)
+    three_layers.loadWeight(args.restored_model)
 
 model_intensity = three_layers.model_intensity
 
