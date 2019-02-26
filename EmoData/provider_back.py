@@ -440,6 +440,97 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
 
     res_gen = {}
     res_gen['nb_samples'] = nb_samples
+    res_gen['nb_batches'
+    n] = nb_batches
+    for key in f:
+        res_gen[key] = _make_generator(f[key], key)
+    return res_gen
+
+
+def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
+                        eval=False,
+                        padding='same'
+                        ):
+    import sys
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    subjects = os.listdir(feature_path)
+    subjects.sort()
+    subject = subjects[subject_index]
+    if eval:
+        used_info_path = os.path.join(used_info_path, subject + '_eval.csv')
+    else:
+        used_info_path = os.path.join(used_info_path, subject + '_used.csv')
+
+    print('>>>>>>>>>>> used_info_path: ', used_info_path)
+
+    f = open(used_info_path)
+    used_frames = f.readline().split(',')
+    used_frames = [int(frame) for frame in used_frames]
+
+    binary_intensity = lambda lab: 1 if lab > 0 else 0
+    aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
+    #################################################################################
+
+    ### label ###
+    labels_per_subj = []
+    for au in aus:
+        with open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r') as f:
+            lines = f.readlines()[:4845]
+        labels_per_subj_per_au = [binary_intensity(np.float32(line.split(',')[1].split('\n')[0])) for line in
+                                  lines[used_frames]]
+        if len(labels_per_subj_per_au) < 4845:
+            labels_per_subj_per_au.append(-1)
+            labels_per_subj.append(labels_per_subj_per_au)
+
+    labels_per_subj = np.transpose(np.array(labels_per_subj), (1, 0))
+
+    ### feature ###
+    with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
+        lines = f.readlines()
+        feat_vec_per_subj = []  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
+        for line in lines:
+            line = line.split(',')
+            frame_idx = int(line[1].split('frame')[1])
+            feat_vec = np.array([float(elt) for elt in line[2:]])
+            if frame_idx in used_frames:
+                feat_vec_per_subj.append(feat_vec)  # key = frame, value = feature vector
+    #################################################################################
+    f = {'feat': np.array(feat_vec_per_subj), 'lab': labels_per_subj}
+
+    nb_samples = len(feat_vec_per_subj)
+    batch_size = nb_samples
+    nb_batches = math.ceil(nb_samples / batch_size)
+    print('-----------------------------------')
+    print('feat_vec_per_subj: ', len(feat_vec_per_subj))
+    print('labels_per_subj: ', len(labels_per_subj))
+    print('nb_samples: ', nb_samples)
+    print('nb_batches: ', nb_batches)
+    print('-----------------------------------')
+
+    def _make_generator(data, key):
+
+        t0, t1 = 0, batch_size
+
+        while True:
+
+            t1 = min(nb_samples, t1)
+            if t0 >= nb_samples:
+                t0, t1 = 0, batch_size
+            batch = data[t0:t1]
+
+            if padding != None and batch.shape[0] < batch_size:
+                if padding == 'same':
+                    batch = data[-batch_size:]
+                else:
+                    tmp = padding * np.ones([batch_size, *batch.shape[1:]])
+                    tmp[:batch.shape[0]] = batch
+                    batch = tmp
+            t0 += batch_size
+            t1 += batch_size
+            yield batch
+
+    res_gen = {}
+    res_gen['nb_samples'] = nb_samples
     res_gen['nb_batches'] = nb_batches
     for key in f:
         res_gen[key] = _make_generator(f[key], key)
