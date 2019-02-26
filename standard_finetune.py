@@ -16,10 +16,7 @@ parser.add_argument("-i", "--input", type=str, default='init', help="files creat
 parser.add_argument("-o", "--output", type=str, default='./model_output/disfa_all', help="files creaded from VAE")
 parser.add_argument("-n", "--nb_iter", type=int, default=1, help="number of VAE iterations")
 parser.add_argument("-w", "--warming", type=int, default=1, help="factor on kl loss")
-parser.add_argument("-tr", "--training_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
-                    help="path to training data set")
-parser.add_argument("-te", "--test_data", type=str, default='/home/mihee/dev/project/robert_data/test.h5',
-                    help="path to test data set")
+
 parser.add_argument("-log", "--log_dir", type=str, default='default', help="log dir")
 parser.add_argument("-au", "--au_index", type=int, default=8, help="au index")
 parser.add_argument("-num_au", "--num_au", type=int, default=8, help="number of au to make the model previously.")
@@ -31,7 +28,7 @@ parser.add_argument("-lr", "--lr", type=float, default=1.0, help="learning rate"
 parser.add_argument("-bal", "--balance", type=bool, default=False, help="Make the dataset balanced or not")
 parser.add_argument("-kshot", "--kshot", type=int, default=0, help="test kshot learning")
 parser.add_argument("-mbs", "--meta_batch_size", type=int, default=13, help="num of task to use for kshot learning")
-parser.add_argument("-sidx", "--start_idx", type=int, default=0, help="start idx of task to use for kshot learning")
+parser.add_argument("-sidx", "--subject_index", type=int, default=0, help="test subject index")
 parser.add_argument("-kshot_seed", "--kshot_seed", type=int, default=0, help="kshot seed")
 parser.add_argument("-feat_path", "--feat_path", type=str, default='', help="extracted feature csv path")
 parser.add_argument("-logdir", "--logdir", type=str, default='', help="extracted feature csv path")
@@ -40,6 +37,9 @@ parser.add_argument("-test", "--test", type=bool, default=True, help="adapt to t
 parser.add_argument("-op", "--opti", type=str, default="adam", help="name of optimizer")
 parser.add_argument("-maml", "--maml_model", type=str, default="", help="name of maml_model")
 parser.add_argument("-m_iter", "--m_iter", type=str, default="", help="num of iter used when training maml model")
+parser.add_argument("-used_frame", "--used_frame_info_path", type=str, default="",
+                    help="path for the csv file of the used frames in MAML adaptation ")
+parser.add_argument("-label_path", "--label_path", type=str, default="", help="path for label")
 
 args = parser.parse_args()
 
@@ -59,43 +59,22 @@ else:
 batch_size = 20  # dont change it!
 log_dir_model = './model'
 
-if args.kshot > 0:
-    if args.test:
-        batch_size = 2 * args.kshot
-        TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
-                                                   padding='same',
-                                                   sbjt_start_idx=args.start_idx,
-                                                   meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
-    else:
-        batch_size = 4 * args.kshot
-        TR = ED.provider_back.flow_from_kshot_feat(args.training_data, args.feat_path, args.kshot_seed, batch_size,
-                                                   padding='same',
-                                                   sbjt_start_idx=args.start_idx,
-                                                   meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot,
-                                                   test=False)
-elif args.balance and au_index < TOTAL_AU:
-    TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
-else:
-    TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same')
+TR = ED.provider_back.flow_from_kshot_csv(args.used_frame_info_path, args.feat_path, args.label_path,
+                                          args.subject_index)
 
-TE = ED.provider_back.flow_from_hdf5(args.test_data, batch_size, padding='same')
+TE = ED.provider_back.flow_from_kshot_csv(args.used_frame_info_path, args.feat_path, args.label_path,
+                                          args.subject_index, eval=True, padding='same')
 
 
-def generator(dat_dict, w_sub=False):
+def generator(dat_dict):
     while True:
-
         feature = next(dat_dict['feat'])
         lab = next(dat_dict['lab'])
-        sub = next(dat_dict['sub'])
         if lab.shape[1] == TOTAL_AU and au_index < TOTAL_AU:
             lab = lab[:, au_index]
             lab = np.reshape(lab, (lab.shape[0], 1, lab.shape[1]))
-        else:
-            lab = lab
-        if w_sub:
-            yield [feature], [lab], [sub]
-        else:
-            yield [feature], [lab]
+        yield [feature], [lab]
+
 
 
 GEN_TR = generator(TR)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
