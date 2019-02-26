@@ -440,8 +440,7 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
 
     res_gen = {}
     res_gen['nb_samples'] = nb_samples
-    res_gen['nb_batches'
-    n] = nb_batches
+    res_gen['nb_batches'] = nb_batches
     for key in f:
         res_gen[key] = _make_generator(f[key], key)
     return res_gen
