@@ -450,11 +450,11 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
                         eval=False,
                         padding='same'
                         ):
-    import sys
-    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
     subjects = os.listdir(label_path)
     subjects.sort()
     subject = subjects[subject_index]
+    print(">>>>>>>>>>>>>subject:", subject)
     if eval:
         used_info_path = os.path.join(used_info_path, subject + '_eval.csv')
     else:
