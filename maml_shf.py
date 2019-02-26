@@ -24,7 +24,7 @@ class MAML:
         self.update_lr = FLAGS.update_lr
         self.meta_lr = FLAGS.meta_lr
         self.classification = False
-        self.weight_dim = 2048
+        self.weight_dim = 300
         self.total_num_au = 8
         self.num_classes = 2
         self.LAMBDA2 = FLAGS.lambda2
