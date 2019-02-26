@@ -166,7 +166,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             out.close()
     if FLAGS.evaluate:
         three_layers = feature_layer(10, FLAGS.num_au)
-        three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au, w=w, b=b)
+        three_layers.loadWeight(FLAGS.vae_model, w=w, b=b)
         print('--- loaded bias to be evaluated: ', b)
 
         subjects = os.listdir(FLAGS.datadir)

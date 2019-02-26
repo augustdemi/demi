@@ -277,7 +277,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
     all_subject_features = []
     print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
     three_layers = feature_layer(10, FLAGS.num_au)
-    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
+    three_layers.loadWeight(FLAGS.vae_model)
 
     print('---- get feature vec')
     existing_frames_in_feat_vec = []
