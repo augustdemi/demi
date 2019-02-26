@@ -186,6 +186,8 @@ model_train = K.models.Model([inp_0], [out_0, out_1,
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
 model_deep_feature = K.models.Model([inp_0], [z_mean])
+inp_1 = Input(shape=[latent_dim1])
+model_final_latent_feat = K.models.Model([inp_1], [z_mean])
 
 sum_vac_disfa_dir = './base/sum_vac_disfa_dir/' + args.log_dir
 sum_mult_out_dir = './base/sum_mult_out_dir/' + args.log_dir
@@ -248,15 +250,6 @@ if nb_iter > 0: model_train.save_weights(model_name)
 import cv2
 
 if args.deep_feature is not '':
-    # load model
-    model_train.load_weights(args.restored_model + '.h5')
-    layer_dict_whole_vae = dict([(layer.name, layer) for layer in model_train.layers])
-    w_latent_feat = layer_dict_whole_vae['latent_feat'].get_weights()
-    print("[vae_model]loaded latent_feat weight from VAE : ", w_latent_feat)
-    layer_dict_model_deep_feature = dict([(layer.name, layer) for layer in model_deep_feature.layers])
-    w_latent_feat2 = layer_dict_model_deep_feature['latent_feat'].get_weights()
-    print("[vae_model]loaded latent_feat weight in model_deep_feature : ", w_latent_feat2)
-
     # directory to save the features
     if not os.path.exists(args.deep_feature):
         os.makedirs(args.deep_feature)
@@ -265,6 +258,13 @@ if args.deep_feature is not '':
         print('==================================================')
         print('FROM RESNET')
         print('==================================================')
+        print(">>>>>>>>>>>>>>>>> embedding model: ", args.restored_model)
+        from feature_layers import feature_layer
+
+        three_layers = feature_layer(10, TOTAL_AU)
+        three_layers.loadWeight(args.restored_model)
+
+
         path = '/home/ml1323/project/robert_data/DISFA_new/detected_disfa_features/'
         subjects = os.listdir(path)
         subjects.sort()
@@ -280,7 +280,7 @@ if args.deep_feature is not '':
 
                     all_feat_vec.append(feat_vec)
                     detected_frame_idx.append(frame_idx)
-            deep_feature = model_deep_feature.predict(all_feat_vec)
+            deep_feature = three_layers.model_final_latent_feat.predict(all_feat_vec)
             print('len deep feat:', len(deep_feature))
             print('len resnet file:', len(detected_frame_idx))
             save_path = args.deep_feature + '/' + subject + '.csv'
@@ -295,6 +295,14 @@ if args.deep_feature is not '':
         print('==================================================')
         print('FROM IMG')
         print('==================================================')
+        # load model
+        model_train.load_weights(args.restored_model + '.h5')
+        layer_dict_whole_vae = dict([(layer.name, layer) for layer in model_train.layers])
+        w_latent_feat = layer_dict_whole_vae['latent_feat'].get_weights()
+        print("[vae_model]loaded latent_feat weight from VAE : ", w_latent_feat)
+        layer_dict_model_deep_feature = dict([(layer.name, layer) for layer in model_deep_feature.layers])
+        w_latent_feat2 = layer_dict_model_deep_feature['latent_feat'].get_weights()
+        print("[vae_model]loaded latent_feat weight in model_deep_feature : ", w_latent_feat2)
         path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
         all_subjects = os.listdir(path)
 
