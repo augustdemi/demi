@@ -131,7 +131,7 @@ class DataGenerator(object):
         import csv
         with open(save_path + '/subject' + FLAGS.subject_index + '.csv', 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(selected_frame_all.join(','))
+            writer.writerow(','.join([str(elt) for elt in selected_frame_all]))
 
         for _ in aus:
             inputa.append(self.feat_vec[0][selected_frame_all])
