@@ -248,6 +248,7 @@ if nb_iter > 0: model_train.save_weights(model_name)
 import cv2
 
 if args.deep_feature is not '':
+    # load model
     model_train.load_weights(args.restored_model + '.h5')
     layer_dict_whole_vae = dict([(layer.name, layer) for layer in model_train.layers])
     w_latent_feat = layer_dict_whole_vae['latent_feat'].get_weights()
@@ -256,34 +257,71 @@ if args.deep_feature is not '':
     w_latent_feat2 = layer_dict_model_deep_feature['latent_feat'].get_weights()
     print("[vae_model]loaded latent_feat weight in model_deep_feature : ", w_latent_feat2)
 
-    path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
-    all_subjects = os.listdir(path)
+    # directory to save the features
+    if not os.path.exists(args.deep_feature):
+        os.makedirs(args.deep_feature)
+    # from resnet feature 2048 -> 300
+    if 'resnet' in args.deep_feature:
+        print('==================================================')
+        print('FROM RESNET')
+        print('==================================================')
+        path = '/home/ml1323/project/robert_data/DISFA_new/detected_disfa_features/'
+        subjects = os.listdir(path)
+        subjects.sort()
+        for subject in subjects:
+            detected_frame_idx = []
+            all_feat_vec = []
+            with open(os.path.join(path, subject), 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    line = line.split(',')
+                    frame_idx = int(line[2].split('frame')[1])
+                    feat_vec = [float(elt) for elt in line[3:]]
 
-    for subject in all_subjects:
-        per_sub_path = path + subject
-        files = os.listdir(per_sub_path)
-        detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in files]
-        detected_frame_idx = list(set(detected_frame_idx))
+                    all_feat_vec.append(feat_vec)
+                    detected_frame_idx.append(frame_idx)
+            deep_feature = model_deep_feature.predict(all_feat_vec)
+            print('len deep feat:', len(deep_feature))
+            print('len resnet file:', len(detected_frame_idx))
+            save_path = args.deep_feature + '/' + subject + '.csv'
+            with open(save_path, 'w') as f:
+                for i in range(len(deep_feature)):
+                    out_csv = np.hstack(
+                        (subject, "frame" + str(detected_frame_idx[i]), [str(x) for x in deep_feature[i]]))
+                    f.write(','.join(out_csv) + '\n')
+            print(">>>>>>>>done: ", subject, len(deep_feature))
+    # from detected img -> 300
+    else:
+        print('==================================================')
+        print('FROM IMG')
+        print('==================================================')
+        path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
+        all_subjects = os.listdir(path)
 
-        imgs = [cv2.imread(per_sub_path + "/frame" + str(i) + "_0.jpg") for i in detected_frame_idx]
-        pre_processed_img_arr = []
-        for img in imgs:
-            img2, _, _ = pp.transform(img, preprocessing=True, augmentation=False)
-            pre_processed_img_arr.append(img2)
-        pre_processed_img_arr = np.array(pre_processed_img_arr)
-        print('pre_processed_img_arr:', pre_processed_img_arr.shape)
-        deep_feature = model_deep_feature.predict(pre_processed_img_arr)
-        print('len deep feat:', len(deep_feature))
-        print('len files:', len(detected_frame_idx))
-        if not os.path.exists(args.deep_feature):
-            os.makedirs(args.deep_feature)
-        save_path = args.deep_feature + '/' + subject + '.csv'
-        with open(save_path, 'w') as f:
-            for i in range(len(deep_feature)):
-                out_csv = np.hstack(
-                    (subject, "frame" + str(detected_frame_idx[i]), [str(x) for x in deep_feature[i]]))
-                f.write(','.join(out_csv) + '\n')
-        print(">>>>>>>>done: ", subject, len(deep_feature))
+        for subject in all_subjects:
+            per_sub_path = path + subject
+            files = os.listdir(per_sub_path)
+            detected_frame_idx = [int(elt.split('frame')[1].split('_')[0]) for elt in files]
+            detected_frame_idx = list(set(detected_frame_idx))
+
+            imgs = [cv2.imread(per_sub_path + "/frame" + str(i) + "_0.jpg") for i in detected_frame_idx]
+            pre_processed_img_arr = []
+            for img in imgs:
+                img2, _, _ = pp.transform(img, preprocessing=True, augmentation=False)
+                pre_processed_img_arr.append(img2)
+            pre_processed_img_arr = np.array(pre_processed_img_arr)
+            print('pre_processed_img_arr:', pre_processed_img_arr.shape)
+            deep_feature = model_deep_feature.predict(pre_processed_img_arr)
+            print('len deep feat:', len(deep_feature))
+            print('len files:', len(detected_frame_idx))
+
+            save_path = args.deep_feature + '/' + subject + '.csv'
+            with open(save_path, 'w') as f:
+                for i in range(len(deep_feature)):
+                    out_csv = np.hstack(
+                        (subject, "frame" + str(detected_frame_idx[i]), [str(x) for x in deep_feature[i]]))
+                    f.write(','.join(out_csv) + '\n')
+            print(">>>>>>>>done: ", subject, len(deep_feature))
 
 
 end_time = datetime.now()
