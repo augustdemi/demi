@@ -100,50 +100,6 @@ class DataGenerator(object):
         return inputa, inputb, labela, labelb, all_used_frame_set
 
 
-    def sample_test_data(self, seed, kshot, aus):
-        print('>>>>>> sampling way: inputa = inputb')
-        inputa = []
-        labela = []
-        all_used_frame_set = []
-        for au in aus:
-            print('==== au: ', au)
-            one_au_one_subject_on_frame_indices = self.on_info_df[au][0]
-            random.seed(seed)
-            selected_on_frame_idx = random.sample(one_au_one_subject_on_frame_indices,
-                                                  min(kshot, len(one_au_one_subject_on_frame_indices)))
-            print('-- selected_on_frame_idx: ', selected_on_frame_idx)
-
-            one_au_one_subject_off_frame_indices = self.off_info_df[au][0]
-            needed_num_samples = 2 * kshot - len(selected_on_frame_idx)
-            random.seed(seed)
-            selected_off_frame_idx = random.sample(one_au_one_subject_off_frame_indices, needed_num_samples)
-            print('-- selected_off_frame_idx: ', selected_off_frame_idx)
-
-            if FLAGS.check_sample:
-                import pickle
-                save_path = '/home/ml1323/project/robert_code/new/check_labels/test/' + str(
-                    FLAGS.update_batch_size) + 'shot'
-                if not os.path.exists(save_path):
-                    os.mkdir(save_path)
-                test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 'SN027', 'SN028',
-                                 'SN029', 'SN030',
-                                 'SN031', 'SN032']
-                save_path = os.path.join(save_path, test_subjects[FLAGS.sbjt_start_idx] + '_' + au + ".pkl")
-                out = open(save_path, 'wb')
-                pickle.dump({'off': selected_off_frame_idx,
-                             'on': selected_on_frame_idx}, out, protocol=2)
-
-            selected_idx = selected_off_frame_idx
-            selected_idx.extend(selected_on_frame_idx)
-            inputa.append(self.feat_vec[0][selected_idx])
-            labela.append(self.labels[0][selected_idx])
-            if FLAGS.evaluate:
-                all_used_frame_set.extend(selected_idx)
-        inputa = np.array(inputa)
-        labela = np.array(labela)
-        all_used_frame_set = list(set(all_used_frame_set))
-        return inputa, inputa, labela, labela, all_used_frame_set
-
     def sample_test_data_use_all(self, seed, kshot, aus):
         inputa = []
         labela = []
@@ -164,23 +120,20 @@ class DataGenerator(object):
             selected_off_frame_idx = random.sample(one_au_one_subject_off_frame_indices, needed_num_samples)
             print('-- selected_off_frame_idx: ', selected_off_frame_idx)
             selected_frame_all.extend(selected_off_frame_idx)
-            if FLAGS.check_sample:
-                import pickle
-                save_path = '/home/ml1323/project/robert_code/new/check_labels/test/' + str(
-                    FLAGS.update_batch_size) + 'shot'
-                if not os.path.exists(save_path):
-                    os.mkdir(save_path)
-                test_subjects = ['SN017', 'SN018', 'SN021', 'SN023', 'SN024', 'SN025', 'SN026', 'SN027', 'SN028',
-                                 'SN029', 'SN030',
-                                 'SN031', 'SN032']
-                save_path = os.path.join(save_path, test_subjects[FLAGS.sbjt_start_idx] + '_' + au + ".pkl")
-                out = open(save_path, 'wb')
-                pickle.dump({'off': selected_off_frame_idx,
-                             'on': selected_on_frame_idx}, out, protocol=2)
+
         selected_frame_all = list(set(selected_frame_all))
         np.random.shuffle(selected_frame_all)
+        if FLAGS.check_sample:
+            save_path = '/home/ml1323/project/robert_code/new/check_labels/test/' + str(
+                FLAGS.update_batch_size) + 'shot'
+            if not os.path.exists(save_path):
+                os.mkdir(save_path)
+        import csv
+        with open(save_path + '/subject' + FLAGS.subject_index + '.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(selected_frame_all.join(','))
 
-        for au in aus:
+        for _ in aus:
             inputa.append(self.feat_vec[0][selected_frame_all])
             labela.append(self.labels[0][selected_frame_all])
         inputa = np.array(inputa)
