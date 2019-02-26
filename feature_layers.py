@@ -28,9 +28,9 @@ class feature_layer:
         self.latent_dim3 = latent_dim3
 
     # 이미 만들어진 vae로 부터 3개 레이어에 대한 weight만 취해옴
-    def loadWeight(self, vae_model_name, au_index, num_au_for_rm=1, w=None, b=None):
-        if num_au_for_rm > 1:
-            trained_model = VAE((160, 240, 1), self.batch_size, num_au_for_rm).model_train
+    def loadWeight(self, vae_model_name, au_index=-1, w=None, b=None):
+        if self.num_au > 1:
+            trained_model = VAE((160, 240, 1), self.batch_size, self.num_au).model_train
             print(">>>>>>>>> model loaded from ", vae_model_name)
             trained_model.load_weights(vae_model_name + '.h5')
             #### get weight
@@ -52,7 +52,7 @@ class feature_layer:
             layer_dict_3layers['z_mean'].set_weights(w_z_mean)
             print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
 
-            if w_softmaxpdf_1[1].shape[0] == self.num_au:
+            if au_index < 0:
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
             else:
                 print(">>>>>>>>>>> going to choose this index in VAE:", au_index)
