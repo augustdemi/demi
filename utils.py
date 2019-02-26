@@ -275,10 +275,6 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
     from feature_layers import feature_layer
 
     all_subject_features = []
-    print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
-    three_layers = feature_layer(10, FLAGS.num_au)
-    three_layers.loadWeight(FLAGS.vae_model)
-
     print('---- get feature vec')
     existing_frames_in_feat_vec = []
     for feature_file in feature_files:
@@ -295,7 +291,6 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
                 if frame_idx < 4845:
                     one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
             one_subject_features = np.array(one_subject_features)
-            one_subject_features = three_layers.model_final_latent_feat.predict(one_subject_features)
             all_subject_features.append(one_subject_features)
 
     print('---- get label')
@@ -364,96 +359,6 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
     )
 
     return all_subject_features, all_subject_labels, on_df, off_df, test_b_frame
-
-
-
-def test(kshot_path, feat_path, label_path, sampling_seed, subject, nb_samples):
-    print(">>>>>>>>>>>>>>>>> embedding model: ", FLAGS.vae_model)
-    print(">>>>>>>>>>>>>>>>> feat_path: ", feat_path)
-    print(">>>>>>>>>>>>>>>>> kshot_path: ", kshot_path)
-    print(">>>>>>>>>>>>>>>>> subject: ", subject)
-    from feature_layers import feature_layer
-    three_layers = feature_layer(10, FLAGS.num_au)
-    three_layers.loadWeight(FLAGS.vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
-    aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
-
-    #### save all label info ####
-    labels = ['off', 'on']  # off = 0, on =1
-    binary_intensity = lambda lab: 1 if lab > 0 else 0
-    all_label_info_per_subj = []
-    for au in aus:
-        with open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r') as f:
-            lines = f.readlines()[:4845]
-            labels_per_subj_per_au = [binary_intensity(float(line.split(',')[1].split('\n')[0])) for line in lines]
-            all_label_info_per_subj.append(labels_per_subj_per_au)
-    all_label_info_per_subj = np.transpose(np.array(all_label_info_per_subj), (1, 0))
-
-    #### save all resnet feat ####
-    f = open(feat_path, 'r')
-    lines = f.readlines()
-    all_feat_data = {}  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
-    for line in lines:
-        line = line.split(',')
-        all_feat_data.update({int(line[1].split('frame')[1]): line[2:]})  # key = frame, value = feature vector
-
-    # for each au, save on/off frames of this subject
-    all_aus_feat_vec = []
-    all_aus_labels = []
-    for au in aus:
-        frames_n_features_per_au = []
-        for label in labels:
-            # on/off 이미지를 구분해 놓은 csv파일로부터 라벨별 이미지 경로 읽어와( au, subject별 on 혹은 off 이미지)
-            img_path_list = open(os.path.join(kshot_path, au, subject, label, 'file_path.csv')).readline().split(',')
-            frame_n_feature_per_label = []
-            try:
-                for path in img_path_list:
-                    frame = int(path.split('/')[-1].split('.')[0].split('_')[0].split('frame')[1])
-                    if frame < 4845:
-                        frame_n_feature_per_label.append((frame, all_feat_data[frame]))
-            except:
-                print('CHECK DATA FOR LABEL: ', kshot_path, label, ' - ', img_path_list)
-            frames_n_features_per_au.append(frame_n_feature_per_label)
-
-        print('total off / on of ', au, ': ', len(frames_n_features_per_au[0]), len(frames_n_features_per_au[1]))
-        # make the balance
-        num_samples_to_select = [nb_samples, nb_samples]
-        num_samples_to_select[1] = min(nb_samples, len(frames_n_features_per_au[1]))
-        num_samples_to_select[0] = 2 * nb_samples - num_samples_to_select[1]
-
-        def sampler(frames_n_features, n_samples):
-            random.seed(sampling_seed)
-            random_frames_n_features = random.sample(frames_n_features, n_samples)
-            return random_frames_n_features
-
-        # 각 task별로 k*2개 씩의 label 과 img담게됨. path = till subject.
-        off_random_frames_n_features = sampler(frames_n_features_per_au[0], num_samples_to_select[0])
-        print("-------------------------------")
-        print(au)
-        print("-------------------------------")
-        print("label: ", labels[0])
-        print('num of off_images: ', len(off_random_frames_n_features))
-        print('off_frames: ', [elt[0] for elt in off_random_frames_n_features])
-        on_random_frames_n_features = sampler(frames_n_features_per_au[1], num_samples_to_select[1])
-        print("-------------------------------")
-        print("label: ", labels[1])
-        print('num of on_images: ', len(on_random_frames_n_features))
-        print('on_frames: ', [elt[0] for elt in on_random_frames_n_features])
-
-        # get label of this au
-        selected_frame_idx = [elt[0] for elt in off_random_frames_n_features]  # put off_idx
-        selected_frame_idx.extend([elt[0] for elt in on_random_frames_n_features])  # put on_idx
-        random.seed(0)
-        random.shuffle(selected_frame_idx)
-        all_aus_labels.append(all_label_info_per_subj[selected_frame_idx])
-        # get feature vector of this au
-        feat_vec = [elt[1] for elt in off_random_frames_n_features]  # put off_features
-        feat_vec.extend([elt[1] for elt in on_random_frames_n_features])  # put on_features
-        random.seed(0)
-        random.shuffle(feat_vec)
-        feat_vec = three_layers.model_final_latent_feat.predict(feat_vec)
-        all_aus_feat_vec.append(feat_vec)
-
-    return np.array(all_aus_feat_vec), np.array(all_aus_labels), all_label_info_per_subj
 
 
 
