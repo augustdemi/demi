@@ -261,12 +261,10 @@ def main():
     elif FLAGS.adaptation:  # adaptation 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
         if FLAGS.base_vae_model:
             print('FLAGS.base_vae_model: ', FLAGS.base_vae_model)
-
+            soft_layer = feature_layer(10, FLAGS.num_au)
             if 'sub' in FLAGS.base_vae_model:
-                soft_layer = feature_layer(10, 1)
                 soft_layer.model_intensity.load_weights(FLAGS.base_vae_model + '.h5')
             else:
-                soft_layer = feature_layer(10, FLAGS.num_au)
                 soft_layer.loadWeight(FLAGS.base_vae_model)
 
             w = soft_layer.model_intensity.layers[-1].get_weights()[0]
