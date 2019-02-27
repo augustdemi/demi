@@ -481,7 +481,9 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
         labels_per_subj.append(labels_per_subj_per_au)
 
     labels_per_subj = np.array(labels_per_subj)
-    labels_per_subj = np.reshape(labels_per_subj, (labels_per_subj.shape[0], 1, labels_per_subj.shape[1]))
+    print('labels_per_subj shape:', labels_per_subj.shape)
+    labels_per_subj = np.transpose(labels_per_subj, (1, 0, 2))
+    print('labels_per_subj shape:', labels_per_subj.shape)
 
     ### feature ###
     with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
