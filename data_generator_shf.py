@@ -128,13 +128,13 @@ class DataGenerator(object):
                 FLAGS.update_batch_size) + 'shot'
             if not os.path.exists(save_path):
                 os.mkdir(save_path)
-        import csv
-        with open(save_path + '/subject' + FLAGS.subject_index + '_used.csv', 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(selected_frame_all)
-        with open(save_path + '/subject' + FLAGS.subject_index + '_eval.csv', 'w', newline='') as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(self.test_b_frame)
+            import csv
+            with open(save_path + '/subject' + FLAGS.subject_index + '_used.csv', 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(selected_frame_all)
+            with open(save_path + '/subject' + FLAGS.subject_index + '_eval.csv', 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(self.test_b_frame)
 
         for _ in aus:
             inputa.append(self.feat_vec[0][selected_frame_all])
