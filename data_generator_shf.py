@@ -124,7 +124,7 @@ class DataGenerator(object):
         selected_frame_all = list(set(selected_frame_all))
         np.random.shuffle(selected_frame_all)
         if FLAGS.check_sample:
-            save_path = '/home/ml1323/project/robert_code/new/check_labels/test/' + str(
+            save_path = FLAGS.check_sample + '/' + str(
                 FLAGS.update_batch_size) + 'shot'
             if not os.path.exists(save_path):
                 os.mkdir(save_path)
