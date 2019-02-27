@@ -186,8 +186,6 @@ model_train = K.models.Model([inp_0], [out_0, out_1,
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
 model_deep_feature = K.models.Model([inp_0], [z_mean])
-inp_1 = Input(shape=[latent_dim1])
-model_final_latent_feat = K.models.Model([inp_1], [z_mean])
 
 sum_vac_disfa_dir = './base/sum_vac_disfa_dir/' + args.log_dir
 sum_mult_out_dir = './base/sum_mult_out_dir/' + args.log_dir
