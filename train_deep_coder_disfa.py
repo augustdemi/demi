@@ -260,8 +260,7 @@ if args.deep_feature is not '':
         from feature_layers import feature_layer
 
         three_layers = feature_layer(10, TOTAL_AU)
-        three_layers.loadWeight(args.restored_model)
-
+        three_layers.loadWeight(args.restored_model + '.h5')
 
         path = '/home/ml1323/project/robert_data/DISFA_new/detected_disfa_features/'
         subjects = os.listdir(path)
