@@ -290,6 +290,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
                 feat_vec = np.array([float(elt) for elt in line[2:]])
                 if frame_idx < 4845:
                     one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
+            one_subject_features = np.array(one_subject_features)
             all_subject_features.append(one_subject_features)
 
     print('---- get label')
