@@ -101,8 +101,8 @@ one_layer.loadWeight(args.restored_model)
 
 model_intensity = one_layer.model_intensity
 
-# for i in range(len(model_intensity.layers) - 1):
-#     model_intensity.layers[i].trainable = False
+for i in range(len(model_intensity.layers) - 1):
+    model_intensity.layers[i].trainable = False
 for i in range(len(model_intensity.layers)):
     print(model_intensity.layers[i], model_intensity.layers[i].trainable)
 
