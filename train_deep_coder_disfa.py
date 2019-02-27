@@ -148,7 +148,7 @@ def sampling(args):
 
 z = Lambda(sampling, output_shape=(latent_dim3,))([z_mean, z_log_sigma])  # 발굴한 feature space에다 노이즈까지 섞어서 샘플링한 z
 
-out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(Reshape((latent_dim3, 1))(z_mean))
+out_1 = EE.layers.softmaxPDF(out_0_shape[0], out_0_shape[1])(Reshape((latent_dim3, 1))(z))
 # out_0_shape = y label값의 형태만큼, predicted label값을 regression으로 만들어낼거임.
 
 D1 = Dense(latent_dim2, activation='relu')  # into 500
