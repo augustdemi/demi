@@ -477,9 +477,8 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
             lines = f.readlines()[:4845]
         labels_per_subj_per_au = [binary_intensity(np.float32(line.split(',')[1].split('\n')[0])) for line in
                                   np.array(lines)[used_frames]]
-        if len(labels_per_subj_per_au) < 4845:
-            labels_per_subj_per_au.append(-1)
-            labels_per_subj.append(labels_per_subj_per_au)
+        labels_per_subj.append(labels_per_subj_per_au)
+
 
     labels_per_subj = np.transpose(np.array(labels_per_subj), (1, 0))
 
