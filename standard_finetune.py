@@ -59,11 +59,11 @@ else:
 batch_size = 20  # dont change it!
 log_dir_model = './model'
 
-TR = ED.provider_back.flow_from_kshot_csv(args.used_frame_info_path, args.feat_path, args.label_path,
+TR, batch_size = ED.provider_back.flow_from_kshot_csv(args.used_frame_info_path, args.feat_path, args.label_path,
                                           args.subject_index)
 
 TE = ED.provider_back.flow_from_kshot_csv(args.used_frame_info_path, args.feat_path, args.label_path,
-                                          args.subject_index, eval=True, padding='same')
+                                          args.subject_index, eval=True, padding='same', batch_size=batch_size)
 
 
 def generator(dat_dict):

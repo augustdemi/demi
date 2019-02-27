@@ -448,7 +448,8 @@ def flow_from_kshot_feat(path_to_folder, feature_path, kshot_seed,
 
 def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
                         eval=False,
-                        padding='same'
+                        padding='same',
+                        batch_size=20
                         ):
 
     subjects = os.listdir(label_path)
@@ -501,7 +502,7 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     print('-----------------------------------')
     print('feat_vec_per_subj: ', len(feat_vec_per_subj))
     print('labels_per_subj: ', len(labels_per_subj))
-    print('nb_samples: ', nb_samples)
+    print('batch_size: ', batch_size)
     print('nb_batches: ', nb_batches)
     print('-----------------------------------')
 
@@ -532,4 +533,4 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     res_gen['nb_batches'] = nb_batches
     for key in f:
         res_gen[key] = _make_generator(f[key], key)
-    return res_gen
+    return res_gen, batch_size
