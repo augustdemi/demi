@@ -467,7 +467,7 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     used_frames = f.readline().split(',')
     used_frames = [int(frame) for frame in used_frames]
 
-    binary_intensity = lambda lab: 1 if lab > 0 else 0
+    binary_intensity = lambda lab: [0,1] if lab > 0 else [1,0]
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     #################################################################################
 
@@ -480,8 +480,8 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
                                   np.array(lines)[used_frames]]
         labels_per_subj.append(labels_per_subj_per_au)
 
-
-    labels_per_subj = np.transpose(np.array(labels_per_subj), (1, 0))
+    labels_per_subj = np.array(labels_per_subj)
+    labels_per_subj = np.reshape(labels_per_subj, (labels_per_subj.shape[0], 1, labels_per_subj.shape[1]))
 
     ### feature ###
     with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
