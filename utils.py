@@ -281,7 +281,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
         print("subject: ", feature_file.split('/')[-1])
         with open(feature_file, 'r') as f:
             lines = f.readlines()
-            one_subject_features = [np.array(range(2048)) for _ in
+            one_subject_features = [np.array(range(300)) for _ in
                                     range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
             for line in lines:
                 line = line.split(',')
@@ -291,9 +291,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
                 if frame_idx < 4845:
                     one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
             one_subject_features = np.array(one_subject_features)
-            print("+++++++++++++++++++++++", one_subject_features.shape)
             all_subject_features.append(one_subject_features)
-            print("+++++++++++++++++++++++", len(all_subject_features))
 
     print('---- get label')
     test_b_frame = []
@@ -338,6 +336,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
         all_subject_off_intensity_info.append(all_au_off_intensity_info)
     all_subject_features = np.array(all_subject_features)
     all_subject_labels = np.array(all_subject_labels)
+    all_subject_features.reshape()
     print('===================')
     print("--- z_arr len:", len(all_subject_features[0][0]))
     print('all_subject_features: ', all_subject_features.shape)
