@@ -262,7 +262,7 @@ def main():
         if FLAGS.base_vae_model:
             print('FLAGS.base_vae_model: ', FLAGS.base_vae_model)
             soft_layer = feature_layer(10, FLAGS.num_au)
-            soft_layer.loadWeight(FLAGS.base_vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
+            soft_layer.loadWeight(FLAGS.base_vae_model)
             w = soft_layer.model_intensity.layers[-1].get_weights()[0]
             b = soft_layer.model_intensity.layers[-1].get_weights()[1]
             print('bias from base_vae_model: ', b)
