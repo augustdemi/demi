@@ -7,7 +7,7 @@ import pickle
 from data_generator_shf import DataGenerator
 from maml_shf import MAML
 from tensorflow.python.platform import flags
-from feature_layers import feature_layer
+from one_layer import feature_layer
 
 
 start_time = datetime.now()
