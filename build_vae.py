@@ -54,6 +54,9 @@ class VAE:
         model_train = K.models.Model([inp_0], [out_0, out_1, out_0])
         model_deep_feature = K.models.Model([inp_0], [latent_feat])
 
+        print("#### from build_vae #####")
+        model_train.summary()
+
         ################# Above: to load the model.
         self.model_train = model_train
         self.model_deep_feature = model_deep_feature
