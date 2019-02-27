@@ -473,7 +473,7 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     ### label ###
     labels_per_subj = []
     for au in aus:
-        with open(os.path.join(label_path, subject + '_' + au + '.txt'), 'r') as f:
+        with open(os.path.join(label_path, subject, subject + '_' + au + '.txt'), 'r') as f:
             lines = f.readlines()[:4845]
         labels_per_subj_per_au = [binary_intensity(np.float32(line.split(',')[1].split('\n')[0])) for line in
                                   lines[used_frames]]
