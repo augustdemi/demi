@@ -165,8 +165,8 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             pickle.dump({'w': w, 'b': b}, out, protocol=2)
             out.close()
     if FLAGS.evaluate:
-        three_layers = feature_layer(10, FLAGS.num_au)
-        three_layers.loadWeight(FLAGS.vae_model, w=w, b=b)
+        soft_layer = feature_layer(10, FLAGS.num_au)
+        soft_layer.loadWeight(FLAGS.vae_model, w=w, b=b)
         print('--- loaded bias to be evaluated: ', b)
 
         subjects = os.listdir(FLAGS.datadir)
@@ -185,7 +185,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                     eval_frame.append(frame_idx)
         y_lab = data_generator.labels[0][eval_frame]
         y_lab = np.array([np.eye(2)[label] for label in y_lab])
-        y_hat = three_layers.model_intensity.predict(eval_vec)
+        y_hat = soft_layer.model_intensity.predict(eval_vec)
         print('y_lab shape: ', y_lab.shape)
         print('y_hat shape: ', y_hat.shape)
         out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
@@ -261,10 +261,10 @@ def main():
     elif FLAGS.adaptation:  # adaptation 첫 시작인 경우 resume은 false이지만 trained maml로 부터 모델 로드는 해야함.
         if FLAGS.base_vae_model:
             print('FLAGS.base_vae_model: ', FLAGS.base_vae_model)
-            three_layers = feature_layer(10, FLAGS.num_au)
-            three_layers.loadWeight(FLAGS.base_vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
-            w = three_layers.model_intensity.layers[-1].get_weights()[0]
-            b = three_layers.model_intensity.layers[-1].get_weights()[1]
+            soft_layer = feature_layer(10, FLAGS.num_au)
+            soft_layer.loadWeight(FLAGS.base_vae_model, FLAGS.au_idx, num_au_for_rm=FLAGS.num_au)
+            w = soft_layer.model_intensity.layers[-1].get_weights()[0]
+            b = soft_layer.model_intensity.layers[-1].get_weights()[1]
             print('bias from base_vae_model: ', b)
             print('-----------------------------------------------------------------')
             with tf.variable_scope("model", reuse=True) as scope:
