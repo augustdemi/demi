@@ -12,15 +12,15 @@ class feature_layer:
         TOTAL_AU = 8
 
         ################# From here, reconstruct the model from input = 2048 with only 3 required layers to finetune only softmax layer
-        inp_1 = Input(shape=[latent_dim3])
-        # intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
-        # z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
-        out_1 = EE.layers.softmaxPDF(num_au, num_of_intensity)(Reshape((latent_dim3, 1))(inp_1))
+        inp_1 = Input(shape=[latent_dim1])
+        intermediate = Dense(latent_dim2, activation='relu', name='intermediate')(inp_1)  # into 500
+        z_mean = Dense(latent_dim3, name='z_mean')(intermediate)  # into latent_dim = 300은. output space의 dim이 될것.
+        out_1 = EE.layers.softmaxPDF(num_au, num_of_intensity)(Reshape((latent_dim3, 1))(z_mean))
 
         model_intensity = K.models.Model([inp_1], [out_1])
-        # model_final_latent_feat = K.models.Model([inp_1], [z_mean])
+        model_final_latent_feat = K.models.Model([inp_1], [z_mean])
 
-        # self.model_final_latent_feat = model_final_latent_feat
+        self.model_final_latent_feat = model_final_latent_feat
         self.model_intensity = model_intensity
         self.TOTAL_AU = TOTAL_AU
         self.num_au = num_au
@@ -28,15 +28,15 @@ class feature_layer:
         self.latent_dim3 = latent_dim3
 
     # 이미 만들어진 vae로 부터 3개 레이어에 대한 weight만 취해옴
-    def loadWeight(self, vae_model_name, au_index=-1, w=None, b=None):
+    def loadWeight(self, vae_model_name, au_index, num_au_to_au=1, w=None, b=None):
         if self.num_au > 1:
             trained_model = VAE((160, 240, 1), self.batch_size, self.num_au).model_train
             print(">>>>>>>>> model loaded from ", vae_model_name)
             trained_model.load_weights(vae_model_name + '.h5')
             #### get weight
             layer_dict_whole_vae = dict([(layer.name, layer) for layer in trained_model.layers])
-            # w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
-            # w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
+            w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
+            w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
             print('check the last layer of model_train: ', trained_model.layers[-1].name)
             w_softmaxpdf_1 = trained_model.layers[-1].get_weights()
             # print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1[1])
@@ -48,11 +48,11 @@ class feature_layer:
 
             #### set weight for 3 layers
             layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
-            # layer_dict_3layers['intermediate'].set_weights(w_intermediate)
-            # layer_dict_3layers['z_mean'].set_weights(w_z_mean)
+            layer_dict_3layers['intermediate'].set_weights(w_intermediate)
+            layer_dict_3layers['z_mean'].set_weights(w_z_mean)
             print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
 
-            if au_index < 0:
+            if w_softmaxpdf_1[1].shape[0] == self.num_au:
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
             else:
                 print(">>>>>>>>>>> going to choose this index in VAE:", au_index)
@@ -72,9 +72,9 @@ class feature_layer:
                 print("[vae_model] loaded weight from MAML : ", w_softmaxpdf_1[1])
                 self.model_intensity.layers[-1].set_weights(w_softmaxpdf_1)
             layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
-            # print("[vae_model] final loaded weight : ")
-            # print("[vae_model] b1 : ", layer_dict_3layers['intermediate'].get_weights()[1])
-            # print("[vae_model] b2 : ", layer_dict_3layers['z_mean'].get_weights()[1])
+            print("[vae_model] final loaded weight : ")
+            print("[vae_model] b1 : ", layer_dict_3layers['intermediate'].get_weights()[1])
+            print("[vae_model] b2 : ", layer_dict_3layers['z_mean'].get_weights()[1])
             print("[vae_model] b3 : ", self.model_intensity.layers[-1].get_weights()[1])
 
     def loadWeightS(self, vae_model_name, au_index, num_au_for_rm=1, w=None, b=None):
