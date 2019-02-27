@@ -483,9 +483,9 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
         labels_per_subj_per_au = [binary_intensity(np.float32(line.split(',')[1].split('\n')[0])) for line in
                                   np.array(lines)[used_frames]]
         labels_per_subj.append(labels_per_subj_per_au)
-        # if not eval:
-        #     print(' au {}, lables: '.format(au))
-        #     print(labels_per_subj_per_au)
+        if not eval:
+            print(' au {}, lables: '.format(au))
+            print(labels_per_subj_per_au)
 
     labels_per_subj = np.array(labels_per_subj)
     print('labels_per_subj shape:', labels_per_subj.shape)
@@ -495,13 +495,14 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     ### feature ###
     with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
         lines = f.readlines()
+        lines = np.array(lines)[used_frames]
         feat_vec_per_subj = []  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
         for line in lines:
             line = line.split(',')
             frame_idx = int(line[1].split('frame')[1])
             feat_vec = np.array([float(elt) for elt in line[2:]])
-            if frame_idx in used_frames:
-                feat_vec_per_subj.append(feat_vec)  # key = frame, value = feature vector
+            feat_vec_per_subj.append(feat_vec)  # key = frame, value = feature vector
+
     #################################################################################
     feat_vec_per_subj = np.array(feat_vec_per_subj)
     f = {'feat': feat_vec_per_subj, 'lab': labels_per_subj}
@@ -510,6 +511,7 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     batch_size = nb_samples
     nb_batches = math.ceil(nb_samples / batch_size)
     print('-----------------------------------')
+    print(feat_vec_per_subj[0])
     print('feat_vec_per_subj: ', feat_vec_per_subj.shape)
     print('labels_per_subj: ', labels_per_subj.shape)
     print('batch_size: ', batch_size)
