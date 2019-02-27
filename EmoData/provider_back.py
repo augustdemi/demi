@@ -458,7 +458,7 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     if eval:
         used_info_path = os.path.join(used_info_path, 'subject' + str(subject_index) + '_eval.csv')
     else:
-        used_info_path = os.path.join(used_info_path, subject + '_used.csv')
+        used_info_path = os.path.join(used_info_path, 'subject' + str(subject_index) + '_used.csv')
 
     print('>>>>>>>>>>> used_info_path: ', used_info_path)
 
