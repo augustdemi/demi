@@ -291,7 +291,9 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
                 if frame_idx < 4845:
                     one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
             one_subject_features = np.array(one_subject_features)
+            print("+++++++++++++++++++++++", one_subject_features.shape)
             all_subject_features.append(one_subject_features)
+            print("+++++++++++++++++++++++", len(all_subject_features))
 
     print('---- get label')
     test_b_frame = []
