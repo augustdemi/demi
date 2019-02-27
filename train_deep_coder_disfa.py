@@ -280,7 +280,7 @@ if args.deep_feature is not '':
             deep_feature = three_layers.model_final_latent_feat.predict(all_feat_vec)
             print('len deep feat:', len(deep_feature))
             print('len resnet file:', len(detected_frame_idx))
-            save_path = args.deep_feature + '/' + subject + '.csv'
+            save_path = args.deep_feature + '/' + subject
             with open(save_path, 'w') as f:
                 for i in range(len(deep_feature)):
                     out_csv = np.hstack(
