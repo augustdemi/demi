@@ -7,7 +7,7 @@ import numpy as np
 import argparse
 from datetime import datetime
 import os
-from feature_layers import feature_layer
+from one_layer import feature_layer
 
 start_time = datetime.now()
 
@@ -90,35 +90,19 @@ def pred_loss(y_true, y_pred):
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
-three_layers = feature_layer(batch_size, args.num_au)
+one_layer = feature_layer(batch_size, args.num_au)
 
 import pickle
 
 
 aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
-if args.logdir != '':
-    print('---------------- load from MAML')
-    if args.trained_model_dir != '':
-        data = pickle.load(
-            open(args.logdir + '/' + args.trained_model_dir + "/soft_weights" + args.m_iter + ".pkl", "rb"),
-            encoding='latin1')
-    else:
-        data = pickle.load(open(args.logdir + 'm1.' + aus[args.au_index] + '.alpha0.05_beta0.05.pkl', "rb"), encoding='latin1')
+one_layer.loadWeight(args.restored_model)
 
-    w = np.array(data['w1'])
-    b = np.array(data['b1'])
-    print(w.shape)
-    print(w)
-    print('--------------------------------')
-    three_layers.loadWeight_pkl(args.restored_model, w, b)
-else:
-    three_layers.loadWeight(args.restored_model)
+model_intensity = one_layer.model_intensity
 
-model_intensity = three_layers.model_intensity
-
-for i in range(len(model_intensity.layers) - 1):
-    model_intensity.layers[i].trainable = False
+# for i in range(len(model_intensity.layers) - 1):
+#     model_intensity.layers[i].trainable = False
 for i in range(len(model_intensity.layers)):
     print(model_intensity.layers[i], model_intensity.layers[i].trainable)
 
