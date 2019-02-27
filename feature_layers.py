@@ -23,7 +23,7 @@ class feature_layer:
         # self.model_final_latent_feat = model_final_latent_feat
         self.model_intensity = model_intensity
         self.TOTAL_AU = TOTAL_AU
-        self.num_au = -1
+        self.num_au = num_au
         self.batch_size = batch_size
         self.latent_dim3 = latent_dim3
 
@@ -35,8 +35,8 @@ class feature_layer:
             trained_model.load_weights(vae_model_name + '.h5')
             #### get weight
             layer_dict_whole_vae = dict([(layer.name, layer) for layer in trained_model.layers])
-            w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
-            w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
+            # w_intermediate = layer_dict_whole_vae['intermediate'].get_weights()
+            # w_z_mean = layer_dict_whole_vae['z_mean'].get_weights()
             print('check the last layer of model_train: ', trained_model.layers[-1].name)
             w_softmaxpdf_1 = trained_model.layers[-1].get_weights()
             # print("[vae_model]loaded weight from VAE : ", w_softmaxpdf_1[1])
@@ -48,8 +48,8 @@ class feature_layer:
 
             #### set weight for 3 layers
             layer_dict_3layers = dict([(layer.name, layer) for layer in self.model_intensity.layers])
-            layer_dict_3layers['intermediate'].set_weights(w_intermediate)
-            layer_dict_3layers['z_mean'].set_weights(w_z_mean)
+            # layer_dict_3layers['intermediate'].set_weights(w_intermediate)
+            # layer_dict_3layers['z_mean'].set_weights(w_z_mean)
             print('check the last layer of model_intensity: ', self.model_intensity.layers[-1].name)
 
             if au_index < 0:
