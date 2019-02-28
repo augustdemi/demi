@@ -127,7 +127,7 @@ class DataGenerator(object):
             save_path = FLAGS.check_sample + '/' + str(
                 FLAGS.update_batch_size) + 'shot'
             if not os.path.exists(save_path):
-                os.mkdir(save_path)
+                os.mkdirs(save_path)
             import csv
             with open(save_path + '/subject' + FLAGS.subject_index + '_used.csv', 'w', newline='') as csvfile:
                 writer = csv.writer(csvfile)
