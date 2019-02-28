@@ -69,6 +69,7 @@ flags.DEFINE_string('check_sample', None, 'check frame idx of samples')
 flags.DEFINE_integer('test_split_seed', -1, 'random seed for test set split')
 flags.DEFINE_bool('evaluate', False, 'evaluate or not')
 flags.DEFINE_string('subject_index', '', 'subject indices to select')
+flags.DEFINE_bool('init', False, 'initialize weight from vae_model')
 
 def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
     print("===============> Final in weight: ", sess.run('model/w1:0').shape, sess.run('model/b1:0').shape)
@@ -232,13 +233,29 @@ def main():
 
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr)
+        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.init' + str(FLAGS.init)
 
     resume_itr = 0
     tf.global_variables_initializer().run()
     tf.train.start_queue_runners()
 
     ################## Train ##################
+    if FLAGS.init:
+        print('FLAGS.vae_model: ', FLAGS.vae_model)
+        soft_layer = feature_layer(10, FLAGS.num_au)
+        soft_layer.loadWeight(FLAGS.vae_model)
+        w = soft_layer.model_intensity.layers[-1].get_weights()[0]
+        b = soft_layer.model_intensity.layers[-1].get_weights()[1]
+        print('bias from base_vae_model: ', b)
+        print('-----------------------------------------------------------------')
+        with tf.variable_scope("model", reuse=True) as scope:
+            scope.reuse_variables()
+            b1 = tf.get_variable("b1", [FLAGS.num_au, 2]).assign(np.array(b))
+            w1 = tf.get_variable("w1", [300, FLAGS.num_au, 2]).assign(np.array(w))
+            sess.run(b1)
+            sess.run(w1)
+        print("uploaded bias from vae_model: ", sess.run('model/b1:0'))
+
 
     if FLAGS.resume:
         model_file = None
@@ -290,7 +307,7 @@ def main():
 
             print("--- Restoring model weights from " + model_file)
             saver.restore(sess, model_file)
-            print("updated bias from MAML ckpt: ", sess.run('model/b1:0'))
+            print("uploaded bias from MAML ckpt: ", sess.run('model/b1:0'))
     print("================================================================================")
 
     if FLAGS.adaptation:
