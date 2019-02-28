@@ -97,7 +97,7 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
         elif itr <= 5000:
             SAVE_INTERVAL = 1000
         else:
-            SAVE_INTERVAL = 5000
+            SAVE_INTERVAL = 2000
 
         input_tensors = [model.train_op]
 
@@ -240,7 +240,7 @@ def main():
 
     ################## Train ##################
 
-    if FLAGS.resume:  # 디폴트로 resume은 항상 true. 따라서 train중간부터 항상 시작 가능.
+    if FLAGS.resume:
         model_file = None
         model_file = tf.train.latest_checkpoint(FLAGS.logdir + '/' + trained_model_dir)
         print(">>>>> trained_model_dir: ", FLAGS.logdir + '/' + trained_model_dir)
