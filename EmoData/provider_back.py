@@ -474,6 +474,23 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     binary_intensity = lambda lab: [0,1] if lab > 0 else [1,0]
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     #################################################################################
+    ### feature ###
+    existing_frames = []
+    with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
+        lines = f.readlines()
+        feat_vec_per_subj = [np.array(range(300)) for _ in
+                                range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
+        for line in lines:
+            line = line.split(',')
+            frame_idx = int(line[1].split('frame')[1])
+            feat_vec = np.array([float(elt) for elt in line[2:]])
+            if frame_idx < 4845 and frame_idx in used_frames:
+                existing_frames.append(frame_idx)
+                feat_vec_per_subj[frame_idx] = feat_vec   # key = frame, value = feature vector
+
+    feat_vec_per_subj = np.array(feat_vec_per_subj)
+    feat_vec_per_subj = feat_vec_per_subj[existing_frames]
+
 
     ### label ###
     labels_per_subj = []
@@ -481,7 +498,7 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
         with open(os.path.join(label_path, subject, subject + '_' + au + '.txt'), 'r') as f:
             lines = f.readlines()[:4845]
         labels_per_subj_per_au = [binary_intensity(np.float32(line.split(',')[1].split('\n')[0])) for line in
-                                  np.array(lines)[used_frames]]
+                                  np.array(lines)[existing_frames]]
         labels_per_subj.append(labels_per_subj_per_au)
         if not eval:
             print(' au {}, lables: '.format(au))
@@ -491,21 +508,6 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     print('labels_per_subj shape:', labels_per_subj.shape)
     labels_per_subj = np.transpose(labels_per_subj, (1, 0, 2))
     print('labels_per_subj shape:', labels_per_subj.shape)
-
-    ### feature ###
-    with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
-        lines = f.readlines()
-        feat_vec_per_subj = [np.array(range(300)) for _ in
-                                range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
-        for line in lines:
-            line = line.split(',')
-            frame_idx = int(line[1].split('frame')[1])
-            feat_vec = np.array([float(elt) for elt in line[2:]])
-            if frame_idx < 4845:
-                feat_vec_per_subj[frame_idx] = feat_vec   # key = frame, value = feature vector
-
-    feat_vec_per_subj = np.array(feat_vec_per_subj)
-    feat_vec_per_subj = feat_vec_per_subj[used_frames]
     #################################################################################
     f = {'feat': feat_vec_per_subj, 'lab': labels_per_subj}
 
