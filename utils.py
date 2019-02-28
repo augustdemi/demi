@@ -272,14 +272,14 @@ def get_kshot_feature_w_all_labels(kshot_path, feat_path, sampling_seed, nb_samp
 
 
 def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1):
-    from feature_layers import feature_layer
 
     all_subject_features = []
     print('---- get feature vec')
-    existing_frames_in_feat_vec = []
+    all_subjects_existing_frames_in_feat_vec = []
     for feature_file in feature_files:
         print("subject: ", feature_file.split('/')[-1])
         with open(feature_file, 'r') as f:
+            existing_frames_in_feat_vec = []
             lines = f.readlines()
             one_subject_features = [np.array(range(300)) for _ in
                                     range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
@@ -290,25 +290,30 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
                 feat_vec = np.array([float(elt) for elt in line[2:]])
                 if frame_idx < 4845:
                     one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
-            one_subject_features = np.array(one_subject_features)
-            all_subject_features.append(one_subject_features)
+            all_subject_features.append(np.array(one_subject_features))
+            all_subjects_existing_frames_in_feat_vec.append(existing_frames_in_feat_vec)
+            print('Missing frames from feature vec: ', [i for i in range(4845) if i not in existing_frames_in_feat_vec])
 
     print('---- get label')
     test_b_frame = []
     if test_split_seed > -1:
+        existing_frames_in_feat_vec = all_subjects_existing_frames_in_feat_vec[0]
         random.seed(test_split_seed)
         test_a_frame = random.sample(existing_frames_in_feat_vec,
                                      int(len(existing_frames_in_feat_vec) / 2))
         test_b_frame = [i for i in existing_frames_in_feat_vec if i not in test_a_frame]
-        existing_frames_in_feat_vec = test_a_frame
+        all_subjects_existing_frames_in_feat_vec[0] = test_a_frame
 
     binary_intensity = lambda lab: 1 if lab > 0 else 0
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     all_subject_labels = []  # list of feat_vec array per subject
     all_subject_on_intensity_info = []
     all_subject_off_intensity_info = []
+    i=-1
     for label_path in label_paths:
+        i+=1
         subject = label_path.split('/')[-1]
+        existing_frames_in_feat_vec = all_subjects_existing_frames_in_feat_vec[i]
         print(subject)
         all_labels_per_subj = []
         all_au_on_intensity_info = []
