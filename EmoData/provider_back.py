@@ -495,16 +495,18 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     ### feature ###
     with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
         lines = f.readlines()
-        lines = np.array(lines)[used_frames]
-        feat_vec_per_subj = []  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
+        feat_vec_per_subj = [np.array(range(300)) for _ in
+                                range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
         for line in lines:
             line = line.split(',')
             frame_idx = int(line[1].split('frame')[1])
             feat_vec = np.array([float(elt) for elt in line[2:]])
-            feat_vec_per_subj.append(feat_vec)  # key = frame, value = feature vector
+            if frame_idx < 4845:
+                feat_vec_per_subj[frame_idx] = feat_vec   # key = frame, value = feature vector
 
-    #################################################################################
     feat_vec_per_subj = np.array(feat_vec_per_subj)
+    feat_vec_per_subj = feat_vec_per_subj[used_frames]
+    #################################################################################
     f = {'feat': feat_vec_per_subj, 'lab': labels_per_subj}
 
     nb_samples = len(feat_vec_per_subj)
