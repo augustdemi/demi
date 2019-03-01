@@ -175,7 +175,7 @@ class MAML:
                 task_co_lossb = tf.reduce_sum(task_co_lossb, 0) / self.total_num_au
                 task_total = task_ce_lossb + self.LAMBDA2 * task_co_lossb
                 ### return output ###
-                task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_total,
+                task_output = [fast_weights['w1'], fast_weights['b1'], task_ce_lossb, task_co_lossb, task_lossa,
                                predb_this_au]
                 return task_output
 
