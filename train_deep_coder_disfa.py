@@ -310,11 +310,12 @@ if args.deep_feature is not '':
         train_subjects = list(val_idx.keys())
 
         for subject in all_subjects:
-            if int(subject.split('SN')[1]) in train_subjects:
+            sub_number = int(subject.split('SN')[1])
+            if sub_number in train_subjects:
                 per_sub_path = path + subject
                 files = os.listdir(per_sub_path)
-
-                imgs = [cv2.imread(per_sub_path + "/frame" + str(i) + "_0.jpg") for i in val_idx]
+                val_idx_this_subject = val_idx[sub_number]
+                imgs = [cv2.imread(per_sub_path + "/frame" + str(i) + "_0.jpg") for i in val_idx_this_subject]
                 pre_processed_img_arr = []
                 for img in imgs:
                     img2, _, _ = pp.transform(img, preprocessing=True, augmentation=False)
@@ -323,29 +324,30 @@ if args.deep_feature is not '':
                 print('pre_processed_img_arr for val:', pre_processed_img_arr.shape)
                 deep_feature = model_deep_feature.predict(pre_processed_img_arr)
                 print('len deep feat for val:', len(deep_feature))
-                print('len files for val:', len(val_idx))
+                print('len files for val:', len(val_idx_this_subject))
                 save_path = args.deep_feature + '/train-val/' + subject + '.csv'
                 with open(save_path, 'w') as f:
                     for i in range(len(deep_feature)):
                         out_csv = np.hstack(
-                            (subject, "frame" + str(val_idx[i]), [str(x) for x in deep_feature[i]]))
+                            (subject, "frame" + str(val_idx_this_subject[i]), [str(x) for x in deep_feature[i]]))
                         f.write(','.join(out_csv) + '\n')
 
-                imgs = [cv2.imread(per_sub_path + "/frame" + str(i) + "_0.jpg") for i in train_idx]
+                train_idx_this_subject = train_idx[sub_number]
+                imgs = [cv2.imread(per_sub_path + "/frame" + str(i) + "_0.jpg") for i in train_idx_this_subject]
                 pre_processed_img_arr = []
                 for img in imgs:
                     img2, _, _ = pp.transform(img, preprocessing=True, augmentation=False)
                     pre_processed_img_arr.append(img2)
                 pre_processed_img_arr = np.array(pre_processed_img_arr)
-                print('pre_processed_img_arr for val:', pre_processed_img_arr.shape)
+                print('pre_processed_img_arr for train:', pre_processed_img_arr.shape)
                 deep_feature = model_deep_feature.predict(pre_processed_img_arr)
-                print('len deep feat for val:', len(deep_feature))
-                print('len files for val:', len(val_idx))
+                print('len deep feat for train:', len(deep_feature))
+                print('len files for train:', len(train_idx_this_subject))
                 save_path = args.deep_feature + '/train-train/' + subject + '.csv'
                 with open(save_path, 'w') as f:
                     for i in range(len(deep_feature)):
                         out_csv = np.hstack(
-                            (subject, "frame" + str(val_idx[i]), [str(x) for x in deep_feature[i]]))
+                            (subject, "frame" + str(train_idx_this_subject[i]), [str(x) for x in deep_feature[i]]))
                         f.write(','.join(out_csv) + '\n')
                 print(">>>>>>>>done: ", subject, len(deep_feature))
             else:
