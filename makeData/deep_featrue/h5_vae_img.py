@@ -21,60 +21,60 @@ for file_name in os.listdir(path):
 
 files.sort(key=lambda f: f[0])
 
-train_set = files[:18]
+train_set = files[:2]
 test_set = files[18:]
 
 data_idx = {'train': [f[1] for f in train_set], 'test': [f[1] for f in test_set]}
 print(data_idx)
 
-imgs = []
-labels = []
-subjects = []
-frames = []
-for file in data_idx['test']:
-    print(">>>> file: " + file)
-    hf = h5py.File(path + file, 'r')
-    img = hf['img'].value
-    frame = hf['frame'].value
-    if len(img) == 4846:
-        img = img[:4845]
-        frame = frame[:4845]
-    label = hf['lab'].value
-    hf.close()
-    subject_number = int(file.split(".")[0].split("SN")[1])
-    n_data = len(img)
-    print(img.shape)
-    imgs.append(img)
-    labels.append(label)
-    frames.append(frame)
-    subjects.append(subject_number * np.ones(n_data))
-
-reshaped_imgs = imgs[0]
-reshaped_labels = labels[0]
-reshaped_subjects = subjects[0]
-reshaped_frames = frames[0]
-for i in range(1, len(imgs)):
-    reshaped_imgs = np.concatenate((reshaped_imgs, imgs[i]), axis=0)
-    reshaped_labels = np.concatenate((reshaped_labels, labels[i]), axis=0)
-    reshaped_subjects = np.concatenate((reshaped_subjects, subjects[i]), axis=0)
-    reshaped_frames = np.concatenate((reshaped_frames, frames[i]), axis=0)
-random_idx = list(range(0, len(reshaped_imgs)))
-random.shuffle(random_idx)
-reshaped_imgs = reshaped_imgs[random_idx]
-reshaped_labels = reshaped_labels[random_idx]
-reshaped_subjects = reshaped_subjects[random_idx]
-reshaped_frames = reshaped_frames[random_idx]
-
-hfs = h5py.File(save_path + "test.h5", 'w')
-hfs.create_dataset('img', data=reshaped_imgs)
-hfs.create_dataset('lab', data=reshaped_labels)
-hfs.create_dataset('sub', data=reshaped_subjects)
-hfs.create_dataset('frame', data=reshaped_frames)
-hfs.close()
-print(save_path + "test.h5")
-print("=========================================")
-
-
+# imgs = []
+# labels = []
+# subjects = []
+# frames = []
+# for file in data_idx['test']:
+#     print(">>>> file: " + file)
+#     hf = h5py.File(path + file, 'r')
+#     img = hf['img'].value
+#     frame = hf['frame'].value
+#     if len(img) == 4846:
+#         img = img[:4845]
+#         frame = frame[:4845]
+#     label = hf['lab'].value
+#     hf.close()
+#     subject_number = int(file.split(".")[0].split("SN")[1])
+#     n_data = len(img)
+#     print(img.shape)
+#     imgs.append(img)
+#     labels.append(label)
+#     frames.append(frame)
+#     subjects.append(subject_number * np.ones(n_data))
+#
+# reshaped_imgs = imgs[0]
+# reshaped_labels = labels[0]
+# reshaped_subjects = subjects[0]
+# reshaped_frames = frames[0]
+# for i in range(1, len(imgs)):
+#     reshaped_imgs = np.concatenate((reshaped_imgs, imgs[i]), axis=0)
+#     reshaped_labels = np.concatenate((reshaped_labels, labels[i]), axis=0)
+#     reshaped_subjects = np.concatenate((reshaped_subjects, subjects[i]), axis=0)
+#     reshaped_frames = np.concatenate((reshaped_frames, frames[i]), axis=0)
+# random_idx = list(range(0, len(reshaped_imgs)))
+# random.shuffle(random_idx)
+# reshaped_imgs = reshaped_imgs[random_idx]
+# reshaped_labels = reshaped_labels[random_idx]
+# reshaped_subjects = reshaped_subjects[random_idx]
+# reshaped_frames = reshaped_frames[random_idx]
+#
+# hfs = h5py.File(save_path + "test.h5", 'w')
+# hfs.create_dataset('img', data=reshaped_imgs)
+# hfs.create_dataset('lab', data=reshaped_labels)
+# hfs.create_dataset('sub', data=reshaped_subjects)
+# hfs.create_dataset('frame', data=reshaped_frames)
+# hfs.close()
+# print(save_path + "test.h5")
+# print("=========================================")
+#
+#
 
 
 
@@ -111,6 +111,8 @@ for file in data_idx['train']:
     val_frames.extend(one_sub_frame[val_idx])
     val_subjects.extend(np.array([subject_number]*len(val_idx)))
     val_frame_info[subject_number] = list(one_sub_frame[val_idx])
+    print(list(one_sub_frame[val_idx]))
+
     #add train-train
     train_imgs.extend(one_sub_img[train_idx])
     train_labels.extend(one_sub_lab[train_idx])
@@ -118,6 +120,9 @@ for file in data_idx['train']:
     train_subjects.extend(np.array([subject_number]*len(train_idx)))
     train_frame_info[subject_number] = list(one_sub_frame[train_idx])
 
+print('///////////////')
+print(val_frame_info)
+print('///////////////')
 
 random_idx = list(range(len(val_imgs)))
 random.seed(0)
