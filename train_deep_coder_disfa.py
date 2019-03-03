@@ -305,8 +305,8 @@ if args.deep_feature is not '':
         all_subjects = os.listdir(path)
 
         import pickle
-        val_idx = pickle.load(open('val_frame_info.pkl', 'rb'), encoding='latin1')
-        train_idx = pickle.load(open('train_frame_info.pkl', 'rb'), encoding='latin1')
+        val_idx = pickle.load(open('/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1_val2/val_frame_info.pkl', 'rb'), encoding='latin1')
+        train_idx = pickle.load(open('/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1_val2/train_frame_info.pkl', 'rb'), encoding='latin1')
         train_subjects = list(val_idx.keys())
 
         for subject in all_subjects:
