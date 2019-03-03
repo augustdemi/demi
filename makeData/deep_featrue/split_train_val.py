@@ -49,7 +49,7 @@ for subject in all_subjects:
     total_train_label.append(one_sub_lab[train_idx])
     total_train_sub.append([subject] * len(train_idx))
 
-random_idx = list(range(total_train_img))
+random_idx = list(range(len(total_train_img)))
 random.shuffle(random_idx)
 total_train_img = np.array(total_train_img)[random_idx]
 total_train_label = np.array(total_train_label)[random_idx]
@@ -61,7 +61,7 @@ hf_train.create_dataset('lab', data=total_train_label)
 hf_train.create_dataset('sub', data=total_train_sub)
 hf_train.close()
 
-random_idx = list(range(total_val_img))
+random_idx = list(range(len(total_val_img)))
 random.shuffle(random_idx)
 total_val_img = np.array(total_val_img)[random_idx]
 total_val_label = np.array(total_val_label)[random_idx]
