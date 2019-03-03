@@ -8,7 +8,7 @@ import random
 path = "/home/ml1323/project/robert_data/DISFA_new/h5_per_sub_bin_int/"
 # path = "D:/연구/프로젝트/DISFA/h5/"
 
-save_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1_val"
+save_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1_val/"
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 val_ratio = 0.3
@@ -31,7 +31,6 @@ imgs = []
 labels = []
 subjects = []
 frames = []
-total_n = 0
 for file in data_idx['test']:
     print(">>>> file: " + file)
     hf = h5py.File(path + file, 'r')
@@ -44,7 +43,6 @@ for file in data_idx['test']:
     hf.close()
     subject_number = int(file.split(".")[0].split("SN")[1])
     n_data = len(img)
-    total_n += n_data
     print(img.shape)
     imgs.append(img)
     labels.append(label)
@@ -84,14 +82,13 @@ train_imgs = []
 train_labels = []
 train_subjects = []
 train_frames = []
-
-
+train_frame_info = {}
 
 val_imgs = []
 val_labels = []
 val_subjects = []
 val_frames = []
-
+val_frame_info = {}
 for file in data_idx['train']:
     print(">>>> file: " + file)
     hf = h5py.File(path + file, 'r')
@@ -113,11 +110,13 @@ for file in data_idx['train']:
     val_labels.extend(one_sub_lab[val_idx])
     val_frames.extend(one_sub_frame[val_idx])
     val_subjects.extend(np.array([subject_number]*len(val_idx)))
+    val_frame_info[subject_number] = one_sub_frame[val_idx]
     #add train-train
     train_imgs.extend(one_sub_img[train_idx])
     train_labels.extend(one_sub_lab[train_idx])
     train_frames.extend(one_sub_frame[train_idx])
     train_subjects.extend(np.array([subject_number]*len(train_idx)))
+    train_frame_info[subject_number] = one_sub_frame[val_idx]
 
 
 random_idx = list(range(len(val_imgs)))
@@ -150,3 +149,9 @@ hfs.create_dataset('lab', data=train_labels)
 hfs.create_dataset('frame', data=train_frames)
 hfs.create_dataset('sub', data=train_subjects)
 hfs.close()
+
+import json
+with open(save_path + 'val_frame_info.json', 'w') as outfile:
+    json.dump(val_frame_info, outfile)
+with open(save_path + 'train_frame_info.json', 'w') as outfile:
+    json.dump(train_frame_info, outfile)
