@@ -292,10 +292,24 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
                     one_subject_features[frame_idx] = feat_vec  # key = frame, value = feature vector
             all_subject_features.append(np.array(one_subject_features))
             all_subjects_existing_frames_in_feat_vec.append(existing_frames_in_feat_vec)
+            print('len of existing_frames_in_feat_vec:', len(existing_frames_in_feat_vec))
             print('Missing frames from feature vec: ', [i for i in range(4845) if i not in existing_frames_in_feat_vec])
+            print('===========================================')
 
     print('---- get label')
     test_b_frame = []
+    # if test_split_seed > -1:
+    #     i = -1
+    #     if FLAGS.adaptation:
+    #         val_ratio = 0.5
+    #     else:
+    #         val_ratio = 0.3
+    #     for existing_frames_in_feat_vec in all_subjects_existing_frames_in_feat_vec:
+    #         i += 1
+    #         random.seed(test_split_seed)
+    #         b_frame = random.sample(existing_frames_in_feat_vec, int(len(existing_frames_in_feat_vec) * val_ratio))
+    #         a_frame = [i for i in existing_frames_in_feat_vec if i not in b_frame]
+    #         all_subjects_existing_frames_in_feat_vec[i] = a_frame
     if test_split_seed > -1:
         existing_frames_in_feat_vec = all_subjects_existing_frames_in_feat_vec[0]
         random.seed(test_split_seed)
@@ -304,14 +318,15 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
         test_b_frame = [i for i in existing_frames_in_feat_vec if i not in test_a_frame]
         all_subjects_existing_frames_in_feat_vec[0] = test_a_frame
 
+
     binary_intensity = lambda lab: 1 if lab > 0 else 0
     aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
     all_subject_labels = []  # list of feat_vec array per subject
     all_subject_on_intensity_info = []
     all_subject_off_intensity_info = []
-    i=-1
+    i = -1
     for label_path in label_paths:
-        i+=1
+        i += 1
         subject = label_path.split('/')[-1]
         existing_frames_in_feat_vec = all_subjects_existing_frames_in_feat_vec[i]
         print(subject)
