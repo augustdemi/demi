@@ -140,20 +140,20 @@ hfs.create_dataset('sub', data=val_subjects)
 hfs.close()
 print("=========================================")
 
-random_idx = list(range(len(train_imgs)))
-random.seed(0)
-random.shuffle(random_idx)
-train_imgs = np.array(train_imgs)[random_idx]
-train_labels = np.array(train_labels)[random_idx]
-train_frames = np.array(train_frames)[random_idx]
-train_subjects = np.array(train_subjects)[random_idx]
-
-hfs = h5py.File(save_path + "train-train.h5", 'w')
-hfs.create_dataset('img', data=train_imgs)
-hfs.create_dataset('lab', data=train_labels)
-hfs.create_dataset('frame', data=train_frames)
-hfs.create_dataset('sub', data=train_subjects)
-hfs.close()
+# random_idx = list(range(len(train_imgs)))
+# random.seed(0)
+# random.shuffle(random_idx)
+# train_imgs = np.array(train_imgs)[random_idx]
+# train_labels = np.array(train_labels)[random_idx]
+# train_frames = np.array(train_frames)[random_idx]
+# train_subjects = np.array(train_subjects)[random_idx]
+#
+# hfs = h5py.File(save_path + "train-train.h5", 'w')
+# hfs.create_dataset('img', data=train_imgs)
+# hfs.create_dataset('lab', data=train_labels)
+# hfs.create_dataset('frame', data=train_frames)
+# hfs.create_dataset('sub', data=train_subjects)
+# hfs.close()
 
 import json
 with open(save_path + 'val_frame_info.json', 'w') as outfile:
