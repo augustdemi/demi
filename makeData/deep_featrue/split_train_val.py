@@ -4,8 +4,8 @@ import h5py
 import random
 
 val_ratio = 0.3
-file_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1/"
-save_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1/train.h5"
+file_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1/train.h5"
+save_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1/"
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
@@ -30,7 +30,7 @@ for s_idx in range(18):
             lab.append(hf['lab'][i])
     total_num_data_one_sub = len(img)
     total_idx = list(range(total_num_data_one_sub))
-    val_idx = random.sample(total_idx, int(total_num_data * val_ratio))
+    val_idx = random.sample(total_idx, int(total_num_data_one_sub * val_ratio))
     train_idx = [i for i in range(total_idx) if i not in val_idx]
     print('-----------------------------------------------------------------------------')
     print('num of validation set of subject {} is {}'.format(s_idx, len(val_idx)))
