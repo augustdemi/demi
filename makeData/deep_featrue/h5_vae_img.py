@@ -8,7 +8,7 @@ import random
 path = "/home/ml1323/project/robert_data/DISFA_new/h5_per_sub_bin_int/"
 # path = "D:/연구/프로젝트/DISFA/h5/"
 
-save_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1_val/"
+save_path = "/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1_val2/"
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 val_ratio = 0.3
@@ -110,13 +110,13 @@ for file in data_idx['train']:
     val_labels.extend(one_sub_lab[val_idx])
     val_frames.extend(one_sub_frame[val_idx])
     val_subjects.extend(np.array([subject_number]*len(val_idx)))
-    val_frame_info[subject_number] = one_sub_frame[val_idx]
+    val_frame_info[subject_number] = list(one_sub_frame[val_idx])
     #add train-train
     train_imgs.extend(one_sub_img[train_idx])
     train_labels.extend(one_sub_lab[train_idx])
     train_frames.extend(one_sub_frame[train_idx])
     train_subjects.extend(np.array([subject_number]*len(train_idx)))
-    train_frame_info[subject_number] = one_sub_frame[val_idx]
+    train_frame_info[subject_number] = list(one_sub_frame[train_idx])
 
 
 random_idx = list(range(len(val_imgs)))
