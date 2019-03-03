@@ -111,7 +111,6 @@ for file in data_idx['train']:
     val_frames.extend(one_sub_frame[val_idx])
     val_subjects.extend(np.array([subject_number]*len(val_idx)))
     val_frame_info[subject_number] = list(one_sub_frame[val_idx])
-    print(list(one_sub_frame[val_idx]))
 
     #add train-train
     train_imgs.extend(one_sub_img[train_idx])
@@ -119,10 +118,6 @@ for file in data_idx['train']:
     train_frames.extend(one_sub_frame[train_idx])
     train_subjects.extend(np.array([subject_number]*len(train_idx)))
     train_frame_info[subject_number] = list(one_sub_frame[train_idx])
-
-print('///////////////')
-print(val_frame_info)
-print('///////////////')
 
 random_idx = list(range(len(val_imgs)))
 random.seed(0)
@@ -155,8 +150,9 @@ print("=========================================")
 # hfs.create_dataset('sub', data=train_subjects)
 # hfs.close()
 
-import json
-with open(save_path + 'val_frame_info.json', 'w') as outfile:
-    json.dump(val_frame_info, outfile)
-with open(save_path + 'train_frame_info.json', 'w') as outfile:
-    json.dump(train_frame_info, outfile)
+import pickle
+with open(save_path + 'val_frame_info.pkl', 'wb') as out:
+    pickle.dump(val_frame_info, out, protocol=2)
+
+with open(save_path + 'train_frame_info.pkl', 'wb') as out:
+    pickle.dump(train_frame_info, out, protocol=2)
