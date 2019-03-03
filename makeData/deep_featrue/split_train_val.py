@@ -41,13 +41,13 @@ for subject in all_subjects:
     one_sub_img = np.array(img)
     one_sub_lab = np.array(lab)
     #add train-val
-    total_val_img.append(one_sub_img[val_idx])
-    total_val_label.append(one_sub_lab[val_idx])
-    total_val_sub.append([subject]*len(val_idx))
+    total_val_img.extend(one_sub_img[val_idx])
+    total_val_label.extend(one_sub_lab[val_idx])
+    total_val_sub.extend([subject]*len(val_idx))
     #add train-train
-    total_train_img.append(one_sub_img[train_idx])
-    total_train_label.append(one_sub_lab[train_idx])
-    total_train_sub.append([subject] * len(train_idx))
+    total_train_img.extend(one_sub_img[train_idx])
+    total_train_label.extend(one_sub_lab[train_idx])
+    total_train_sub.extend([subject] * len(train_idx))
 
 random_idx = list(range(len(total_train_img)))
 random.shuffle(random_idx)
@@ -55,10 +55,14 @@ total_train_img = np.array(total_train_img)[random_idx]
 total_train_label = np.array(total_train_label)[random_idx]
 total_train_sub = np.array(total_train_sub)[random_idx]
 
-hf_train = h5py.File(save_path + 'train-train' + ".h5", 'w')
+hf_train = h5py.File(save_path + 'train-train.h5', 'w')
 hf_train.create_dataset('img', data=total_train_img)
 hf_train.create_dataset('lab', data=total_train_label)
 hf_train.create_dataset('sub', data=total_train_sub)
+print('---------------- train ----------------')
+print('total_train_img shape: ', total_train_img.shape)
+print('total_train_label shape: ', total_train_label.shape)
+print('total_train_sub shape: ', total_train_sub.shape)
 hf_train.close()
 
 random_idx = list(range(len(total_val_img)))
@@ -67,9 +71,12 @@ total_val_img = np.array(total_val_img)[random_idx]
 total_val_label = np.array(total_val_label)[random_idx]
 total_val_sub = np.array(total_val_sub)[random_idx]
 
-hf_val = h5py.File(save_path + 'train-val' + ".h5", 'w')
+hf_val = h5py.File(save_path + 'train-val.h5', 'w')
 hf_val.create_dataset('img', data=total_val_img)
 hf_val.create_dataset('lab', data=total_val_label)
 hf_val.create_dataset('sub', data=total_val_sub)
-
+print('---------------- validation ----------------')
+print('total_val_img shape: ', total_val_img.shape)
+print('total_val_label shape: ', total_val_label.shape)
+print('total_val_sub shape: ', total_val_sub.shape)
 hf_val.close()
