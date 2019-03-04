@@ -180,6 +180,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             pickle.dump({'w': w, 'b': b}, out, protocol=2)
             out.close()
     if FLAGS.evaluate:
+        adapted_model_dir += '/val'
         soft_layer = feature_layer(10, FLAGS.num_au)
         soft_layer.loadWeight(FLAGS.vae_model, w=w, b=b)
         print('--- loaded bias to be evaluated: ', b)
@@ -188,24 +189,49 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         subjects.sort()
         eval_vec = []
         eval_frame = []
-        print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
-        with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
-            lines = f.readlines()
-            for line in lines:
-                line = line.split(',')
-                frame_idx = int(line[1].split('frame')[1])
-                if frame_idx in data_generator.test_b_frame and frame_idx < 4845:
-                    feat_vec = [float(elt) for elt in line[2:]]
-                    eval_vec.append(feat_vec)
-                    eval_frame.append(frame_idx)
-        y_lab = data_generator.labels[0][eval_frame]
-        y_lab = np.array([np.eye(2)[label] for label in y_lab])
-        y_hat = soft_layer.model_intensity.predict(eval_vec)
-        print('y_lab shape: ', y_lab.shape)
-        print('y_hat shape: ', y_hat.shape)
-        out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
-        pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
-        out.close()
+
+        if FLAGS.train:
+            print('total labels: ', len(data_generator.labels))
+            print('total subjects: ', subjects)
+            for i in range(len(subjects)):
+                print('-- evaluate vec: ', subjects[i])
+                with open(os.path.join(FLAGS.datadir, subjects[i]), 'r') as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        line = line.split(',')
+                        frame_idx = int(line[1].split('frame')[1])
+                        if frame_idx < 4845:
+                            feat_vec = [float(elt) for elt in line[2:]]
+                            eval_vec.append(feat_vec)
+                            eval_frame.append(frame_idx)
+
+                y_lab = data_generator.labels[i][eval_frame]
+                y_lab = np.array([np.eye(2)[label] for label in y_lab])
+                y_hat = soft_layer.model_intensity.predict(eval_vec)
+                print('y_lab shape: ', y_lab.shape)
+                print('y_hat shape: ', y_hat.shape)
+                out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+                pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
+                out.close()
+        else:
+            print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
+            with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    line = line.split(',')
+                    frame_idx = int(line[1].split('frame')[1])
+                    if frame_idx in data_generator.test_b_frame and frame_idx < 4845:
+                        feat_vec = [float(elt) for elt in line[2:]]
+                        eval_vec.append(feat_vec)
+                        eval_frame.append(frame_idx)
+            y_lab = data_generator.labels[0][eval_frame]
+            y_lab = np.array([np.eye(2)[label] for label in y_lab])
+            y_hat = soft_layer.model_intensity.predict(eval_vec)
+            print('y_lab shape: ', y_lab.shape)
+            print('y_hat shape: ', y_hat.shape)
+            out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+            pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
+            out.close()
 
 
 def main():
