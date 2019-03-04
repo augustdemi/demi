@@ -109,6 +109,10 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
         input_tensors.extend([model.fast_weight_b])
         result = sess.run(input_tensors, feed_dict)
 
+        if (itr % SUMMARY_INTERVAL == 0):
+            train_writer.add_summary(result[1], itr)
+
+
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
             print("================================================ iter:", itr)
