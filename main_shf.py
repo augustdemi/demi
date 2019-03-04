@@ -308,7 +308,7 @@ def main():
                 sess.run(b1)
                 sess.run(w1)
             print("uploaded bias from base_vae_model: ", sess.run('model/b1:0'))
-        else:
+        elif FLAGS.keep_train_dir:
             print('checkpoint dir: ', FLAGS.keep_train_dir)
             model_file = tf.train.latest_checkpoint(FLAGS.keep_train_dir)
 
