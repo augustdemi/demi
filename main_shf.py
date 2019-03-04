@@ -146,8 +146,14 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
             FLAGS.metatrain_iterations) + '/splitseed' + str(
             FLAGS.test_split_seed) + '.' + str(FLAGS.update_batch_size) + 'shot.kseed' + str(FLAGS.kshot_seed)
-    else:
+    elif FLAGS.keep_train_dir:
         adapted_model_dir = FLAGS.keep_train_dir + '/adaptation/update_lr' + str(
+            FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
+            FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
+            FLAGS.metatrain_iterations) + '/splitseed' + str(
+            FLAGS.test_split_seed) + '.' + str(FLAGS.update_batch_size) + 'shot.kseed' + str(FLAGS.kshot_seed)
+    else:
+        adapted_model_dir = './validation/adaptation/update_lr' + str(
             FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
             FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
             FLAGS.metatrain_iterations) + '/splitseed' + str(
