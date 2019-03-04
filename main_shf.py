@@ -109,9 +109,6 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
         input_tensors.extend([model.fast_weight_b])
         result = sess.run(input_tensors, feed_dict)
 
-        if (itr % SUMMARY_INTERVAL == 0):
-            train_writer.add_summary(result[1], itr)
-
         if (itr % SAVE_INTERVAL == 0) or (itr == FLAGS.metatrain_iterations):
             w = sess.run('model/w1:0')
             print("================================================ iter:", itr)
@@ -124,6 +121,11 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             pickle.dump({'w': sess.run('model/w1:0'), 'b': sess.run('model/b1:0')}, out, protocol=2)
             out.close()
             saver.save(sess, FLAGS.logdir + '/' + trained_model_dir + '/model' + str(itr))
+
+        if itr == FLAGS.metatrain_iterations:
+            with open(FLAGS.logdir + '/' + trained_model_dir + "/per_sub_weight.pkl", 'wb') as out:
+                pickle.dump({'w': result[-2], 'b': result[-1]}, out, protocol=2)
+                out.close()
 
 
 def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
@@ -212,6 +214,7 @@ def main():
     else:
         inputa, inputb, labela, labelb, all_used_frame_set = data_generator.shuffle_data(FLAGS.kshot_seed,
                                                                                          FLAGS.update_batch_size, aus)
+        # val_input, val_label =
 
 
     # inputa = (aus*subjects, 2K, latent_dim)
