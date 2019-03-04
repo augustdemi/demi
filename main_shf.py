@@ -191,9 +191,34 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         eval_frame = []
 
         if FLAGS.train:
+            f = pickle.load(open('./validation/maml/fold1/m1_ce_0.01co_shuffle1_adadelta_each/cls_2.mbs_18.ubs_10.numstep1.updatelr0.01.metalr0.01.initFalse/per_sub_weight.pkl', 'rb'), encoding='latin1')
+            w = np.array(f['w'])
+            b = np.array(f['b'])
+
+            w_all = []
+            b_all = []
+            for i in range(18):
+                w_per_subject = w[0, i]
+                b_per_subject = b[0, i]
+                for j in range(1, 8):
+                    w_per_subject = np.append(w_per_subject, w[j, i], axis=1)
+                    b_per_subject = np.append(b_per_subject, b[j, i], axis=0)
+                w_all.append(w_per_subject)
+                b_all.append(b_per_subject)
+
+
+
             print('total labels: ', len(data_generator.labels))
             print('total subjects: ', subjects)
             for i in range(len(subjects)):
+                with tf.variable_scope("model", reuse=True) as scope:
+                    scope.reuse_variables()
+                    b1 = tf.get_variable("b1", [FLAGS.num_au, 2]).assign(b_all[i])
+                    w1 = tf.get_variable("w1", [300, FLAGS.num_au, 2]).assign(w_all[i])
+                    sess.run(b1)
+                    sess.run(w1)
+                print("uploaded bias from per sub weight for subject {} : {}".format(i, sess.run('model/b1:0')))
+
                 print('-- evaluate vec: ', subjects[i])
                 with open(os.path.join(FLAGS.datadir, subjects[i]), 'r') as f:
                     lines = f.readlines()
@@ -210,7 +235,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                 y_hat = soft_layer.model_intensity.predict(eval_vec)
                 print('y_lab shape: ', y_lab.shape)
                 print('y_hat shape: ', y_hat.shape)
-                out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+                out = open(adapted_model_dir + '/predicted_subject' + str(i) + ".pkl", 'wb')
                 pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
                 out.close()
         else:
