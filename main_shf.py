@@ -145,13 +145,13 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
             FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
             FLAGS.metatrain_iterations) + '/splitseed' + str(
-            FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
+            FLAGS.test_split_seed) + '.' + str(FLAGS.update_batch_size) + 'shot.kseed' + str(FLAGS.kshot_seed)
     else:
         adapted_model_dir = FLAGS.keep_train_dir + '/adaptation/update_lr' + str(
             FLAGS.update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.lambda' + str(
             FLAGS.lambda2) + '.num_updates' + str(FLAGS.num_updates) + '.meta_iter' + str(
             FLAGS.metatrain_iterations) + '/splitseed' + str(
-            FLAGS.test_split_seed) + '/' + str(FLAGS.update_batch_size) + 'shot/kseed' + str(FLAGS.kshot_seed)
+            FLAGS.test_split_seed) + '.' + str(FLAGS.update_batch_size) + 'shot.kseed' + str(FLAGS.kshot_seed)
     if FLAGS.test_iter > 0:
         adapted_model_dir = adapted_model_dir + '/test_iter' + str(FLAGS.test_iter)
 
@@ -170,7 +170,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             w = sess.run('model/w1:0')
             b = sess.run('model/b1:0')
             print('--- adapted bias: ', b)
-            out = open(adapted_model_dir + '/subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+            out = open(adapted_model_dir + '/subject' + str(FLAGS.subject_index) + ".pkl", 'wb')
             pickle.dump({'w': w, 'b': b}, out, protocol=2)
             out.close()
     if FLAGS.evaluate:
@@ -182,8 +182,8 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         subjects.sort()
         eval_vec = []
         eval_frame = []
-        print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
-        with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
+        print('-- evaluate vec: ', subjects[FLAGS.subject_index])
+        with open(os.path.join(FLAGS.datadir, subjects[FLAGS.subject_index]), 'r') as f:
             lines = f.readlines()
             for line in lines:
                 line = line.split(',')
@@ -197,7 +197,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         y_hat = soft_layer.model_intensity.predict(eval_vec)
         print('y_lab shape: ', y_lab.shape)
         print('y_hat shape: ', y_hat.shape)
-        out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.sbjt_start_idx) + ".pkl", 'wb')
+        out = open(adapted_model_dir + '/predicted_subject' + str(FLAGS.subject_index) + ".pkl", 'wb')
         pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': all_used_frame_set}, out, protocol=2)
         out.close()
 
@@ -297,6 +297,10 @@ def main():
             b = soft_layer.model_intensity.layers[-1].get_weights()[1]
             print('bias from base_vae_model: ', b)
             print('-----------------------------------------------------------------')
+            with open(FLAGS.base_vae_model + "_soft_layer.pkl", 'wb') as out:
+                pickle.dump({'w': w, 'b': b}, out, protocol=2)
+                out.close()
+
             with tf.variable_scope("model", reuse=True) as scope:
                 scope.reuse_variables()
                 b1 = tf.get_variable("b1", [FLAGS.num_au, 2]).assign(np.array(b))
