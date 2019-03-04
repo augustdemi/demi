@@ -231,6 +231,10 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                             eval_frame.append(frame_idx)
 
                 y_lab = data_generator.labels[i][eval_frame]
+                print('----------------eval_frame ---------------------')
+                print(eval_frame)
+                print('----------------y_lab ---------------------')
+                print(y_lab)
                 y_lab = np.array([np.eye(2)[label] for label in y_lab])
                 y_hat = soft_layer.model_intensity.predict(eval_vec)
                 print('y_lab shape: ', y_lab.shape)
