@@ -186,20 +186,20 @@ class MAML:
                                                                    -1])  # (aus*subjects, 2K, au, 2)로부터 AU별로 #subjects 잘라냄 => (subjects, 2K, au, 2)
                 labelb = tf.slice(self.labelb, [i * batch, 0, 0], [batch, -1, -1])
                 print("=========================================================")
-                print("used inputa shape in one au learning: ", inputa.shape)
-                print("used labela shape in one au learning: ", labela.shape)
+                print("used inputa shape in au_idx {} : {}".format(i, inputa.shape))
+                print("used labela shape in au_idx {} : {}".format(i, labela.shape))
                 print("=========================================================")
                 fast_weight_w, fast_weight_b, ce_lossesb, co_lossesb, total_lossesb, predict_b = tf.map_fn(
                     task_metalearn,
                     elems=(inputa, inputb, labela, labelb),
                     dtype=out_dtype_task_metalearn,
                     parallel_iterations=FLAGS.meta_batch_size)
-                if i == 0:
+                try:
+                    self.fast_weight_w = np.append(self.fast_weight_w, fast_weight_w, axis=2)
+                    self.fast_weight_b = np.append(self.fast_weight_b, fast_weight_b, axis=2)
+                except:
                     self.fast_weight_w = fast_weight_w # 14 * 300*1*2
                     self.fast_weight_b = fast_weight_b
-                else:
-                    self.fast_weight_w = np.append(self.fast_weight_w, fast_weight_w, axis=2)
-                    self.fast_weight_b = np.append(self.fast_weight_b, fast_weight_w, axis=2)
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
