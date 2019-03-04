@@ -2,6 +2,7 @@
 from __future__ import print_function
 import sys
 import tensorflow as tf
+import numpy as np
 
 try:
     import special_grads
@@ -193,8 +194,12 @@ class MAML:
                     elems=(inputa, inputb, labela, labelb),
                     dtype=out_dtype_task_metalearn,
                     parallel_iterations=FLAGS.meta_batch_size)
-                self.fast_weight_w.append(fast_weight_w)
-                self.fast_weight_b.append(fast_weight_b)
+                if i == 0:
+                    self.fast_weight_w = fast_weight_w # 14 * 300*1*2
+                    self.fast_weight_b = fast_weight_b
+                else:
+                    self.fast_weight_w = np.append(self.fast_weight_w, fast_weight_w, axis=2)
+                    self.fast_weight_b = np.append(self.fast_weight_b, fast_weight_w, axis=2)
                 self.task_ce_losses.append(ce_lossesb)
                 self.task_co_losses.append(co_lossesb)  # 8*14
                 self.task_total_losses.append(total_lossesb)  # 8*14
