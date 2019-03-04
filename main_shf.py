@@ -357,6 +357,7 @@ def main():
 
     if FLAGS.adaptation:
         print("ADAPTATION")
+        print("before adaptation bias: ", sess.run('model/b1:0'))
         print("================================================================================")
         test(model, sess, trained_model_dir, data_generator, all_used_frame_set)
     else:
