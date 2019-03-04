@@ -192,7 +192,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
 
         if FLAGS.train:
             adapted_model_dir += '/val'
-            f = pickle.load(open('./validation/maml/fold1/m1_ce_0.01co_shuffle1_adadelta_each/cls_2.mbs_18.ubs_10.numstep1.updatelr0.01.metalr0.01.initFalse/per_sub_weight.pkl', 'rb'), encoding='latin1')
+            f = pickle.load(open('./validation/maml/fold1/m1_ce_0.01co_shuffle1_adadelta_each/cls_2.mbs_18.ubs_10.numstep20.updatelr0.01.metalr0.01.initFalse/per_sub_weight.pkl', 'rb'), encoding='latin1')
             w = np.array(f['w'])
             b = np.array(f['b'])
 
