@@ -180,7 +180,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             pickle.dump({'w': w, 'b': b}, out, protocol=2)
             out.close()
     if FLAGS.evaluate:
-        adapted_model_dir += '/val'
+
         soft_layer = feature_layer(10, FLAGS.num_au)
         soft_layer.loadWeight(FLAGS.vae_model, w=w, b=b)
         print('--- loaded bias to be evaluated: ', b)
@@ -191,6 +191,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
         eval_frame = []
 
         if FLAGS.train:
+            adapted_model_dir += '/val'
             f = pickle.load(open('./validation/maml/fold1/m1_ce_0.01co_shuffle1_adadelta_each/cls_2.mbs_18.ubs_10.numstep1.updatelr0.01.metalr0.01.initFalse/per_sub_weight.pkl', 'rb'), encoding='latin1')
             w = np.array(f['w'])
             b = np.array(f['b'])
