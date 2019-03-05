@@ -152,7 +152,7 @@ GEN_TE = generator(TE)
 GEN_TR = generator(TR)
 x, y = next(GEN_TE)
 # import numpy as np
-y_lab = np.array(y)
+y_lab = np.array(y)[0]
 y_hat = model_intensity.predict(x)
 print('y_lab shape: ', y_lab.shape)
 print('y_hat shape: ', y_hat.shape)
