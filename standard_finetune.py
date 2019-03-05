@@ -7,7 +7,7 @@ import numpy as np
 import argparse
 from datetime import datetime
 import os
-from two_layer import feature_layer
+from one_layer import feature_layer
 
 start_time = datetime.now()
 
@@ -80,6 +80,7 @@ def generator(dat_dict):
 GEN_TR = generator(TR)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
 GEN_TE = generator(TE)
 
+
 def pred_loss(y_true, y_pred):
     # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     ce = EE.losses.categorical_crossentropy(y_true, y_pred)
@@ -89,21 +90,19 @@ def pred_loss(y_true, y_pred):
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
-two_layer = feature_layer(batch_size, args.num_au)
+one_layer = feature_layer(batch_size, args.num_au)
 
 import pickle
 
 
 aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
-two_layer.loadWeight(args.restored_model)
+one_layer.loadWeight(args.restored_model)
 
-model_intensity = two_layer.model_intensity
+model_intensity = one_layer.model_intensity
 
 for i in range(len(model_intensity.layers) - 1):
     model_intensity.layers[i].trainable = False
-layer_dict_whole_vae = dict([(layer.name, layer) for layer in model_intensity.layers])
-layer_dict_whole_vae['z_mean'].trainable = True
 for i in range(len(model_intensity.layers)):
     print(model_intensity.layers[i], model_intensity.layers[i].trainable)
 
@@ -146,20 +145,6 @@ model_intensity.fit_generator(
         )
     ]
 )
-
-
-GEN_TE = generator(TE)
-GEN_TR = generator(TR)
-x, y = next(GEN_TE)
-# import numpy as np
-y_lab = np.array(y)[0]
-y_hat = model_intensity.predict(x)
-print('y_lab shape: ', y_lab.shape)
-print('y_hat shape: ', y_hat.shape)
-out = open('/'.join(args.saving_model.split('/')[:-1]) + '/predicted_subject' + str(args.subject_index) + ".pkl", 'wb')
-x, y = next(GEN_TR)
-pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': x}, out, protocol=2)
-out.close()
 
 if nb_iter > 0: model_intensity.save_weights(model_name)
 
