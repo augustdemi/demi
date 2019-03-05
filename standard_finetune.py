@@ -80,12 +80,6 @@ def generator(dat_dict):
 GEN_TR = generator(TR)  # train data안의 그룹 별로 (img/label이 그룹인듯) 정해진 배치사이즈만큼의 배치 이미지 혹은 배치 라벨을 생성
 GEN_TE = generator(TE)
 
-X, Y = next(GEN_TR) # train data의 X = img batches , y = [img, lab, img]
-inp_0_shape = X[0].shape[1:]
-out_0_shape = Y[1].shape[1:]
-
-print(">>>>>>>>>>inp_0_shape", inp_0_shape)
-
 def pred_loss(y_true, y_pred):
     # ce = tf.nn.softmax_cross_entropy_with_logits(labels=y_true, logits=y_pred)
     ce = EE.losses.categorical_crossentropy(y_true, y_pred)
