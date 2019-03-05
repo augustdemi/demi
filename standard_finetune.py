@@ -147,6 +147,20 @@ model_intensity.fit_generator(
     ]
 )
 
+
+GEN_TE = generator(TE)
+GEN_TR = generator(TR)
+x, y = next(GEN_TE)
+# import numpy as np
+y_lab = np.array(np.eye(2)[y])
+y_hat = model_intensity.predict(x)
+print('y_lab shape: ', y_lab.shape)
+print('y_hat shape: ', y_hat.shape)
+out = open(args.saving_model + '/predicted_subject' + str(args.subject_index) + ".pkl", 'wb')
+x, y = next(GEN_TR)
+pickle.dump({'y_lab': y_lab, 'y_hat': y_hat, 'all_used_frame_set': x}, out, protocol=2)
+out.close()
+
 if nb_iter > 0: model_intensity.save_weights(model_name)
 
 end_time = datetime.now()
