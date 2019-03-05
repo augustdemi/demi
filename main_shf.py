@@ -187,8 +187,7 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
 
         subjects = os.listdir(FLAGS.datadir)
         subjects.sort()
-        eval_vec = []
-        eval_frame = []
+
 
         if FLAGS.train:
             adapted_model_dir += '/val'
@@ -212,6 +211,8 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
             print('total labels: ', len(data_generator.labels))
             print('total subjects: ', subjects)
             for i in range(len(subjects)):
+                eval_vec = []
+                eval_frame = []
                 with tf.variable_scope("model", reuse=True) as scope:
                     scope.reuse_variables()
                     b1 = tf.get_variable("b1", [FLAGS.num_au, 2]).assign(b_all[i])
@@ -233,8 +234,10 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
 
                 y_lab = data_generator.labels[i][eval_frame]
                 print('----------------eval_frame ---------------------')
+                print(len(eval_frame))
                 print(eval_frame)
                 print('----------------y_lab ---------------------')
+                print(len(y_lab))
                 print(y_lab)
                 y_lab = np.array([np.eye(2)[label] for label in y_lab])
                 y_hat = soft_layer.model_intensity.predict(eval_vec)
@@ -245,6 +248,8 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                 out.close()
         else:
             print('-- evaluate vec: ', subjects[FLAGS.sbjt_start_idx])
+            eval_vec = []
+            eval_frame = []
             with open(os.path.join(FLAGS.datadir, subjects[FLAGS.sbjt_start_idx]), 'r') as f:
                 lines = f.readlines()
                 for line in lines:
