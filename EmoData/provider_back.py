@@ -478,7 +478,7 @@ def flow_from_kshot_csv(used_info_path, feature_path, label_path, subject_index,
     existing_frames = []
     with open(os.path.join(feature_path, subject + '.csv'), 'r') as f:
         lines = f.readlines()
-        feat_vec_per_subj = [np.array(range(300)) for _ in
+        feat_vec_per_subj = [np.array(range(500)) for _ in
                                 range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
         for line in lines:
             line = line.split(',')
