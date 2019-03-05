@@ -207,19 +207,19 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                 b_all.append(b_per_subject)
 
 
-
             print('total labels: ', len(data_generator.labels))
             print('total subjects: ', subjects)
             for i in range(len(subjects)):
                 eval_vec = []
                 eval_frame = []
-                with tf.variable_scope("model", reuse=True) as scope:
-                    scope.reuse_variables()
-                    b1 = tf.get_variable("b1", [FLAGS.num_au, 2]).assign(b_all[i])
-                    w1 = tf.get_variable("w1", [300, FLAGS.num_au, 2]).assign(w_all[i])
-                    sess.run(b1)
-                    sess.run(w1)
-                print("uploaded bias from per sub weight for subject {} : {}".format(i, sess.run('model/b1:0')))
+                # with tf.variable_scope("model", reuse=True) as scope:
+                #     scope.reuse_variables()
+                #     b1 = tf.get_variable("b1", [FLAGS.num_au, 2]).assign(b_all[i])
+                #     w1 = tf.get_variable("w1", [300, FLAGS.num_au, 2]).assign(w_all[i])
+                #     sess.run(b1)
+                #     sess.run(w1)
+                # print("uploaded bias from per sub weight for subject {} : {}".format(i, sess.run('model/b1:0')))
+
 
                 print('-- evaluate vec: ', subjects[i])
                 with open(os.path.join(FLAGS.datadir, subjects[i]), 'r') as f:
@@ -235,10 +235,10 @@ def test(model, sess, trained_model_dir, data_generator, all_used_frame_set):
                 y_lab = data_generator.labels[i][eval_frame]
                 print('----------------eval_frame ---------------------')
                 print(len(eval_frame))
-                print(eval_frame)
+                # print(eval_frame)
                 print('----------------y_lab ---------------------')
                 print(len(y_lab))
-                print(y_lab)
+                # print(y_lab)
                 y_lab = np.array([np.eye(2)[label] for label in y_lab])
                 y_hat = soft_layer.model_intensity.predict(eval_vec)
                 print('y_lab shape: ', y_lab.shape)
