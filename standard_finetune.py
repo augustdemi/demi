@@ -7,7 +7,7 @@ import numpy as np
 import argparse
 from datetime import datetime
 import os
-from one_layer import feature_layer
+from two_layer import feature_layer
 
 start_time = datetime.now()
 
@@ -90,19 +90,21 @@ def pred_loss(y_true, y_pred):
 sum_vac_disfa_dir = log_dir_model + '/z_val/disfa/' + args.log_dir
 sum_mult_out_dir = 'res_disfa_' + str(args.warming).zfill(4) + '.csv/' + args.log_dir
 
-one_layer = feature_layer(batch_size, args.num_au)
+two_layer = feature_layer(batch_size, args.num_au)
 
 import pickle
 
 
 aus = ['au1', 'au2', 'au4', 'au6', 'au9', 'au12', 'au25', 'au26']
 
-one_layer.loadWeight(args.restored_model)
+two_layer.loadWeight(args.restored_model)
 
-model_intensity = one_layer.model_intensity
+model_intensity = two_layer.model_intensity
 
-for i in range(len(model_intensity.layers) - 1):
+for i in range(len(model_intensity.layers) - 2):
     model_intensity.layers[i].trainable = False
+layer_dict_whole_vae = dict([(layer.name, layer) for layer in model_intensity.layers])
+layer_dict_whole_vae['z_mean'].trainable = True
 for i in range(len(model_intensity.layers)):
     print(model_intensity.layers[i], model_intensity.layers[i].trainable)
 
