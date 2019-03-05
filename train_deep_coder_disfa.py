@@ -57,14 +57,9 @@ latent_dim3 = 300
 w_1 = args.warming / 50
 
 if args.kshot > 0:
-    print('!!!!!!!!!!!!!!!!!!!')
-    TR, batch_size = ED.provider_back.flow_from_kshot_csv(args.used_frame_info_path, args.feat_path, args.label_path,
-                                          args.subject_index)
-
-    TE, batch_size = ED.provider_back.flow_from_kshot_csv(args.used_frame_info_path, args.feat_path, args.label_path,
-                                                          args.subject_index, eval=True, padding='same',
-                                                          batch_size=batch_size)
-
+    TR = ED.provider_back.flow_from_folder_kshot(args.training_data, batch_size, padding='same',
+                                                 sbjt_start_idx=args.start_idx,
+                                                 meta_batch_size=args.meta_batch_size, update_batch_size=args.kshot)
 elif args.balance and au_index < TOTAL_AU:
     TR = ED.provider_back.flow_from_hdf5(args.training_data, batch_size, padding='same', au_idx=au_index)
 else:
@@ -190,7 +185,7 @@ model_train = K.models.Model([inp_0], [out_0, out_1,
                                        out_0])  # inp_0: train data, out_0 : reconstruted img, out_1: predicted label.
 model_rec_z_y = K.models.Model([inp_0], [out_0, z_mean, out_1])
 model_au_int = K.models.Model([inp_0], [out_1])
-model_deep_feature = K.models.Model([inp_0], [z_mean])
+model_deep_feature = K.models.Model([inp_0], [intermediate])
 
 sum_vac_disfa_dir = './base/sum_vac_disfa_dir/' + args.log_dir
 sum_mult_out_dir = './base/sum_mult_out_dir/' + args.log_dir
@@ -217,17 +212,9 @@ model_train.compile(
 model_train.summary()
 
 
-for i in range(len(model_train.layers) - 1):
-    model_train.layers[i].trainable = False
+from keras.callbacks import EarlyStopping
 
-layer_dict_whole_vae = dict([(layer.name, layer) for layer in model_train.layers])
-layer_dict_whole_vae['z_mean'].trainable = True
-for i in range(len(model_train.layers)):
-    print(model_train.layers[i], model_train.layers[i].trainable)
-
-
-
-
+early_stopping = EarlyStopping(monitor='softmaxpdf_1_loss', patience=3, verbose=1)
 
 model_train.fit_generator(
         generator = GEN_TR,
@@ -238,6 +225,7 @@ model_train.fit_generator(
         nb_epoch = nb_iter,
         max_q_size = 4,
         callbacks=[
+            # early_stopping,
             EE.callbacks.summary_multi_output(
                 gen_list = (generator(TR, False, 1), generator(TE, False, 1)),
                 predictor=model_au_int.predict,
