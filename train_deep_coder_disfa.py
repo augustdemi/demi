@@ -303,6 +303,8 @@ if args.deep_feature is not '':
         path = '/home/ml1323/project/robert_data/DISFA/detected_disfa/'
 
         all_subjects = os.listdir(path)
+        all_subjects = ['SN024', 'SN025', 'SN026', 'SN027', 'SN028', 'SN029', 'SN030',
+                         'SN031', 'SN032']
 
         import pickle
         val_idx = pickle.load(open('/home/ml1323/project/robert_data/DISFA_new/h5_vae_img/fold1_val/val_frame_info.pkl', 'rb'), encoding='latin1')
