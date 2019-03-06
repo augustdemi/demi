@@ -279,7 +279,7 @@ class MAML:
 
     def forward_fc(self, inp, weights):
         hidden = tf.reduce_sum(weights['w2'] * inp, 1) + weights['b2']
-        z = tf.reduce_sum(weights['w1'][None, ::] * hidden[:, :, None,None], 1) + weights['b1'][None, ::]
+        z = tf.reduce_sum(weights['w1'][None, ::] * hidden[:, :, None, None], 1) + weights['b1'][None, ::]
         return z
 
 
@@ -293,8 +293,8 @@ class MAML:
         weights['b2'] = tf.get_variable('b2', [self.weight_dim[1]], initializer=tf.zeros_initializer())
 
         #for softmax
-        weights['w1'] = tf.get_variable('w1', [self.weight_dim[1], 1, 2],initializer=fc_initializer)
-        weights['b1'] = tf.get_variable('b1', [1, 2], initializer=tf.zeros_initializer())
+        weights['w1'] = tf.get_variable('w1', [self.weight_dim[1], self.total_num_au, 2],initializer=fc_initializer)
+        weights['b1'] = tf.get_variable('b1', [self.total_num_au, 2], initializer=tf.zeros_initializer())
         return weights
 
 
