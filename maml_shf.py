@@ -25,7 +25,8 @@ class MAML:
         self.update_lr = FLAGS.update_lr
         self.meta_lr = FLAGS.meta_lr
         self.classification = False
-        self.weight_dim = 300
+        # self.weight_dim = 300
+        self.weight_dim = [500, 300]
         self.total_num_au = 8
         self.num_classes = 2
         self.LAMBDA2 = FLAGS.lambda2
@@ -277,6 +278,28 @@ class MAML:
 
 
     def forward_fc(self, inp, weights):
+        hidden = tf.reduce_sum(weights['w2'] * inp, 1) + weights['b2']
+        z = tf.reduce_sum(weights['w1'][None, ::] * hidden[:, :, None,None], 1) + weights['b1'][None, ::]
+        return z
+
+
+    def getWeightVar(self):
+        tf.set_random_seed(FLAGS.weight_seed)
+        dtype = tf.float32
+        fc_initializer = tf.contrib.layers.xavier_initializer(dtype=dtype)
+        weights = {}
+
+        weights['w2'] = tf.get_variable('w2', [self.dim_input, self.weight_dim[0]], initializer=fc_initializer)
+        weights['b2'] = tf.get_variable('b2', [self.weight_dim[0]], initializer=tf.zeros_initializer())
+
+        #for softmax
+        weights['w1'] = tf.get_variable('w1', [self.weight_dim[1], self.total_num_au, 2],initializer=fc_initializer)
+        weights['b1'] = tf.get_variable('b1', [self.total_num_au, 2], initializer=tf.zeros_initializer())
+        return weights
+
+
+'''
+    def forward_fc(self, inp, weights):
         var_w = weights['w1'][None, ::]
         # add dimension for features
         var_b = weights['b1'][None, ::]
@@ -289,7 +312,8 @@ class MAML:
         # normalize(tf.matmul(inp, weights['w1']) + weights['b1'], activation=tf.nn.relu, reuse=reuse, scope='0')
         # score = tf.nn.softmax(z)
         return z
-
+        
+        
     def getWeightVar(self):
         tf.set_random_seed(FLAGS.weight_seed)
         # w1 = tf.Variable(tf.truncated_normal([self.weight_dim, 1, 2], stddev=0.01), name="w1")
@@ -300,3 +324,4 @@ class MAML:
         b1 = tf.get_variable("b1", [self.total_num_au, 2], initializer=tf.zeros_initializer())
         weight_tensor = {"w1": w1, "b1": b1}
         return weight_tensor
+'''
