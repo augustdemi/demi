@@ -281,7 +281,7 @@ def get_all_feature_w_all_labels(feature_files, label_paths, test_split_seed=-1)
         with open(feature_file, 'r') as f:
             existing_frames_in_feat_vec = []
             lines = f.readlines()
-            one_subject_features = [np.array(range(300)) for _ in
+            one_subject_features = [np.array(range(FLAGS.feat_dim)) for _ in
                                     range(4845)]  # 모든 feature를 frame 을 key값으로 하여 dic에 저장해둠
             for line in lines:
                 line = line.split(',')
