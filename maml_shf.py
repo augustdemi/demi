@@ -80,7 +80,7 @@ class MAML:
                 this_b = weights['b1'][self.au_idx, :]
                 this_w = tf.reshape(this_w, [int(this_w.shape[0]), 1, int(this_w.shape[1])])  # (300,1,2)
                 this_b = tf.reshape(this_b, [1, int(this_b.shape[0])])
-                this_weight = {'w1': this_w, 'b1': this_b}
+                this_weight = {'w1': this_w, 'b1': this_b, 'w2': weights['w2'], 'b2': weights['b2']}
                 # only reuse on the first iter: <<<previously meta-updated weight * input a>>>
                 task_outputa = self.forward(inputa, this_weight)  # (NK, 1, 2)
 
@@ -93,7 +93,7 @@ class MAML:
                     other_b = weights['b1'][i, :]
                     other_w = tf.reshape(other_w, [int(other_w.shape[0]), 1, int(other_w.shape[1])])  # (300,1,2)
                     other_b = tf.reshape(other_b, [1, int(other_b.shape[0])])
-                    other_weight = {'w1': other_w, 'b1': other_b}
+                    other_weight = {'w1': other_w, 'b1': other_b, 'w2': weights['w2'], 'b2': weights['b2']}
                     pred_other_au = self.forward(input, other_weight)
                     pred_other_au = tf.nn.softmax(pred_other_au)
                     pred_other_au = pred_other_au[:, 0, 1]
@@ -293,8 +293,8 @@ class MAML:
         weights['b2'] = tf.get_variable('b2', [self.weight_dim[0]], initializer=tf.zeros_initializer())
 
         #for softmax
-        weights['w1'] = tf.get_variable('w1', [self.weight_dim[1], self.total_num_au, 2],initializer=fc_initializer)
-        weights['b1'] = tf.get_variable('b1', [self.total_num_au, 2], initializer=tf.zeros_initializer())
+        weights['w1'] = tf.get_variable('w1', [self.weight_dim[1], 1, 2],initializer=fc_initializer)
+        weights['b1'] = tf.get_variable('b1', [1, 2], initializer=tf.zeros_initializer())
         return weights
 
 
