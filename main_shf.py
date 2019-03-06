@@ -7,7 +7,7 @@ import pickle
 from data_generator_shf import DataGenerator
 from maml_shf import MAML
 from tensorflow.python.platform import flags
-from one_layer import feature_layer
+from two_layer import feature_layer
 
 
 start_time = datetime.now()
@@ -67,6 +67,7 @@ flags.DEFINE_bool('adaptation', False, 'adaptation or not')
 flags.DEFINE_string('labeldir', "/home/ml1323/project/robert_data/DISFA/label/", 'label_dir')
 flags.DEFINE_string('check_sample', None, 'check frame idx of samples')
 flags.DEFINE_integer('test_split_seed', -1, 'random seed for test set split')
+flags.DEFINE_integer('feat_dim', 300, 'input feature dimension')
 flags.DEFINE_bool('evaluate', False, 'evaluate or not')
 flags.DEFINE_string('subject_index', '', 'subject indices to select')
 flags.DEFINE_bool('init', False, 'initialize weight from vae_model')
