@@ -310,7 +310,7 @@ def main():
 
     trained_model_dir = 'cls_' + str(FLAGS.num_classes) + '.mbs_' + str(FLAGS.meta_batch_size) + '.ubs_' + str(
         FLAGS.train_update_batch_size) + '.numstep' + str(FLAGS.num_updates) + '.updatelr' + str(
-        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.init' + str(FLAGS.init) + '.opti_' + FLAGS.opti
+        FLAGS.train_update_lr) + '.metalr' + str(FLAGS.meta_lr) + '.init' + str(FLAGS.init)
 
     resume_itr = 0
     tf.global_variables_initializer().run()
