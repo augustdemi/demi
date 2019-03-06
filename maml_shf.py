@@ -260,18 +260,22 @@ class MAML:
             self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1, self.metatrain_op2, self.metatrain_op3,
                                      self.metatrain_op4, self.metatrain_op5, self.metatrain_op6, self.metatrain_op7)
         elif FLAGS.opti.startswith('adam'):
-            print('------------- optimized with ADAM - lr: ', self.meta_lr)
-            # self.metatrain_op0 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[0])
-            # self.metatrain_op1 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[1])
-            # self.metatrain_op2 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[2])
-            # self.metatrain_op3 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[3])
-            # self.metatrain_op4 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[4])
-            # self.metatrain_op5 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[5])
-            # self.metatrain_op6 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[6])
-            # self.metatrain_op7 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[7])
-            total_loss = tf.reduce_sum(self.total_losses) / self.total_num_au
-            self.metatrain_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_loss)
-            self.train_op = self.metatrain_op
+            if FLAGS.adaptation:
+                print('------------- optimized with ADAM integ - lr: ', self.meta_lr)
+                total_loss = tf.reduce_sum(self.total_losses) / self.total_num_au
+                self.train_op = tf.train.AdamOptimizer(self.meta_lr).minimize(total_loss)
+            else:
+                print('------------- optimized with ADAM each - lr: ', self.meta_lr)
+                self.metatrain_op0 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[0])
+                self.metatrain_op1 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[1])
+                self.metatrain_op2 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[2])
+                self.metatrain_op3 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[3])
+                self.metatrain_op4 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[4])
+                self.metatrain_op5 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[5])
+                self.metatrain_op6 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[6])
+                self.metatrain_op7 = tf.train.AdamOptimizer(self.meta_lr).minimize(self.total_losses[7])
+                self.train_op = tf.group(self.metatrain_op0, self.metatrain_op1, self.metatrain_op2, self.metatrain_op3,
+                                         self.metatrain_op4, self.metatrain_op5, self.metatrain_op6, self.metatrain_op7)
         else:
             print('------------- optimizer should be adam or adadelta but given: ', FLAGS.opti)
 
