@@ -294,7 +294,7 @@ def main():
     metatrain_input_tensors = {'inputa': tf.convert_to_tensor(inputa), 'inputb': tf.convert_to_tensor(inputb),
                                'labela': tf.convert_to_tensor(labela), 'labelb': tf.convert_to_tensor(labelb)}
 
-    dim_input = np.prod((160, 240))  # img size
+    dim_input = FLAGS.feat_dim  # img size
     model = MAML(dim_input, FLAGS.num_classes)
     model.construct_model(input_tensors=metatrain_input_tensors)
     model.summ_op = tf.summary.merge_all()

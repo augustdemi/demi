@@ -289,8 +289,8 @@ class MAML:
         fc_initializer = tf.contrib.layers.xavier_initializer(dtype=dtype)
         weights = {}
 
-        weights['w2'] = tf.get_variable('w2', [self.dim_input, self.weight_dim[0]], initializer=fc_initializer)
-        weights['b2'] = tf.get_variable('b2', [self.weight_dim[0]], initializer=tf.zeros_initializer())
+        weights['w2'] = tf.get_variable('w2', [self.dim_input, self.weight_dim[1]], initializer=fc_initializer)
+        weights['b2'] = tf.get_variable('b2', [self.weight_dim[1]], initializer=tf.zeros_initializer())
 
         #for softmax
         weights['w1'] = tf.get_variable('w1', [self.weight_dim[1], 1, 2],initializer=fc_initializer)
