@@ -11,7 +11,7 @@ except KeyError as e:
           file=sys.stderr)
 
 from tensorflow.python.platform import flags
-from utils import mse, xent, scaling
+from utils import mse, xent, scaling, normalize
 
 FLAGS = flags.FLAGS
 
@@ -63,8 +63,7 @@ class MAML:
             def task_metalearn(inp, reuse=True):
                 """ Perform gradient descent for one task in the meta-batch. """
                 inputa, inputb, labela, labelb = inp  # input = (NK,latent_dim)  label = (NK, num of au, N), N = num of class
-                inputa = tf.reshape(inputa, [int(inputa.shape[0]), int(inputa.shape[1]), 1])  # (NK,2000,1)
-                inputb = tf.reshape(inputb, [int(inputb.shape[0]), int(inputb.shape[1]), 1])
+
                 inputa = tf.cast(inputa, tf.float32)
                 inputb = tf.cast(inputb, tf.float32)
 
@@ -282,7 +281,8 @@ class MAML:
 
 
     def forward_fc(self, inp, weights):
-        hidden = tf.reduce_sum(weights['w2'] * inp, 1) + weights['b2']
+        hidden = normalize(tf.matmul(inp, weights['w2']) + weights['b2'], activation=tf.nn.relu, reuse=True, scope='0')
+        # hidden = tf.reduce_sum(weights['w2'] * inp, 1) + weights['b2']
         z = tf.reduce_sum(weights['w1'][None, ::] * hidden[:, :, None, None], 1) + weights['b1'][None, ::]
         return z
 
