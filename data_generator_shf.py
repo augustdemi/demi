@@ -142,3 +142,31 @@ class DataGenerator(object):
         inputa = np.array(inputa)
         labela = np.array(labela)
         return inputa, inputa, labela, labela, selected_frame_all
+
+
+
+
+    def get_validation_data(self):
+        subjects = os.listdir(FLAGS.val_data_folder)
+        subjects.sort()
+
+        all_sub_feat_vec = []
+        all_sub_frame = []
+        print('total validation subjects: ', subjects)
+        for i in range(len(subjects)):
+            eval_vec = []
+            eval_frame = []
+
+            with open(os.path.join(FLAGS.val_data_folder, subjects[i]), 'r') as f:
+                lines = f.readlines()
+                for line in lines:
+                    line = line.split(',')
+                    frame_idx = int(line[1].split('frame')[1])
+                    if frame_idx < 4845:
+                        feat_vec = [float(elt) for elt in line[2:]]
+                        eval_vec.append(feat_vec)
+                        eval_frame.append(frame_idx)
+            all_sub_feat_vec.append(eval_vec)
+            all_sub_frame.append(eval_frame)
+        self.val_feat_vec = all_sub_feat_vec
+        self.val_frame = all_sub_frame
