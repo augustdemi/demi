@@ -170,8 +170,6 @@ def train(model, data_generator, saver, sess, trained_model_dir, resume_itr=0):
             for i in range(len(val_subjects)):
                 eval_vec = all_val_feat_vec[i]
                 eval_frame = all_val_frame[i]
-
-                eval_vec = eval_vec[:trcted_len]
                 y_lab = data_generator.labels[i][eval_frame]
                 print('---------------- len of eval_frame ---------------------')
                 print(len(eval_frame))
